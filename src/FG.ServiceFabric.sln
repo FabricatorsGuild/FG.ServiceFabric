@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Services.R
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Actors.Remoting", "FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj", "{045616FB-2560-4168-B073-8D5B86FA7B52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Diagnostics", "FG.ServiceFabric.Diagnostics\FG.ServiceFabric.Diagnostics.csproj", "{48E2C92E-4C29-431B-A048-EBFF8BF98828}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{045616FB-2560-4168-B073-8D5B86FA7B52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{045616FB-2560-4168-B073-8D5B86FA7B52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{045616FB-2560-4168-B073-8D5B86FA7B52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48E2C92E-4C29-431B-A048-EBFF8BF98828}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48E2C92E-4C29-431B-A048-EBFF8BF98828}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48E2C92E-4C29-431B-A048-EBFF8BF98828}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48E2C92E-4C29-431B-A048-EBFF8BF98828}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
