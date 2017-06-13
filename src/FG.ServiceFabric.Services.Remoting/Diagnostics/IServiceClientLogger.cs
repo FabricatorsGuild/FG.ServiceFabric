@@ -9,9 +9,7 @@ namespace FG.ServiceFabric.Diagnostics
         IDisposable CallService(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader);
 
         void CallServiceFailed(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
-
-
+        
         void ServiceClientFailed(Uri requestUri, CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
-
     }
 }

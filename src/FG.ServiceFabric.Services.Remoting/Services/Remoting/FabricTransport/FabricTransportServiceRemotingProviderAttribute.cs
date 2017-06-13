@@ -27,7 +27,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 
         /// <summary>
         ///     Creates a service remoting listener for remoting the service interface.
-        ///     Uses the <see cref="T:FFCG.CodeEffect.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher"/> to dispatch
+        ///     Uses the <see cref="T:FG.CodeEffect.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher"/> to dispatch
         ///     service method invocations.
         ///     Exception Handlers <see cref="T:Microsoft.ServiceFabric.Services.Communication.Client.IExceptionHandler"/> can be attached by
         ///     adding them to the the constructor of this attribute
