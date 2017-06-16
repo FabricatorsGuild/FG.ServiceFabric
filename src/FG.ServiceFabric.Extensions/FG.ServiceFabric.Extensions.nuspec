@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta1</version>
+    <version>$version$-beta2</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
