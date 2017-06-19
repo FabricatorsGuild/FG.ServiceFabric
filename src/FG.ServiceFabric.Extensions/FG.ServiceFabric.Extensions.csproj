@@ -110,8 +110,6 @@
     <Compile Include="Actors\Runtime\ActorServiceExtensions.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderHelper.cs" />
     <Compile Include="Actors\Runtime\ActorWithStateBase.cs" />
-    <Compile Include="Actors\Runtime\DomainActorBase.cs" />
-    <Compile Include="Actors\Runtime\EventSourcedDomainActorBase.cs" />
     <Compile Include="Actors\State\ActorStateVersionExtension.cs" />
     <Compile Include="Actors\State\IMigrationContainer.cs" />
     <Compile Include="Actors\State\IVersionedState.cs" />
@@ -119,19 +117,22 @@
     <Compile Include="Actors\State\MigrationWithFunctions.cs" />
     <Compile Include="Actors\State\VersionedStateProvider.cs" />
     <Compile Include="Data\ReliableStateInfo.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="Diagnostics\Tracing\ActorFrameworkEventSource.cs" />
+    <Compile Include="Diagnostics\Tracing\DebugOutputEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\OutputEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\SystemEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\EventMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventParameterMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventSourceMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventSourceMapper.cs" />
+    <Compile Include="Diagnostics\Tracing\GenericEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\IEventSource.cs" />
+>>>>>>> 29ebf2b2e7a5e0145089114371846d6079d0efdd
     <Compile Include="Data\ReliableStateExtensions.cs" />
     <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
     <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClient.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClientFactory.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRequestHeaderAttribute.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRemotingClientExtensions.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRemotingMessageHeadersExtensions.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRequestContext.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRequestContextHelper.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRequestHeader.cs" />
-    <Compile Include="Services\Remoting\FabricTransport\ServiceRequestHeaderExtensions.cs" />
-    <Compile Include="Services\Remoting\Runtime\Client\AuditedServiceProxyFactory.cs" />
     <Compile Include="Services\Runtime\ServiceContextExtensions.cs" />
     <Compile Include="Services\Runtime\ServiceExtensions.cs" />
     <Compile Include="Services\Runtime\ServiceReference.cs" />
@@ -139,11 +140,14 @@
     <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Communication\ExceptionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+<<<<<<< HEAD
     <Compile Include="Services\Remoting\FabricTransport\FabricTransportServiceRemotingProviderAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceMethodInvocationInfo.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcher.cs" />
+=======
+>>>>>>> 29ebf2b2e7a5e0145089114371846d6079d0efdd
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
   </ItemGroup>
