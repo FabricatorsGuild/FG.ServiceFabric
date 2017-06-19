@@ -105,12 +105,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actors\Diagnostics\Tracing\ActorEventSourceBase.cs" />
-    <Compile Include="Actors\Remoting\FabricTransport\ActorServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Actors\Runtime\ActorBase.cs" />
-    <Compile Include="Actors\Remoting\Runtime\ActorMessageHeaders.cs" />
-    <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcherExtensions.cs" />
-    <Compile Include="Actors\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
     <Compile Include="Actors\Runtime\ActorService.cs" />
     <Compile Include="Actors\Runtime\ActorServiceExtensions.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderHelper.cs" />
@@ -124,22 +119,8 @@
     <Compile Include="Actors\State\MigrationWithFunctions.cs" />
     <Compile Include="Actors\State\VersionedStateProvider.cs" />
     <Compile Include="Data\ReliableStateInfo.cs" />
-    <Compile Include="Diagnostics\Tracing\ActorFrameworkEventSource.cs" />
-    <Compile Include="Actors\Diagnostics\Tracing\IActorEventSource.cs" />
-    <Compile Include="Diagnostics\Tracing\DebugOutputEventListener.cs" />
-    <Compile Include="Diagnostics\Tracing\OutputEventListener.cs" />
-    <Compile Include="Diagnostics\Tracing\SystemEventListener.cs" />
-    <Compile Include="Diagnostics\Tracing\EventMap.cs" />
-    <Compile Include="Diagnostics\Tracing\EventParameterMap.cs" />
-    <Compile Include="Diagnostics\Tracing\EventSourceMap.cs" />
-    <Compile Include="Diagnostics\Tracing\EventSourceMapper.cs" />
-    <Compile Include="Diagnostics\Tracing\GenericEventListener.cs" />
-    <Compile Include="Diagnostics\Tracing\IEventSource.cs" />
     <Compile Include="Data\ReliableStateExtensions.cs" />
-    <Compile Include="Diagnostics\Tracing\MicrosoftEventListener.cs" />
     <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
-    <Compile Include="Services\Diagnostics\Tracing\IServiceEventSource.cs" />
-    <Compile Include="Services\Diagnostics\Tracing\ServiceEventSourceBase.cs" />
     <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
     <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClient.cs" />
     <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClientFactory.cs" />
@@ -158,10 +139,7 @@
     <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Communication\ExceptionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Actors\Remoting\FabricTransport\FabricTransportActorRemotingProviderAttribute.cs" />
     <Compile Include="Services\Remoting\FabricTransport\FabricTransportServiceRemotingProviderAttribute.cs" />
-    <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcher.cs" />
-    <Compile Include="Actors\Remoting\Runtime\ActorServiceMethodInvocationInfo.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceMethodInvocationInfo.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />

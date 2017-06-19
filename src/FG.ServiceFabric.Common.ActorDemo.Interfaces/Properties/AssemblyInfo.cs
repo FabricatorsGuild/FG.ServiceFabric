@@ -35,5 +35,3 @@ using Microsoft.ServiceFabric.Actors.Remoting.FabricTransport;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("0.1.0.0")]
-
-[assembly: FG.ServiceFabric.Actors.Remoting.FabricTransport.FabricTransportActorRemotingProvider(typeof(ApplicationException))]

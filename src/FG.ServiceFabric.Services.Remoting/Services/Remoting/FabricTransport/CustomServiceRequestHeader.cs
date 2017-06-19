@@ -125,6 +125,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
             remotingMessageHeaders.AddHeader(CustomServiceRequestHeaderName, _bytes);
             return remotingMessageHeaders;
         }
+
         public override byte[] GetValue()
         {
             if (_needsPackaging)
@@ -133,7 +134,6 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
             }
             return _bytes;
         }
-
 
     }
 

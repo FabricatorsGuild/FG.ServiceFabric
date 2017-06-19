@@ -15,12 +15,12 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 {
     public class FabricTransportServiceRemotingClient : IServiceRemotingClient, ICommunicationClient
     {
-        protected readonly IServiceRemotingClient InnerClient;
+        protected internal IServiceRemotingClient InnerClient { get; }
         protected readonly Uri ServiceUri;
-        protected readonly IServiceClientLogger Logger;
+	    private readonly IServiceClientLogger _logger;
 
         private readonly MethodDispatcherBase _serviceMethodDispatcher;
-        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
+        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();		
 
         private string GetServiceMethodName(ServiceRemotingMessageHeaders messageHeaders)
         {
@@ -54,7 +54,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         {
             InnerClient = innerClient;
             ServiceUri = serviceUri;
-            Logger = logger;
+            _logger = logger;
             _serviceMethodDispatcher = serviceMethodDispatcher;
         }
 
@@ -75,7 +75,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         protected virtual Task<byte[]> RequestServiceResponseAsync(ServiceRemotingMessageHeaders messageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetServiceMethodName(messageHeaders);
-            using (Logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
+            using (_logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
             {
                 try
                 {
@@ -84,7 +84,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    Logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
+                    _logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }
@@ -100,7 +100,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         protected virtual Task<byte[]> SendServiceOneWay(ServiceRemotingMessageHeaders messageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetServiceMethodName(messageHeaders);
-            using (Logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
+            using (_logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
             {
                 try
                 {
@@ -109,7 +109,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    Logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
+                    _logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }
@@ -134,20 +134,12 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 
         private CustomServiceRequestHeader UpdateAndGetMessageHeaders(ServiceRemotingMessageHeaders messageHeaders)
         {
-            if ((ServiceRequestContext.Current != null) && (ServiceRequestContext.Current?.Headers?.Any() ?? false))
+	        var customHeader = ServiceRequestContext.Current?.GetCustomHeader();
+	        if (customHeader != null)
             {
-                messageHeaders.AddHeaders(ServiceRequestContext.Current.Headers);
+                messageHeaders.AddHeader(customHeader);
             }
-            else if (ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId] != null || ServiceRequestContext.Current?[ServiceRequestContextKeys.UserId] != null)
-            {
-                var header = new CustomServiceRequestHeader()
-                    .AddHeader(ServiceRequestContextKeys.CorrelationId, ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId])
-                    .AddHeader(ServiceRequestContextKeys.UserId, ServiceRequestContext.Current?[ServiceRequestContextKeys.UserId]);
-
-                messageHeaders.AddHeader(header);
-            }
-            var customServiceRequestHeader = messageHeaders.GetCustomServiceRequestHeader(Logger) ?? new CustomServiceRequestHeader();
-            return customServiceRequestHeader;
+	        return customHeader;
         }
     }
 }

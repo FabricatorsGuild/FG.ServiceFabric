@@ -2,12 +2,11 @@
 using System.Diagnostics.Tracing;
 using System.Fabric;
 using System.Threading.Tasks;
-using FG.ServiceFabric.Services.Diagnostics.Tracing;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
     [EventSource(Name = "FFCG-ServiceFabric-Demo-ActorDemo")]
-    internal sealed class ActorDemoEventSource : EventSource, IServiceEventSource//, IActorEventSource
+    internal sealed class ActorDemoEventSource : EventSource
     {
         public static readonly ActorDemoEventSource Current = new ActorDemoEventSource();
 

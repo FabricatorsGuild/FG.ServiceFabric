@@ -13,22 +13,9 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         public ServiceRequestContext()
         {
             _values = new ConcurrentDictionary<string, string>();
-        }
+        }		
 
-        public ServiceRequestContext(IEnumerable<ServiceRequestHeader> headers)
-            : this()
-        {
-            Headers = headers;
-        }
-
-        public IServiceCommunicationLogger Logger { get; set; }
-
-        public IEnumerable<ServiceRequestHeader> Headers { get; set; }
-
-        public static void SetHeaders(IEnumerable<ServiceRequestHeader> headers)
-        {
-            Current.Headers = headers;
-        }
+        public IEnumerable<ServiceRequestHeader> Headers { get; private set; }
 
         private readonly IDictionary<string, string> _values;
 

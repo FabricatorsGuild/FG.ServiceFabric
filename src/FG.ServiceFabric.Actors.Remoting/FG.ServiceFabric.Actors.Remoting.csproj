@@ -114,6 +114,9 @@
     <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcher.cs" />
     <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Actors\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
+    <Compile Include="Diagnostics\ActorDescription.cs" />
+    <Compile Include="Diagnostics\ActorOrActorServiceDescription.cs" />
+    <Compile Include="Diagnostics\ActorServiceDescription.cs" />
     <Compile Include="Diagnostics\IActorClientLogger.cs" />
     <Compile Include="Diagnostics\IActorServiceCommunicationLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

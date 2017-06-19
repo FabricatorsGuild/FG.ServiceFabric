@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Threading.Tasks;
 using FG.Common.Utils;
-using FG.ServiceFabric.Actors.Remoting.Runtime;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;

@@ -74,7 +74,23 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
             }            
         }
 
-        public static IServiceRemotingClientFactory CreateServiceRemotingClientFactory(Type interfaceType, IServiceRemotingCallbackClient callbackClient, IActorClientLogger logger, string correlationId, MethodDispatcherBase actorMethodDispatcher, MethodDispatcherBase serviceMethodDispatcher)
+		/// <summary>
+		/// Create a <see cref="FabricTransportActorRemotingClientFactory"/> for either the Actor interface of the service interface
+		/// </summary>
+		/// <param name="interfaceType"></param>
+		/// <param name="callbackClient"></param>
+		/// <param name="logger"></param>
+		/// <param name="correlationId"></param>
+		/// <param name="actorMethodDispatcher"></param>
+		/// <param name="serviceMethodDispatcher"></param>
+		/// <returns></returns>
+		public static IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
+			Type interfaceType, 
+			IServiceRemotingCallbackClient callbackClient, 
+			IActorClientLogger logger, 
+			string correlationId, 
+			MethodDispatcherBase actorMethodDispatcher, 
+			MethodDispatcherBase serviceMethodDispatcher)
         {
             var fabricTransportSettings = GetDefaultFabricTransportSettings("TransportSettings");
             var exceptionHandlers = GetExceptionHandlers(interfaceType);
