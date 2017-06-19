@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta7</version>
+    <version>$version$-beta8</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -11,8 +11,8 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric actors services testing mocks unit test</tags>
     <dependencies>
-      <dependency id="FG.Common" version="1.0.0-beta7" />
-      <dependency id="FG.ServiceFabric.Extensions" version="1.0.0-beta7" />
+      <dependency id="FG.Common" version="1.0.0-beta8" />
+      <dependency id="FG.ServiceFabric.Extensions" version="1.0.0-beta8" />
       <dependency id="ImpromptuInterface" version="[5.6.7]" />
     </dependencies>
   </metadata>

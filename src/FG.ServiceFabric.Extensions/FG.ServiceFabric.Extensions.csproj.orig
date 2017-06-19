@@ -117,6 +117,19 @@
     <Compile Include="Actors\State\MigrationWithFunctions.cs" />
     <Compile Include="Actors\State\VersionedStateProvider.cs" />
     <Compile Include="Data\ReliableStateInfo.cs" />
+<<<<<<< HEAD
+=======
+    <Compile Include="Diagnostics\Tracing\ActorFrameworkEventSource.cs" />
+    <Compile Include="Diagnostics\Tracing\DebugOutputEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\OutputEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\SystemEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\EventMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventParameterMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventSourceMap.cs" />
+    <Compile Include="Diagnostics\Tracing\EventSourceMapper.cs" />
+    <Compile Include="Diagnostics\Tracing\GenericEventListener.cs" />
+    <Compile Include="Diagnostics\Tracing\IEventSource.cs" />
+>>>>>>> 29ebf2b2e7a5e0145089114371846d6079d0efdd
     <Compile Include="Data\ReliableStateExtensions.cs" />
     <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
     <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
@@ -127,6 +140,17 @@
     <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Communication\ExceptionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+<<<<<<< HEAD
+<<<<<<< HEAD
+    <Compile Include="Services\Remoting\FabricTransport\FabricTransportServiceRemotingProviderAttribute.cs" />
+    <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
+    <Compile Include="Services\Remoting\Runtime\ServiceMethodInvocationInfo.cs" />
+    <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
+    <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcher.cs" />
+=======
+>>>>>>> 29ebf2b2e7a5e0145089114371846d6079d0efdd
+=======
+>>>>>>> origin/develop
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
   </ItemGroup>
