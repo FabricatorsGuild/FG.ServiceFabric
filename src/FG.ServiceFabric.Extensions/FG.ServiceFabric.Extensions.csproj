@@ -140,14 +140,12 @@
     <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Communication\ExceptionHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-<<<<<<< HEAD
+    <Compile Include="Actors\Remoting\FabricTransport\FabricTransportActorRemotingProviderAttribute.cs" />
     <Compile Include="Services\Remoting\FabricTransport\FabricTransportServiceRemotingProviderAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceMethodInvocationInfo.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcher.cs" />
-=======
->>>>>>> 29ebf2b2e7a5e0145089114371846d6079d0efdd
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
   </ItemGroup>
