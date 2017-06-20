@@ -19,7 +19,12 @@ namespace FG.ServiceFabric.Tests.Actor
                 // For more information, see https://aka.ms/servicefabricactorsplatform
 
                 ActorRuntime.RegisterActorAsync<ActorDemo>(
-                   (context, actorType) => new  ActorDemoActorService(context, actorType)).GetAwaiter().GetResult();
+                   (context, actorType) => new  ActorDemoActorService(context, actorType, settings:
+                    new ActorServiceSettings()
+                    {
+                        ActorGarbageCollectionSettings =
+                            new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
+                    })).GetAwaiter().GetResult();
 
                 Thread.Sleep(Timeout.Infinite);
             }

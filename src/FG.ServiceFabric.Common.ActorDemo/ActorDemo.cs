@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
@@ -74,6 +75,30 @@ namespace FG.ServiceFabric.Tests.Actor
             ActorDemoEventSource.Current.ActorDemoCountSet(this, count);
             var updatedCount = await this.StateManager.AddOrUpdateStateAsync("count", count, (key, value) => count > value ? count : value);
             ActorDemoEventSource.Current.ActorDemoCountUpdated(this, updatedCount);            
+        }
+
+        public Task<ComplexType> GetComplexTypeAsync()
+        {
+            return this.StateManager.GetStateAsync<ComplexType>("complexType");
+        }
+
+        public async Task SetComplexTypeAsync(string value)
+        {
+            var complexType = new ComplexType()
+            {
+                SomeId = Guid.NewGuid(),
+                ListOfStrings = new List<string> { "simple" },
+                ListOfSomething = new List<InnerComplexType>
+                {
+                    new InnerComplexType() {
+                        SomeId = Guid.NewGuid(),
+                        ArrayOfInterfaces = new []{ new SomeImpl() { Value = value }, new SomeImpl { Value = "Foo"}}
+                    },
+                    new InnerComplexType() { SomeId = Guid.NewGuid()}
+                }
+            };
+
+            await this.StateManager.SetStateAsync("complexType", complexType);
         }
     }
 }
