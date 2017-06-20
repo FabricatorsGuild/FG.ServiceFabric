@@ -14,7 +14,12 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
 {
     public class FabricTransportActorRemotingClient : FabricTransportServiceRemotingClient
     {
-        private readonly IActorClientLogger _logger;
+	    internal IServiceRemotingClient InnerClient
+	    {
+		    get { return base.InnerClient; }
+	    }
+
+	    private readonly IActorClientLogger _logger;
         private readonly MethodDispatcherBase _actorMethodDispatcher;
         private static readonly ConcurrentDictionary<long, string> ActorMethodMap = new ConcurrentDictionary<long, string>();
 

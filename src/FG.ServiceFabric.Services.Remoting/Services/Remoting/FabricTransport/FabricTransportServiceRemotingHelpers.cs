@@ -47,14 +47,14 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         }
 
         public static IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
-            Type actorInterfaceType, 
+            Type serviceInterfaceType, 
             IServiceRemotingCallbackClient callbackClient, 
             IServiceClientLogger logger, 
             string correlationId, 
             MethodDispatcherBase serviceMethodDispatcher)
         {
             var fabricTransportSettings = GetDefaultFabricTransportSettings("TransportSettings");
-            var exceptionHandlers = GetExceptionHandlers(actorInterfaceType);
+            var exceptionHandlers = GetExceptionHandlers(serviceInterfaceType);
             return
                 (IServiceRemotingClientFactory)new Client.FabricTransportServiceRemotingClientFactory(
                     new FabricTransportServiceRemotingClientFactory(

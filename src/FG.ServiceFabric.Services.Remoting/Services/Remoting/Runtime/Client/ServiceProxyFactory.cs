@@ -27,7 +27,7 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
             var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
 
             return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
-                serviceInterfaceType,
+                 serviceInterfaceType,
                 serviceRemotingCallbackClient,
                 Logger,
                 ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId],
