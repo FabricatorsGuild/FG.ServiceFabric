@@ -15,6 +15,34 @@
         </Extension>
       </Extensions>
     </StatefulServiceType>
+    <StatefulServiceType ServiceTypeName="ComplexActorServiceType">
+      <Extensions>
+        <Extension Name="__GeneratedServiceType__" GeneratedId="ade3ac3f-2172-4080-9f1a-b224fa28ea25|Volatile">
+          <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+            <DefaultService Name="ComplexActorService" />
+            <ServiceEndpoint Name="ComplexActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="ComplexActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="ComplexActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="ComplexActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="ComplexActorServiceLocalStoreConfig" />
+          </GeneratedNames>
+        </Extension>
+      </Extensions>
+    </StatefulServiceType>
+    <StatefulServiceType ServiceTypeName="EventStoredActorServiceType" HasPersistedState="true">
+      <Extensions>
+        <Extension Name="__GeneratedServiceType__" GeneratedId="f2ea463b-c2ad-4fbd-b45a-e8a57147000d|Persisted">
+          <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+            <DefaultService Name="EventStoredActorService" />
+            <ServiceEndpoint Name="EventStoredActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="EventStoredActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="EventStoredActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="EventStoredActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="EventStoredActorServiceLocalStoreConfig" />
+          </GeneratedNames>
+        </Extension>
+      </Extensions>
+    </StatefulServiceType>
   </ServiceTypes>
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
@@ -28,6 +56,10 @@
     <Endpoints>
       <Endpoint Name="ActorDemoActorServiceEndpoint" />
       <Endpoint Name="ActorDemoActorServiceReplicatorEndpoint" />
+      <Endpoint Name="ComplexActorServiceEndpoint" />
+      <Endpoint Name="ComplexActorServiceReplicatorEndpoint" />
+      <Endpoint Name="EventStoredActorServiceEndpoint" />
+      <Endpoint Name="EventStoredActorServiceReplicatorEndpoint" />
     </Endpoints>
   </Resources>
   <!-- The content will be generated during build -->

@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Diagnostic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabricTests.WebApi", "FG.ServiceFabricTests.WebApi\FG.ServiceFabricTests.WebApi.csproj", "{E1058BBA-905C-438B-A196-B0CEEC68D49B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Data", "FG.ServiceFabric.Data\FG.ServiceFabric.Data.csproj", "{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,14 @@ Global
 		{E1058BBA-905C-438B-A196-B0CEEC68D49B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E1058BBA-905C-438B-A196-B0CEEC68D49B}.Release|x64.ActiveCfg = Release|Any CPU
 		{E1058BBA-905C-438B-A196-B0CEEC68D49B}.Release|x64.Build.0 = Release|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Debug|x64.ActiveCfg = Debug|x64
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Debug|x64.Build.0 = Debug|x64
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Release|x64.ActiveCfg = Release|Any CPU
+		{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

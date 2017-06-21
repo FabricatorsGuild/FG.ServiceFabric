@@ -5,6 +5,12 @@
     <Parameter Name="ActorDemoActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="ActorDemoActorService_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="ActorDemoActorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="ComplexActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="ComplexActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="ComplexActorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="EventStoredActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="EventStoredActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="EventStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -30,6 +36,16 @@
     <Service Name="ActorDemoActorService" GeneratedIdRef="09f6aca8-8a55-47a2-a155-cdb7f7e5db79|Persisted">
       <StatefulService ServiceTypeName="ActorDemoActorServiceType" TargetReplicaSetSize="[ActorDemoActorService_TargetReplicaSetSize]" MinReplicaSetSize="[ActorDemoActorService_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[ActorDemoActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="ComplexActorService" GeneratedIdRef="ade3ac3f-2172-4080-9f1a-b224fa28ea25|Volatile">
+      <StatefulService ServiceTypeName="ComplexActorServiceType" TargetReplicaSetSize="[ComplexActorService_TargetReplicaSetSize]" MinReplicaSetSize="[ComplexActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[ComplexActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="EventStoredActorService" GeneratedIdRef="f2ea463b-c2ad-4fbd-b45a-e8a57147000d|Persisted">
+      <StatefulService ServiceTypeName="EventStoredActorServiceType" TargetReplicaSetSize="[EventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EventStoredActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[EventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
   </DefaultServices>

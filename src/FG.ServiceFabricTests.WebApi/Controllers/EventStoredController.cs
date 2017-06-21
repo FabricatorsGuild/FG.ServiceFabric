@@ -9,22 +9,13 @@ using Microsoft.ServiceFabric.Actors.Client;
 namespace FG.ServiceFabricTests.WebApi.Controllers
 {
     [Route("api/[controller]")]
-    public class ValuesController : Controller
+    public class EventStoredController : Controller
     {
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public async Task<ComplexType> Get(string id)
-        {
-            return
-                await new ActorProxyFactory().CreateActorProxy<IActorDemo>(new ActorId(id))
-                    .GetComplexTypeAsync();
-        }
-
         // POST api/values
         [HttpPost("{id}")]
         public void Post(string id, [FromBody]Command value)
         {
-            new ActorProxyFactory().CreateActorProxy<IActorDemo>(new ActorId(id)).SetComplexTypeAsync(value.Value);
+            new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).RaiseAsync(value.Value);
         }
 
         public class Command

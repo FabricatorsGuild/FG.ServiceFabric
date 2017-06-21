@@ -79,6 +79,8 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IComplexActor.cs" />
+    <Compile Include="IEventStoredActor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IActorDemo.cs" />
   </ItemGroup>
@@ -89,6 +91,10 @@
     <ProjectReference Include="..\FG.Common\FG.Common.csproj">
       <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
       <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Data\FG.ServiceFabric.Data.csproj">
+      <Project>{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}</Project>
+      <Name>FG.ServiceFabric.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>

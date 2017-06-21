@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("FG.ServiceFabric.Diagnostics")]
-[assembly: AssemblyDescription("Service Fabric Remoting Diagnostics")]
+[assembly: AssemblyTitle("FG.ServiceFabric.Data")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Fabricators Guild")]
-[assembly: AssemblyProduct("FG.ServiceFabric.Diagnostics")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("FG.ServiceFabric.Data")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("48e2c92e-4c29-431b-a048-ebff8bf98828")]
+[assembly: Guid("3d50a2ba-c14e-4a82-b76b-3de20c97d558")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -33,3 +33,4 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

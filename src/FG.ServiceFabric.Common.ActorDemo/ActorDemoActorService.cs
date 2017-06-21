@@ -19,7 +19,7 @@ namespace FG.ServiceFabric.Tests.Actor
             Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null, 
             Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null, 
             IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) : 
-            base(context, actorTypeInfo, actorFactory, stateManagerFactory, new FileStateProvider(actorTypeInfo), settings)
+            base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
         {
         }
 
