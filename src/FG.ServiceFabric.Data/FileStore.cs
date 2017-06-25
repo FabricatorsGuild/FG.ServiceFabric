@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
@@ -35,6 +36,12 @@ namespace FG.ServiceFabric.Data
             Directory.CreateDirectory(folder);
             return folder;
         }
+        private static string GetFolderPath()
+        {
+            var folder = Path.Combine(BaseFolderPath, "ActorService");
+            Directory.CreateDirectory(folder);
+            return folder;
+        }
 
         public Task RestoreExternalState<T>(ActorId actorId, string stateName,
             CancellationToken cancellationToken = new CancellationToken())
@@ -57,8 +64,7 @@ namespace FG.ServiceFabric.Data
             
             return Task.FromResult(false);
         }
-
-
+        
         public async Task<bool> ContainsExternalStateAsync(ActorId actorId, string stateName,
             CancellationToken cancellationToken = new CancellationToken())
         {
@@ -117,6 +123,70 @@ namespace FG.ServiceFabric.Data
             {
                 throw;
             }   
+        }
+
+        public override Task<IActorReminderCollection> LoadRemindersAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return base.LoadRemindersAsync(cancellationToken);
+        }
+
+        public Task RestoreExternalReminders(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var folderPath = Path.Combine(GetFolderPath(), ".json");
+
+            foreach (var fileName in Directory.EnumerateFiles(folderPath))
+            {
+                if (!fileName.Contains("Reminder"))
+                    continue;
+
+                var content = File.ReadAllText(Path.Combine(folderPath,fileName));
+                var externalState = JsonConvert.DeserializeObject<ExternalReminder>(content, _settings);
+
+                if (externalState != null)
+                {
+                    // Set lost state.
+                    return base.SaveReminderAsync(
+                        externalState.ActorId,
+                        externalState,
+                        cancellationToken);
+                }
+            }
+            
+            return Task.FromResult(false);
+        }
+        
+        public override async Task SaveReminderAsync(ActorId actorId, IActorReminder reminder,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            var externalReminder = new ExternalReminder()
+            {
+                ActorId = actorId,
+                DueTime = reminder.DueTime,
+                Name = reminder.Name,
+                Period = reminder.Period,
+                State = reminder.State
+            };
+
+            var reminderData = JsonConvert.SerializeObject(externalReminder, Formatting.Indented, _settings);
+            await Task.Run(() => File.WriteAllText(Path.Combine(GetFolderPath(), "Reminder_" + actorId + reminder.Name + ".json"), reminderData), cancellationToken);
+
+            await base.SaveReminderAsync(actorId, reminder, cancellationToken);
+        }
+
+        private class ExternalReminder : IActorReminder
+        {
+            public ActorId ActorId { get; set; }
+            public string Name { get; set; }
+            public TimeSpan DueTime { get; set; }
+            public TimeSpan Period { get; set; }
+            public byte[] State { get; set; }
+        }
+
+        public override Task DeleteReminderAsync(ActorId actorId, string reminderName,
+            CancellationToken cancellationToken = new CancellationToken())
+        {
+            File.Delete(Path.Combine(GetFolderPath(), "Reminder", actorId + reminderName + ".json"));
+            return base.DeleteReminderAsync(actorId, reminderName, cancellationToken);
         }
     }
 }

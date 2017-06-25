@@ -17,8 +17,7 @@ namespace FG.ServiceFabric.Tests.Actor
             Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null, 
             IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) : 
             base(context, actorTypeInfo, actorFactory, stateManagerFactory, new EventStore<IEvent>(actorTypeInfo), settings)
-        {
-        }
+        { }
 
         protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
         {

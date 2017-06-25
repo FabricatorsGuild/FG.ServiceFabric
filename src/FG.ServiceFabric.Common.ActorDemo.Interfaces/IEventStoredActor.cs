@@ -22,6 +22,6 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
         [DataMember]
         public string[] ListOfStrings { get; set; }
         [DataMember]
-        public Guid EventId { get; }
+        public Guid EventId { get; set; }
     }
 }

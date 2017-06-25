@@ -7,24 +7,12 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
-    /// <remarks>
-    /// This class represents an actor.
-    /// Every ActorID maps to an instance of this class.
-    /// The StatePersistence attribute determines persistence and replication of actor state:
-    ///  - Persisted: State is written to disk and replicated.
-    ///  - Volatile: State is kept in memory only and replicated.
-    ///  - None: State is kept in memory only and not replicated.
-    /// </remarks>
     [StatePersistence(StatePersistence.Volatile)]
-    internal class ComplexActor : FG.ServiceFabric.Actors.Runtime.ActorBase, IComplexActor
+    internal class ComplexActor : FG.ServiceFabric.Actors.Runtime.ActorBase, IComplexActor, IRemindable
     {
         private readonly ComplexActorService _actorService;
+        private const string ReminderName = "Remind_me_I_got_a_problem";
 
-        /// <summary>
-        /// Initializes a new instance of ActorDemo
-        /// </summary>
-        /// <param name="actorService">The Microsoft.ServiceFabric.Actors.Runtime.ActorService that will host this actor instance.</param>
-        /// <param name="actorId">The Microsoft.ServiceFabric.Actors.ActorId for this actor instance.</param>
         public ComplexActor(ComplexActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
@@ -33,7 +21,11 @@ namespace FG.ServiceFabric.Tests.Actor
 
         protected override async Task OnActivateAsync()
         {
-            await _actorService.StateProvider.RestoreExternalState<ComplexType>(this.GetActorId(), "complexType");
+            var reminderRegistration = await this.RegisterReminderAsync(
+                ReminderName,
+                BitConverter.GetBytes(1337),
+                TimeSpan.FromMinutes(1),
+                TimeSpan.FromMinutes(1));
         }
 
         public Task<ComplexType> GetComplexTypeAsync()
@@ -51,13 +43,22 @@ namespace FG.ServiceFabric.Tests.Actor
                 {
                     new InnerComplexType() {
                         SomeId = Guid.NewGuid(),
-                        ArrayOfInterfaces = new []{ new SomeImpl() { Value = value }, new SomeImpl { Value = "Foo"}}
+                        ArrayOfInterfaces = new ISomeInterface[]{ new SomeImpl() { Value = value }, new SomeImpl { Value = "Foo"}}
                     },
                     new InnerComplexType() { SomeId = Guid.NewGuid()}
                 }
             };
 
             await this.StateManager.SetStateAsync("complexType", complexType);
+        }
+
+        public async Task ReceiveReminderAsync(string reminderName, byte[] state, TimeSpan dueTime, TimeSpan period)
+        {
+            if (reminderName.Equals(ReminderName))
+            {
+                var reminder = GetReminder(ReminderName);
+                await UnregisterReminderAsync(reminder); //problem resolved this activation...
+            }
         }
     }
 }

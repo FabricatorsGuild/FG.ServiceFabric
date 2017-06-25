@@ -11,7 +11,6 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
     [Route("api/[controller]")]
     public class ComplexController : Controller
     {
-        // GET api/values/5
         [HttpGet("{id}")]
         public async Task<ComplexType> Get(string id)
         {
@@ -26,8 +25,7 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
                 throw;
             }
         }
-
-        // POST api/values
+        
         [HttpPost("{id}")]
         public async Task Post(string id, [FromBody]Command value)
         {

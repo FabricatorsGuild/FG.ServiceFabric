@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Data;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ServiceFabric.Actors;

@@ -69,17 +69,17 @@ namespace FG.ServiceFabric.Data
             set { _innerStateProvider.OnDataLossAsync = value; }
         }
 
-        public void Initialize(ActorTypeInformation actorTypeInformation)
+        public virtual void Initialize(ActorTypeInformation actorTypeInformation)
         {
             _innerStateProvider.Initialize(actorTypeInformation);
         }
 
-        public Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
+        public virtual Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.ActorActivatedAsync(actorId, cancellationToken);
         }
 
-        public Task ReminderCallbackCompletedAsync(ActorId actorId, IActorReminder reminder,
+        public virtual Task ReminderCallbackCompletedAsync(ActorId actorId, IActorReminder reminder,
             CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.ReminderCallbackCompletedAsync(actorId, reminder, cancellationToken);
@@ -97,39 +97,39 @@ namespace FG.ServiceFabric.Data
             return _innerStateProvider.SaveStateAsync(actorId, stateChanges, cancellationToken);
         }
 
-        public Task<bool> ContainsStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
+        public virtual Task<bool> ContainsStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.ContainsStateAsync(actorId, stateName, cancellationToken);
         }
 
-        public Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
+        public virtual Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.RemoveActorAsync(actorId, cancellationToken);
         }
 
-        public Task<IEnumerable<string>> EnumerateStateNamesAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
+        public virtual Task<IEnumerable<string>> EnumerateStateNamesAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.EnumerateStateNamesAsync(actorId, cancellationToken);
         }
 
-        public Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken, CancellationToken cancellationToken)
+        public virtual Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             return _innerStateProvider.GetActorsAsync(numItemsToReturn, continuationToken, cancellationToken);
         }
 
-        public Task SaveReminderAsync(ActorId actorId, IActorReminder reminder,
+        public virtual Task SaveReminderAsync(ActorId actorId, IActorReminder reminder,
             CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.SaveReminderAsync(actorId, reminder, cancellationToken);
         }
 
-        public Task DeleteReminderAsync(ActorId actorId, string reminderName,
+        public virtual Task DeleteReminderAsync(ActorId actorId, string reminderName,
             CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.DeleteReminderAsync(actorId, reminderName, cancellationToken);
         }
 
-        public Task<IActorReminderCollection> LoadRemindersAsync(CancellationToken cancellationToken = new CancellationToken())
+        public virtual Task<IActorReminderCollection> LoadRemindersAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             return _innerStateProvider.LoadRemindersAsync(cancellationToken);
         }
