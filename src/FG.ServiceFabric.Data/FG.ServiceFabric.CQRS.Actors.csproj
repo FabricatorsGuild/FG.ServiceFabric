@@ -7,8 +7,8 @@
     <ProjectGuid>{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FG.ServiceFabric.Data</RootNamespace>
-    <AssemblyName>FG.ServiceFabric.Data</AssemblyName>
+    <RootNamespace>FG.ServiceFabric</RootNamespace>
+    <AssemblyName>FG.ServiceFabric.CQRS.Actors</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -105,16 +105,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventStore.SomeBus.cs" />
-    <Compile Include="WrappedActorStateProvider.cs" />
-    <Compile Include="EventStore.cs" />
-    <Compile Include="FileStore.cs" />
+    <Compile Include="Actors\Runtime\AggregateRootReadModelGenerator.cs" />
+    <Compile Include="Actors\Runtime\CommandExecutionHelper.cs" />
+    <Compile Include="Actors\Runtime\EventStoredActor.cs" />
+    <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
+    <Compile Include="Actors\Runtime\EventStoreSession.cs" />
+    <Compile Include="Persistance\IDbSession.cs" />
+    <Compile Include="Actors\Runtime\EventStreamReader.cs" />
+    <Compile Include="Actors\Runtime\EventStoredStateProvider.cs" />
+    <Compile Include="Actors\Runtime\FileStoreStateProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+      <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
+      <Name>FG.ServiceFabric.CQRS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>

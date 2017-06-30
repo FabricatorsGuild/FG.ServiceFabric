@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Data;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
+using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
@@ -21,7 +23,7 @@ namespace FG.ServiceFabric.Tests.Actor
             Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null, 
             Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null, 
             IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) : 
-            base(context, actorTypeInfo, actorFactory, stateManagerFactory, new ComplexFileStore(actorTypeInfo), settings)
+            base(context, actorTypeInfo, actorFactory, stateManagerFactory, new ComplexFileStoreStateProvider(actorTypeInfo), settings)
         {
         }
         
@@ -34,9 +36,9 @@ namespace FG.ServiceFabric.Tests.Actor
         }
     }
 
-    public class ComplexFileStore : FileStore
+    public class ComplexFileStoreStateProvider : FileStoreStateProvider
     {
-        public ComplexFileStore(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null) : base(actorTypeInfor, stateProvider)
+        public ComplexFileStoreStateProvider(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null) : base(actorTypeInfor, stateProvider)
         {
         }
 

@@ -1,42 +1,114 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using FG.ServiceFabric.Data;
+using FG.ServiceFabric.Actors.Runtime;
+using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
+using IAggregateRootEvent = FG.ServiceFabric.CQRS.IAggregateRootEvent;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
-    /// <remarks>
-    /// This class represents an actor.
-    /// Every ActorID maps to an instance of this class.
-    /// The StatePersistence attribute determines persistence and replication of actor state:
-    ///  - Persisted: State is written to disk and replicated.
-    ///  - Volatile: State is kept in memory only and replicated.
-    ///  - None: State is kept in memory only and not replicated.
-    /// </remarks>
     [StatePersistence(StatePersistence.Persisted)]
-    internal class EventStoredActor : FG.ServiceFabric.Actors.Runtime.ActorBase, IEventStoredActor
+    public class EventStoredActor : 
+        EventStoredActor<EventStoredActor.MyAggregateRoot, EventStoredActor.MyEventStream>,
+        IEventStoredActor, 
+        IHandleDomainEvent<EventStoredActor.MyDomainEvent>, 
+        IHandleDomainEvent<EventStoredActor.MySecondDomainEvent>
     {
-        /// <summary>
-        /// Initializes a new instance of ActorDemo
-        /// </summary>
-        /// <param name="actorService">The Microsoft.ServiceFabric.Actors.Runtime.ActorService that will host this actor instance.</param>
-        /// <param name="actorId">The Microsoft.ServiceFabric.Actors.ActorId for this actor instance.</param>
         public EventStoredActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
         }
 
-        public async Task RaiseAsync(string value)
+        protected override async Task OnActivateAsync()
         {
-            var @event = new EventImpl
-            {
-                ListOfStrings = new []{ value },
-            };
-
-            await this.StateManager.SetStateAsync(@event.EventId.ToString(), @event);
+            //here or in state provider onactoractivated.
+            //todo:restore external state if no state exist in state provider
+            //todo:reminders?
+            //todo:check for unpublished?
+            //todo:kill actors without state anywhere.
+            await GetAndSetDomainAsync();
         }
+
+        public Task CreateAsync(Guid aggregateRootId, string value)
+        {
+            DomainState.MyDomainAction(aggregateRootId, value);
+            return Task.FromResult(true);
+        }
+        public Task UpdateAsync(Guid aggregateRootId, string value)
+        {
+            DomainState.MySecondDomainAction(aggregateRootId, value);
+            return Task.FromResult(true);
+        }
+
+        public async Task Handle(MyDomainEvent domainEvent)
+        {
+            //await StoreDomainEventAsync(domainEvent);
+        }
+
+        public async Task Handle(MySecondDomainEvent domainEvent)
+        {
+            //await StoreDomainEventAsync(domainEvent);
+        }
+
+        #region Sample domain
+
+        public interface IMyEventInterface : IAggregateRootEvent
+        {
+        }
+
+        public interface IMyDomainEvent : IMyEventInterface
+        {
+            string MyProp { get; }
+        }
+
+        [DataContract]
+        public class MyDomainEvent : AggregateRootEventBase, IMyDomainEvent, IAggregateRootCreatedEvent
+        {
+            [DataMember]
+            public string MyProp { get; set; }
+        }
+
+        [DataContract]
+        public class MySecondDomainEvent : AggregateRootEventBase, IMyDomainEvent
+        {
+            [DataMember]
+            public string MyProp { get; set; }
+        }
+
+        public class MyAggregateRoot : AggregateRoot<IMyEventInterface>
+        {
+            public MyAggregateRoot()
+            {
+                RegisterEventAppliers()
+                    .For<IMyDomainEvent>(e => this.MyProp = e.MyProp);
+            }
+
+            public string MyProp { get; set; }
+
+            public void MyDomainAction(Guid aggregateRootId, string arg)
+            {
+                RaiseEvent(new MyDomainEvent {AggregateRootId = aggregateRootId, MyProp = arg});
+            }
+
+            public void MySecondDomainAction(Guid aggregateRootId, string arg)
+            {
+                //try raise 2 events.
+                RaiseEvent(new MySecondDomainEvent { MyProp = arg + "1" });
+                RaiseEvent(new MySecondDomainEvent { MyProp = arg + "2" });
+            }
+        }
+
+        [DataContract]
+        [KnownType(typeof(MyDomainEvent))]
+        [KnownType(typeof(MySecondDomainEvent))]
+        public class MyEventStream : EventStreamBase
+        {
+        }
+
+        #endregion
     }
 }

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FG.ServiceFabric.Data;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ServiceFabric.Actors;
@@ -14,9 +11,15 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
     {
         // POST api/values
         [HttpPost("{id}")]
-        public void Post(string id, [FromBody]Command value)
+        public async void Post(Guid id, [FromBody]Command value)
         {
-            new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).RaiseAsync(value.Value);
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).CreateAsync(id, value.Value);
+        }
+
+        [HttpPut("{id}")]
+        public async void Put(Guid id, [FromBody]Command value)
+        {
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).UpdateAsync(id, value.Value);
         }
 
         public class Command

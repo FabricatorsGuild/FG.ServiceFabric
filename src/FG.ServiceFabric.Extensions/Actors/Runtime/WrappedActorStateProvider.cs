@@ -8,9 +8,9 @@ using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Data;
 
-namespace FG.ServiceFabric.Data
+namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class WrappedActorStateProvider
+    public abstract class WrappedActorStateProvider : IActorStateProvider
     {
         private readonly IActorStateProvider _innerStateProvider;
 
