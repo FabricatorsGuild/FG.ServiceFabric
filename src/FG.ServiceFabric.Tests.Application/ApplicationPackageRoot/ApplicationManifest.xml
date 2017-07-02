@@ -43,7 +43,7 @@
         <UniformInt64Partition PartitionCount="[ComplexActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
-    <Service Name="EventStoredActorService" GeneratedIdRef="f2ea463b-c2ad-4fbd-b45a-e8a57147000d|Persisted">
+    <Service Name="EventStoredActorService" GeneratedIdRef="972f7c49-bd68-43f8-94a3-d51b859ec165|Volatile">
       <StatefulService ServiceTypeName="EventStoredActorServiceType" TargetReplicaSetSize="[EventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EventStoredActorService_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[EventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>

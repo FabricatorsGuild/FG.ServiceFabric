@@ -11,15 +11,11 @@ using FG.ServiceFabric.Persistance;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public interface IRestorableStateProvider
+    public class TempDatabaseStateProvider : WrappedActorStateProvider, IRestorableActorStateProvider, IActorStateProvider
     {
-    }
-    
-    public class DatabaseStateProvider : WrappedActorStateProvider
-    {
-        private readonly Func<IDbSession> _dbSessionFactory;
+        private readonly Func<IDocumentDbSession> _dbSessionFactory;
 
-        public DatabaseStateProvider(ActorTypeInformation actorTypeInfo, Func<IDbSession> dbSessionFactory, IActorStateProvider stateProvider = null)
+        public TempDatabaseStateProvider(ActorTypeInformation actorTypeInfo, Func<IDocumentDbSession> dbSessionFactory, IActorStateProvider stateProvider = null)
             : base(actorTypeInfo, stateProvider)
         {
             _dbSessionFactory = dbSessionFactory;
@@ -38,36 +34,29 @@ namespace FG.ServiceFabric.Actors.Runtime
             if (await base.ContainsStateAsync(actorId, stateName, cancellationToken))
                 return true;
 
-            if (await HasRestorableState(actorId, stateName, cancellationToken))
+            if (await HasRestorableStateAsync(actorId, stateName, cancellationToken))
             {
-                await RestoreState(actorId, stateName, cancellationToken);
+                await RestoreStateAsync(actorId, stateName, cancellationToken);
                 return true;
             }
 
             return false;
         }
 
-        private async Task RestoreState(ActorId actorId, string stateName, CancellationToken cancellationToken)
+        public async Task RestoreStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken)
         {
             var state = await _dbSessionFactory().GetState(actorId, stateName, cancellationToken);
-            await SaveStateAsync(actorId, new[] {new ActorStateChange(stateName, state.GetType(), state, StateChangeKind.Add)},
-                cancellationToken);
+            await SaveStateAsync(actorId, new[] {new ActorStateChange(stateName, state.GetType(), state, StateChangeKind.Add)}, cancellationToken);
         }
 
-        private Task<bool> HasRestorableState(ActorId actorId, string stateName, CancellationToken cancellationToken)
+        public Task<bool> HasRestorableStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken)
         {
             return _dbSessionFactory().ContainsStateAsync(actorId, stateName, cancellationToken);
-        }
-
-        public override async Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
-        {
-            //todo: restore external state?
-            await base.ActorActivatedAsync(actorId, cancellationToken);
         }
     }
     
     [DataContract]
-    public abstract class EventStreamBase : IDomainEventStream
+    public abstract class EventStreamBase : IEventStream
     {
         protected EventStreamBase()
         {
@@ -80,6 +69,11 @@ namespace FG.ServiceFabric.Actors.Runtime
         public void Append(IDomainEvent domainEvent)
         {
             DomainEvents = DomainEvents.Union(new[] {domainEvent}).ToArray();
+        }
+
+        public void Append(IDomainEvent[] domainEvents)
+        {
+            DomainEvents = DomainEvents.Union(domainEvents).ToArray();
         }
     }
 }

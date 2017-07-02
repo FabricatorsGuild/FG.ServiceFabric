@@ -110,10 +110,13 @@
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
     <Compile Include="Actors\Runtime\EventStoreSession.cs" />
-    <Compile Include="Persistance\IDbSession.cs" />
+    <Compile Include="Actors\Runtime\IRestorableActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\WrappedStateManager.cs" />
+    <Compile Include="Persistance\FileSystemDbSession.cs" />
+    <Compile Include="Persistance\IDocumentDbSession.cs" />
     <Compile Include="Actors\Runtime\EventStreamReader.cs" />
-    <Compile Include="Actors\Runtime\EventStoredStateProvider.cs" />
-    <Compile Include="Actors\Runtime\FileStoreStateProvider.cs" />
+    <Compile Include="Actors\Runtime\TempDatabaseStateProvider.cs" />
+    <Compile Include="Actors\Runtime\TempFileSystemStateProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +134,10 @@
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
+      <Project>{1A4F9C49-629B-4331-BE3C-698FFFAA294C}</Project>
+      <Name>FG.ServiceFabric.Services.Remoting</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

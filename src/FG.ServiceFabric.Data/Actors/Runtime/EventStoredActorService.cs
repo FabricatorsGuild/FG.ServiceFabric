@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.CQRS;
@@ -11,7 +10,6 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Data;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 
 namespace FG.ServiceFabric.Actors.Runtime
 { 
@@ -35,9 +33,9 @@ namespace FG.ServiceFabric.Actors.Runtime
          ActorServiceSettings settings = null,
          IReliableStateManagerReplica reliableStateManagerReplica = null,
          IEventStreamReader<TEventStream> eventStreamReader = null)
-            : base(context, actorTypeInfo, actorFactory, stateManagerFactory, new DatabaseStateProvider(actorTypeInfo, () => new FileSystemSession(),  stateProvider), settings, reliableStateManagerReplica)
+            : base(context, actorTypeInfo, actorFactory, stateManagerFactory, new TempDatabaseStateProvider(actorTypeInfo, () => new FileSystemDbSession(),  stateProvider), settings, reliableStateManagerReplica)
         {
-            StateProviderEventStreamReader = eventStreamReader ?? new EventStreamReader<TEventStream>(StateProvider, EventStoredActor<TAggregateRoot, TEventStream>.CoreStateName);
+            StateProviderEventStreamReader = eventStreamReader ?? new EventStreamReader<TEventStream>(StateProvider, EventStoredActor.EventStreamStateKey);
         }
 
         public async Task<IEnumerable<string>> GetAllEventHistoryAsync(Guid aggregateRootId)

@@ -4,8 +4,6 @@ using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Data;
-using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
@@ -15,7 +13,7 @@ namespace FG.ServiceFabric.Tests.Actor
 {
     public class ComplexActorService : Actors.Runtime.ActorService, IActorService
     {
-        public new IExternalActorStateProvider StateProvider =>  (IExternalActorStateProvider) base.StateProvider;
+        public new IRestorableActorStateProvider StateProvider =>  (IRestorableActorStateProvider) base.StateProvider;
 
         public ComplexActorService(
             StatefulServiceContext context, 
@@ -36,16 +34,20 @@ namespace FG.ServiceFabric.Tests.Actor
         }
     }
 
-    public class ComplexFileStoreStateProvider : FileStoreStateProvider
+    public class ComplexFileStoreStateProvider : TempFileSystemStateProvider
     {
-        public ComplexFileStoreStateProvider(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null) : base(actorTypeInfor, stateProvider)
+        public ComplexFileStoreStateProvider(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null) 
+            : base(actorTypeInfor, stateProvider)
         {
         }
 
         public override async Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            //todo: either here or in Actor.OnActivateAsync and based on some condition?
-            await RestoreExternalState<ComplexType>(actorId, "complexType", cancellationToken);
+            if (await HasRestorableStateAsync(actorId, "complexType", cancellationToken))
+            {
+                await RestoreStateAsync(actorId, "complexType", cancellationToken);
+            }
+
             await base.ActorActivatedAsync(actorId, cancellationToken);
         }
     }

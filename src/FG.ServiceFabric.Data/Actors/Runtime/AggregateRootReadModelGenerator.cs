@@ -11,11 +11,11 @@ namespace FG.ServiceFabric.Actors.Runtime
         where TAggregateRootEventInterface : class, IAggregateRootEvent
         where TReadModel : class, new()
     {
-        protected readonly EventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new EventDispatcher<TAggregateRootEventInterface>();
+        protected readonly DomainEventDispatcher<TAggregateRootEventInterface> EventDispatcher = new DomainEventDispatcher<TAggregateRootEventInterface>();
         
-        protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
+        protected DomainEventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
         {
-            return _eventDispatcher.RegisterHandlers();
+            return EventDispatcher.RegisterHandlers();
         }
 
         protected TReadModel ReadModel { get; set; }
@@ -23,7 +23,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         public void Apply(TReadModel readModel, TAggregateRootEventInterface evt)
         {
             ReadModel = readModel;
-            _eventDispatcher.Dispatch(evt);
+            EventDispatcher.Dispatch(evt);
             ReadModel = null;
         }
 
@@ -38,7 +38,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
     public abstract class AggregateRootReadModelGenerator<TEventStream, TAggregateRootEventInterface, TReadModel> 
         : ReadModelGenerator<TAggregateRootEventInterface, TReadModel>
-        where TEventStream : class, IDomainEventStream, new()
+        where TEventStream : class, IEventStream, new()
         where TAggregateRootEventInterface : class, IAggregateRootEvent
         where TReadModel : class, IAggregateReadModel, new()
     {
@@ -81,7 +81,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             ReadModel = new TReadModel();
             foreach (var domainEvent in domainEvents)
             {
-                _eventDispatcher.Dispatch(domainEvent as TAggregateRootEventInterface);
+                EventDispatcher.Dispatch(domainEvent as TAggregateRootEventInterface);
             }
             var result = ReadModel;
             ReadModel = null;

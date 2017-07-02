@@ -15,4 +15,14 @@ namespace FG.ServiceFabric.CQRS
         public Guid CommandId { get; private set; }
 
     }
+
+    [DataContract]
+    public abstract class DomainCommandBase : CommandBase, IDomainCommand
+    {
+    }
+
+    [DataContract]
+    public abstract class ServiceCommandBase : CommandBase, IServiceCommand
+    {
+    }
 }

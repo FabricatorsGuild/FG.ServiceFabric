@@ -109,8 +109,8 @@
     <Compile Include="Actors\Runtime\ActorService.cs" />
     <Compile Include="Actors\Runtime\ActorServiceExtensions.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderHelper.cs" />
-    <Compile Include="Actors\Runtime\ActorWithStateBase.cs" />
     <Compile Include="Actors\Runtime\WrappedActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\WrappedStateManager.cs" />
     <Compile Include="Actors\State\ActorStateVersionExtension.cs" />
     <Compile Include="Actors\State\IMigrationContainer.cs" />
     <Compile Include="Actors\State\IVersionedState.cs" />

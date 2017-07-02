@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace FG.ServiceFabric.CQRS
 {
     public interface IEventStoreSession
     {
-        TAggregate Get<TAggregate>(Guid aggregateId) where TAggregate : IEventStored;
-        void SaveChanges();
-        void Delete(Guid aggregateId);
+        Task<TAggregateRoot> Get<TAggregateRoot>()
+            where TAggregateRoot : class, IEventStored, new();
+        Task SaveChanges();
+        Task Delete();
     }
 }

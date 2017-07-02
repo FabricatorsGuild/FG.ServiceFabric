@@ -49,9 +49,7 @@
     <Compile Include="CQRS\AggregateRoot.Entity.cs" />
     <Compile Include="CQRS\AggregateRootEvent.cs" />
     <Compile Include="CQRS\CommandBase.cs" />
-    <Compile Include="CQRS\DomainCommandBase.cs" />
-    <Compile Include="CQRS\DomainEventStreamBase.cs" />
-    <Compile Include="CQRS\EventDispatcher.cs" />
+    <Compile Include="CQRS\DomainEventDispatcher.cs" />
     <Compile Include="CQRS\Exceptions\AggregateRootException.cs" />
     <Compile Include="CQRS\Exceptions\AggregateRootNotFoundException.cs" />
     <Compile Include="CQRS\Exceptions\EventHandlerNotFoundException.cs" />
@@ -62,8 +60,7 @@
     <Compile Include="CQRS\IAggregateRootDeletedEvent.cs" />
     <Compile Include="CQRS\IAggregateRootEvent.cs" />
     <Compile Include="CQRS\ICommand.cs" />
-    <Compile Include="CQRS\IDomainAggregateRoot.cs" />
-    <Compile Include="CQRS\IDomainCommand.cs" />
+    <Compile Include="CQRS\IEventStored.cs" />
     <Compile Include="CQRS\IDomainEvent.cs" />
     <Compile Include="CQRS\IDomainEventController.cs" />
     <Compile Include="CQRS\IDomainEventStream.cs" />
@@ -71,10 +68,7 @@
     <Compile Include="CQRS\IEventStoreSession.cs" />
     <Compile Include="CQRS\IEventStreamReader.cs" />
     <Compile Include="CQRS\IHandleDomainEvent.cs" />
-    <Compile Include="CQRS\IHandleDomainRequest.cs" />
-    <Compile Include="CQRS\IServiceCommand.cs" />
     <Compile Include="CQRS\ITimeProvider.cs" />
-    <Compile Include="CQRS\ServiceCommandBase.cs" />
     <Compile Include="CQRS\UtcNowTimeProvider.cs" />
     <Compile Include="CQRS\ValueObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

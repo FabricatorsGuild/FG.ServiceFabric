@@ -9,19 +9,12 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Persistance
 {
-    public interface IDbSession
-    {
-        Task<object> GetState(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken());
-        Task<bool> ContainsStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken());
-        Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges, CancellationToken cancellationToken = new CancellationToken());
-    }
-
-    public class FileSystemSession : IDbSession
+    public class FileSystemDbSession : IDocumentDbSession
     {
         private readonly JsonSerializerSettings _settings;
         private const string BaseFolderPath = @"C:\Temp\";
 
-        public FileSystemSession()
+        public FileSystemDbSession()
         {
             _settings = new JsonSerializerSettings()
             {
@@ -72,6 +65,24 @@ namespace FG.ServiceFabric.Persistance
             throw new Exception("State not found");
         }
 
+        public Task<T> GetState<T>(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
+        {
+            var filePath = Path.Combine(GetFolderPath(actorId), stateName + ".json");
+
+            if (File.Exists(filePath))
+            {
+                var content = File.ReadAllText(filePath);
+                var externalState = JsonConvert.DeserializeObject<ValueWrapper>(content, _settings);
+
+                if (externalState != null)
+                {
+                    return Task.FromResult((T) externalState.Value);
+                }
+            }
+
+            throw new Exception("State not found");
+        }
+
         public Task<bool> ContainsStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
         {
             return Task.FromResult(File.Exists(Path.Combine(GetFolderPath(actorId), stateName + ".json")));
@@ -80,7 +91,7 @@ namespace FG.ServiceFabric.Persistance
         public Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            //todo:transactional
+            // TODO: Do this transactional.
             foreach (var actorStateChange in stateChanges)
             {
                 switch (actorStateChange.ChangeKind)

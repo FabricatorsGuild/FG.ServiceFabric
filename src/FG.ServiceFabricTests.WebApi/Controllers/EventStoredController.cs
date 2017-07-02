@@ -13,13 +13,13 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpPost("{id}")]
         public async void Post(Guid id, [FromBody]Command value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).CreateAsync(id, value.Value);
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).CreateAsync(new MyCommand {AggretateRootId = id, Value = value.Value});
         }
 
         [HttpPut("{id}")]
         public async void Put(Guid id, [FromBody]Command value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).UpdateAsync(id, value.Value);
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).UpdateAsync(new MyCommand { AggretateRootId = id, Value = value.Value });
         }
 
         public class Command

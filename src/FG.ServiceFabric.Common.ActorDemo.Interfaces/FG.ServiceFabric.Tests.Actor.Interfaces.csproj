@@ -92,6 +92,10 @@
       <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
       <Name>FG.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+      <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
+      <Name>FG.ServiceFabric.CQRS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Data\FG.ServiceFabric.CQRS.Actors.csproj">
       <Project>{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}</Project>
       <Name>FG.ServiceFabric.CQRS.Actors</Name>

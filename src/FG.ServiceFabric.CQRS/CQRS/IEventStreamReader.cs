@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace FG.ServiceFabric.CQRS
 {
-    public interface IEventStreamReader<TEventStream> where TEventStream : IDomainEventStream
+    public interface IEventStreamReader<TEventStream> where TEventStream : IEventStream
     {
         Task<TEventStream> GetEventStreamAsync(Guid id, CancellationToken cancellationToken);
     }

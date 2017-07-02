@@ -11,53 +11,35 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-
-    public interface IExternalActorStateProvider : IActorStateProvider
+    public class TempFileSystemStateProvider : WrappedActorStateProvider, IRestorableActorStateProvider, IActorStateProvider
     {
-        Task<bool> ContainsExternalStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken());
-        Task RestoreExternalState<T>(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken());
-    }
-
-    public class FileStoreStateProvider : WrappedActorStateProvider, IExternalActorStateProvider
-    {
-        private readonly Func<IDbSession> _dbSessionFactory;
+        private readonly Func<IDocumentDbSession> _dbSessionFactory;
         private const string BaseFolderPath = @"C:\Temp\";
 
-        public FileStoreStateProvider(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null)
+        public TempFileSystemStateProvider(ActorTypeInformation actorTypeInfor, IActorStateProvider stateProvider = null)
             : base(actorTypeInfor, stateProvider)
         {
-            _dbSessionFactory = () => new FileSystemSession();
-        }
-        
-        public async Task RestoreExternalState<T>(ActorId actorId, string stateName,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            if (await ContainsExternalStateAsync(actorId, stateName, cancellationToken))
-            {
-                var externalState = await _dbSessionFactory()
-                    .GetState(actorId, stateName, cancellationToken);
-
-                if (externalState is T)
-                {
-                    // Set lost state.
-                    await base.SaveStateAsync(actorId,
-                        new[] { new ActorStateChange(stateName, typeof(T), externalState, StateChangeKind.Add) },
-                        cancellationToken);
-                }
-            }
-        }
-        
-        public Task<bool> ContainsExternalStateAsync(ActorId actorId, string stateName,
-            CancellationToken cancellationToken = new CancellationToken())
-        {
-            return _dbSessionFactory().ContainsStateAsync(actorId, stateName, cancellationToken);
+            _dbSessionFactory = () => new FileSystemDbSession();
         }
 
+       
         public override async Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges, CancellationToken cancellationToken = new CancellationToken())
         {
             await _dbSessionFactory().SaveStateAsync(actorId, stateChanges, cancellationToken);
             await base.SaveStateAsync(actorId, stateChanges, cancellationToken);
         }
+
+        public async Task RestoreStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken)
+        {
+            var state = await _dbSessionFactory().GetState(actorId, stateName, cancellationToken);
+            await SaveStateAsync(actorId, new[] { new ActorStateChange(stateName, state.GetType(), state, StateChangeKind.Add) }, cancellationToken);
+        }
+
+        public Task<bool> HasRestorableStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken)
+        {
+            return _dbSessionFactory().ContainsStateAsync(actorId, stateName, cancellationToken);
+        }
+
 
         //todo: reminders
         private static string GetFolderPath()

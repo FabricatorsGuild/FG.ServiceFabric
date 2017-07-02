@@ -6,4 +6,12 @@ namespace FG.ServiceFabric.CQRS
     {
         Guid CommandId { get; }
     }
+
+    public interface IDomainCommand : ICommand
+    {
+    }
+
+    public interface IServiceCommand : ICommand
+    {
+    }
 }

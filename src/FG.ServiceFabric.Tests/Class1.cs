@@ -25,7 +25,7 @@ namespace FG.ServiceFabric.Tests
             fabricRuntime.SetupActor((service, actorId) => new FG.ServiceFabric.Tests.Actor.EventStoredActor(service, actorId), createStateProvider: () => mockActorStateProvider);
 
             var actor = fabricRuntime.ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId("testivus"));
-            await actor.CreateAsync(Guid.NewGuid(), "apa");
+            await actor.CreateAsync(new MyCommand { AggretateRootId = Guid.NewGuid(), Value = "festivus" });
         }
     }
 }

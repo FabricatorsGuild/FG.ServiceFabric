@@ -8,7 +8,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IDomainEventStream
+    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IEventStream
     {
         private readonly IActorStateProvider _stateProvider;
         private readonly string _stateKey;
@@ -30,7 +30,6 @@ namespace FG.ServiceFabric.Actors.Runtime
         }
 
         public virtual async Task<TEventStream> GetEventStreamAsync(Guid id, CancellationToken cancellationToken)
-            
         {
             return await LoadEventStream(id, cancellationToken);
         }

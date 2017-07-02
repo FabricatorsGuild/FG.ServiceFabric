@@ -1,7 +1,4 @@
 ﻿namespace FG.ServiceFabric.CQRS
 {
-    public interface IAggregateRootDeletedEvent : IAggregateRootEvent
-    {
-
-    }
+    public interface IAggregateRootDeletedEvent : IAggregateRootEvent { }
 }

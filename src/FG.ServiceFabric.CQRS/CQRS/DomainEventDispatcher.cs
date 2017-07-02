@@ -4,8 +4,8 @@ using FG.ServiceFabric.CQRS.Exceptions;
 
 namespace FG.ServiceFabric.CQRS
 {
-    public class EventDispatcher<TEvent>
-        where TEvent : class, IAggregateRootEvent
+    public class DomainEventDispatcher<TEvent>
+        where TEvent : class, IDomainEvent
     {
         private readonly List<KeyValuePair<Type, Action<object>>> _handlers = new List<KeyValuePair<Type, Action<object>>>();
         
@@ -16,9 +16,9 @@ namespace FG.ServiceFabric.CQRS
         
         public class RegistrationBuilder : IEventHandlerRegistrar<TEvent>
         {
-            private readonly EventDispatcher<TEvent> _dispather;
+            private readonly DomainEventDispatcher<TEvent> _dispather;
 
-            public RegistrationBuilder(EventDispatcher<TEvent> dispather)
+            public RegistrationBuilder(DomainEventDispatcher<TEvent> dispather)
             {
                 _dispather = dispather;
             }

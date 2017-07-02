@@ -29,9 +29,9 @@
         </Extension>
       </Extensions>
     </StatefulServiceType>
-    <StatefulServiceType ServiceTypeName="EventStoredActorServiceType" HasPersistedState="true">
+    <StatefulServiceType ServiceTypeName="EventStoredActorServiceType">
       <Extensions>
-        <Extension Name="__GeneratedServiceType__" GeneratedId="f2ea463b-c2ad-4fbd-b45a-e8a57147000d|Persisted">
+        <Extension Name="__GeneratedServiceType__" GeneratedId="972f7c49-bd68-43f8-94a3-d51b859ec165|Volatile">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="EventStoredActorService" />
             <ServiceEndpoint Name="EventStoredActorServiceEndpoint" />

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using FG.ServiceFabric.CQRS.Exceptions;
 
 namespace FG.ServiceFabric.CQRS
@@ -9,24 +10,7 @@ namespace FG.ServiceFabric.CQRS
     {
         private ITimeProvider _timeProvider;
         private IDomainEventController EventController { get; set; }
-        
-        public void Initialize(IDomainEventController domainEventController, IDomainEvent[] eventStream, ITimeProvider timeProvider = null)
-        {
-            Initialize(domainEventController, timeProvider);
-
-            if(eventStream == null) return;
-
-            foreach(var domainEvent in eventStream)
-            {
-                ApplyEvent(domainEvent as TAggregateRootEventInterface);
-            }
-        }
-
-        public void Initialize(IDomainEventController domainEventController, ITimeProvider timeProvider = null)
-        {
-            _timeProvider = timeProvider ?? UtcNowTimeProvider.Instance;
-            EventController = domainEventController;
-        }
+        private readonly IList<TAggregateRootEventInterface> _uncommittedEvents = new List<TAggregateRootEventInterface>();
         
         public Guid AggregateRootId { get; private set; }
         private void SetId(Guid id) { AggregateRootId = id; }
@@ -69,12 +53,8 @@ namespace FG.ServiceFabric.CQRS
 
             ApplyEvent(domainEvent);
             AssertInvariantsAreMet();
-
-            //Store domain event actually calls the state manager which keeps the change pending until the unit of work ends and then it gets persisted by the state provider.
-            //todo: Use a pending changes event stream?
-            EventController.StoreDomainEventAsync(domainEvent).GetAwaiter().GetResult();
-            //todo:remove this and move responsibility to event store.
-            EventController.RaiseDomainEvent(domainEvent).GetAwaiter().GetResult();
+            _eventController.RaiseDomainEvent(domainEvent);
+            _uncommittedEvents.Add(domainEvent);
         }
 
         public virtual void AssertInvariantsAreMet()
@@ -95,10 +75,44 @@ namespace FG.ServiceFabric.CQRS
             _eventDispatcher.Dispatch(domainEvent);
         }
 
-        private readonly EventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new EventDispatcher<TAggregateRootEventInterface>();
-        protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
+        private readonly DomainEventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new DomainEventDispatcher<TAggregateRootEventInterface>();
+        
+        protected DomainEventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
         {
             return _eventDispatcher.RegisterHandlers();
         }
+
+        #region IEventStored
+        private IDomainEventController _eventController;
+
+        public void Initialize(IDomainEventController eventController, IDomainEvent[] eventStream, ITimeProvider timeProvider = null)
+        {
+            Initialize(eventController, timeProvider);
+
+            if (eventStream == null) return;
+
+            foreach (var domainEvent in eventStream)
+            {
+                ApplyEvent(domainEvent as TAggregateRootEventInterface);
+            }
+        }
+
+        public void Initialize(IDomainEventController eventController, ITimeProvider timeProvider = null)
+        {
+            _timeProvider = timeProvider ?? UtcNowTimeProvider.Instance;
+            _eventController = eventController;
+        }
+
+        public IEnumerable<IDomainEvent> GetChanges()
+        {
+            return _uncommittedEvents;
+        }
+
+        public void ClearChanges()
+        {
+            _uncommittedEvents.Clear();
+        }
+
+        #endregion
     }
 }
