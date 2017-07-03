@@ -90,15 +90,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="LoggerTypeTemplates\ActorMessageHeadersTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\ActorOrActorServiceTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\ActorServiceTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\ActorTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\ServiceRequestContextTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\StatefulServiceContextTypeTemplateExtension.cs" />
-    <Compile Include="LoggerTypeTemplates\StatelessServiceContextTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorMessageHeadersTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorOrActorServiceTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ServiceRequestContextTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\StatefulServiceContextTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\StatelessServiceContextTypeTemplateExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
