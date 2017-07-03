@@ -1,9 +1,8 @@
-using CodeEffect.Diagnostics.EventSourceGenerator.Model;
-using Microsoft.ServiceFabric.Actors.Runtime;
+using FG.Diagnostics.AutoLogger.Model;
 
-namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
+namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ActorServiceTypeTemplateExtension : BaseTemplateExtension<ActorService>
+    public class ActorServiceTypeTemplateExtension : BaseTemplateExtension
     {
         private string Definition = @"{
                   ""Name"": ""ActorService"",
@@ -63,5 +62,7 @@ namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
         {
             return Definition;
         }
-    }
+
+		public override string Module => @"ServiceFabric";
+	}
 }

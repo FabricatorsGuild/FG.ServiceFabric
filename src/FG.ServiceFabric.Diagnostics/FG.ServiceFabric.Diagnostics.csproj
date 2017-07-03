@@ -88,10 +88,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="LoggerTypeTemplates\ActorMessageHeadersTypeTemplateExtension.cs" />
+    <Compile Include="LoggerTypeTemplates\ActorOrActorServiceTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\ActorServiceTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\ActorTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
+    <Compile Include="LoggerTypeTemplates\ServiceRequestContextTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\StatefulServiceContextTypeTemplateExtension.cs" />
     <Compile Include="LoggerTypeTemplates\StatelessServiceContextTypeTemplateExtension.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -107,6 +109,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+  </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
