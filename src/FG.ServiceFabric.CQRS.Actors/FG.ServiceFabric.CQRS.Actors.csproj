@@ -105,18 +105,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actors\Runtime\AggregateRootReadModelGenerator.cs" />
     <Compile Include="Actors\Runtime\CommandExecutionHelper.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
-    <Compile Include="Actors\Runtime\EventStoredStateManager.cs" />
     <Compile Include="Actors\Runtime\EventStoreSession.cs" />
-    <Compile Include="Actors\Runtime\IRestorableActorStateProvider.cs" />
-    <Compile Include="Persistance\FileSystemDbSession.cs" />
-    <Compile Include="Persistance\IDocumentDbSession.cs" />
+    <Compile Include="Actors\Runtime\EventStreamBase.cs" />
     <Compile Include="Actors\Runtime\EventStreamReader.cs" />
-    <Compile Include="Actors\Runtime\TempDatabaseStateProvider.cs" />
-    <Compile Include="Actors\Runtime\TempFileSystemStateProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

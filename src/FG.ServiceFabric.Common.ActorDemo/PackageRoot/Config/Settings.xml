@@ -7,18 +7,18 @@
   <Section Name="ActorDemoActorServiceReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
-  <Section Name="ComplexActorServiceReplicatorConfig">
-    <Parameter Name="ReplicatorEndpoint" Value="ComplexActorServiceReplicatorEndpoint" />
+  <Section Name="TempEventStoredActorServiceReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="TempEventStoredActorServiceReplicatorEndpoint" />
     <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
   </Section>
-  <Section Name="ComplexActorServiceReplicatorSecurityConfig">
+  <Section Name="TempEventStoredActorServiceReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
-  <Section Name="EventStoredActorServiceReplicatorConfig">
-    <Parameter Name="ReplicatorEndpoint" Value="EventStoredActorServiceReplicatorEndpoint" />
+  <Section Name="PersonEventStoredActorServiceReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="PersonEventStoredActorServiceReplicatorEndpoint" />
     <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
   </Section>
-  <Section Name="EventStoredActorServiceReplicatorSecurityConfig">
+  <Section Name="PersonEventStoredActorServiceReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
   <!-- The content will be generated during build -->

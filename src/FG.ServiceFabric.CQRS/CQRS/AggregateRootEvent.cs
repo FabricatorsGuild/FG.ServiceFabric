@@ -18,5 +18,7 @@ namespace FG.ServiceFabric.CQRS
         public DateTime UtcTimeStamp { get; set; }
         [DataMember]
         public Guid AggregateRootId { get; set; }
+        [DataMember]
+        public int Version { get; set; }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IEventStream
+    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IDomainEventStream
     {
         private readonly IActorStateProvider _stateProvider;
         private readonly string _stateKey;

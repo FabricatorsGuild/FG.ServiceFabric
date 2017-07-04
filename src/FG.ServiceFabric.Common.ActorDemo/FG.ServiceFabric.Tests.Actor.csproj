@@ -101,15 +101,17 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventStoredActor.cs" />
-    <Compile Include="EventStoredActorService.cs" />
-    <Compile Include="ComplexActorService.cs" />
-    <Compile Include="ComplexActor.cs" />
+    <Compile Include="Domain\Person.cs" />
+    <Compile Include="TempEventStoredActor.cs" />
+    <Compile Include="PersonEventStoredActor.cs" />
+    <Compile Include="TempEventStoredActorService.cs" />
+    <Compile Include="PersonEventStoredActorService.cs" />
     <Compile Include="ActorDemoActorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorDemo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorDemoEventSource.cs" />
+    <Compile Include="Query\PersonReadModelGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PackageRoot\ServiceManifest.xml" />
@@ -130,7 +132,7 @@
       <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
       <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Data\FG.ServiceFabric.CQRS.Actors.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
       <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
       <Name>FG.ServiceFabric.CQRS.Actors</Name>
     </ProjectReference>

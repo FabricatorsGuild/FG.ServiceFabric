@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Fabric;
 using FG.ServiceFabric.Actors.Runtime;
+using FG.ServiceFabric.Tests.Actor.Domain;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
@@ -9,10 +10,10 @@ using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
-    internal class EventStoredActorService 
-        : EventStoredActorService<MyEventStream>, IActorService
+    internal class TempEventStoredActorService 
+        : EventStoredActorService<Person, PersonEventStream>, IActorService
     {
-        public EventStoredActorService(
+        public TempEventStoredActorService(
             StatefulServiceContext context,
             ActorTypeInformation actorTypeInfo,
             Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null,

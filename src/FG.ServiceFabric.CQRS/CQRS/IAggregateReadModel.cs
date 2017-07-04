@@ -1,9 +1,6 @@
-﻿using System;
-
-namespace FG.ServiceFabric.CQRS
+﻿namespace FG.ServiceFabric.CQRS
 {
-    public interface IAggregateReadModel
+    public interface IAggregateReadModel : IHasIdentity
     {
-        Guid Id { get; set; }    
     }
 }

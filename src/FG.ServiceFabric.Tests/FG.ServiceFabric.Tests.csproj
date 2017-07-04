@@ -92,7 +92,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +111,7 @@
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
       <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Data\FG.ServiceFabric.CQRS.Actors.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
       <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
       <Name>FG.ServiceFabric.CQRS.Actors</Name>
     </ProjectReference>

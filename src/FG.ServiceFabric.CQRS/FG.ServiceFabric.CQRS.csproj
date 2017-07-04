@@ -48,6 +48,7 @@
     <Compile Include="CQRS\AggregateRoot.cs" />
     <Compile Include="CQRS\AggregateRoot.Entity.cs" />
     <Compile Include="CQRS\AggregateRootEvent.cs" />
+    <Compile Include="CQRS\AggregateRootReadModelGenerator.cs" />
     <Compile Include="CQRS\CommandBase.cs" />
     <Compile Include="CQRS\DomainEventDispatcher.cs" />
     <Compile Include="CQRS\Exceptions\AggregateRootException.cs" />
@@ -68,6 +69,7 @@
     <Compile Include="CQRS\IEventStoreSession.cs" />
     <Compile Include="CQRS\IEventStreamReader.cs" />
     <Compile Include="CQRS\IHandleDomainEvent.cs" />
+    <Compile Include="CQRS\IHasIdentity.cs" />
     <Compile Include="CQRS\ITimeProvider.cs" />
     <Compile Include="CQRS\UtcNowTimeProvider.cs" />
     <Compile Include="CQRS\ValueObject.cs" />

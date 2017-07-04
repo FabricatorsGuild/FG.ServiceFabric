@@ -38,7 +38,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
     public abstract class AggregateRootReadModelGenerator<TEventStream, TAggregateRootEventInterface, TReadModel> 
         : ReadModelGenerator<TAggregateRootEventInterface, TReadModel>
-        where TEventStream : class, IEventStream, new()
+        where TEventStream : class, IDomainEventStream, new()
         where TAggregateRootEventInterface : class, IAggregateRootEvent
         where TReadModel : class, IAggregateReadModel, new()
     {
