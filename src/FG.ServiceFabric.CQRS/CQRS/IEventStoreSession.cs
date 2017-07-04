@@ -5,7 +5,7 @@ namespace FG.ServiceFabric.CQRS
 {
     public interface IEventStoreSession
     {
-        Task<TAggregateRoot> Get<TAggregateRoot>()
+        Task<TAggregateRoot> GetAsync<TAggregateRoot>()
             where TAggregateRoot : class, IEventStored, new();
         Task SaveChanges();
         Task Delete();

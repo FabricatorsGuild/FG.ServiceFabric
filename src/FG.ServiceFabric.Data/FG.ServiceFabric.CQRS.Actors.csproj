@@ -109,9 +109,9 @@
     <Compile Include="Actors\Runtime\CommandExecutionHelper.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
+    <Compile Include="Actors\Runtime\EventStoredStateManager.cs" />
     <Compile Include="Actors\Runtime\EventStoreSession.cs" />
     <Compile Include="Actors\Runtime\IRestorableActorStateProvider.cs" />
-    <Compile Include="Actors\Runtime\WrappedStateManager.cs" />
     <Compile Include="Persistance\FileSystemDbSession.cs" />
     <Compile Include="Persistance\IDocumentDbSession.cs" />
     <Compile Include="Actors\Runtime\EventStreamReader.cs" />

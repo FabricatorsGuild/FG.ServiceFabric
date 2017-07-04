@@ -3,21 +3,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.CQRS;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class EventStoredActor : ActorBase, IDomainEventController
-       
+    public abstract class EventStoredActor<TEventStream> : ActorBase, IDomainEventController 
+        where TEventStream : IEventStream, new()
     {
-        private readonly ITimeProvider _timeProvider;
         public const string EventStreamStateKey = @"fg__eventstream_state";
        
-        protected EventStoredActor(Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId, ITimeProvider timeProvider = null) 
+        protected EventStoredActor(Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId, ITimeProvider timeProvider = null, Func<IActorStateManager, IEventStoreSession> eventStoreSessionFactory = null) 
             : base(actorService, actorId)
         {
-            _timeProvider = timeProvider;
+            TimeProvider = timeProvider;
+
+            eventStoreSessionFactory = eventStoreSessionFactory ?? ((sm) => new EventStoreSession<TEventStream>(sm, this));
+            EventStoreSession = eventStoreSessionFactory(StateManager);
         }
-        
+
+        public IEventStoreSession EventStoreSession { get; }
+        public ITimeProvider TimeProvider { get; }
+
         protected async Task ExecuteCommandAsync
            (Func<CancellationToken, Task> func, ICommand command, CancellationToken cancellationToken)
         {

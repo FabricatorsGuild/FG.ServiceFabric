@@ -1,14 +1,24 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.CQRS;
-using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
+    [DataContract]
+    public class CommandExecution
+    {
+        [DataMember]
+        public Guid[] RaisedEventIds { get; set; }
+        [DataMember]
+        public object ReturnValue { get; set; }
+    }
+
+
     public class EventStoreSession<TEventStream> : IEventStoreSession
             where TEventStream : IEventStream, new()
     {
@@ -21,7 +31,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             _eventController = eventController; //todo: something else.
         }
 
-        public async Task<TAggregateRoot> Get<TAggregateRoot>()
+        public async Task<TAggregateRoot> GetAsync<TAggregateRoot>()
             where TAggregateRoot : class, IEventStored, new()
         {
             if (_trackedAggregate == null)
@@ -43,7 +53,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             // TODO: (a) Idempotency check, check for prior execution of this command id. If prior execution has happened, goto c.
             //CommandExecutionHelper
             //await HandleChanges(changes);
-            var commandId = ServiceRequestContext.Current?["CommandId"] ?? Guid.NewGuid().ToString();
+            //var commandId = ServiceRequestContext.Current?["CommandId"] ?? Guid.NewGuid().ToString();
             
             // TODO: (b) Save commandId, and changes (event ids) in state manager with commandId as key.
 

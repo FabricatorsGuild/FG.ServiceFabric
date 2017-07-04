@@ -13,36 +13,32 @@ using IAggregateRootEvent = FG.ServiceFabric.CQRS.IAggregateRootEvent;
 namespace FG.ServiceFabric.Tests.Actor
 {
     [StatePersistence(StatePersistence.Volatile)]
-    public class EventStoredActor : FG.ServiceFabric.Actors.Runtime.EventStoredActor, IEventStoredActor, 
+    public class EventStoredActor : EventStoredActor<MyEventStream>, IEventStoredActor, 
         IHandleDomainEvent<MyDomainEvent>,
         IHandleDomainEvent<MySecondDomainEvent>
     {
-        private readonly Func<IEventStoreSession> _eventStoreSessionFactory;
-        private IEventStoreSession _eventStoreSession;
+        private MyAggregateRoot _aggregate;
 
         public EventStoredActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
-            _eventStoreSessionFactory = () => new EventStoreSession<MyEventStream>(this.StateManager, this);
         }
 
-        protected override Task OnActivateAsync()
+        protected override async Task OnActivateAsync()
         {
-            _eventStoreSession = _eventStoreSessionFactory();
-            return base.OnActivateAsync();
+            _aggregate = await EventStoreSession.GetAsync<MyAggregateRoot>();
+            await base.OnActivateAsync();
         }
 
         public async Task CreateAsync(MyCommand command)
         {
-            var aggregate = await _eventStoreSession.Get<MyAggregateRoot>();
-            aggregate.MyDomainAction(command.AggretateRootId, command.Value);
-            await _eventStoreSession.SaveChanges();
+            _aggregate.MyDomainAction(command.AggretateRootId, command.Value);
+            await EventStoreSession.SaveChanges();
         }
         public async Task UpdateAsync(MyCommand command)
         {
-            var aggregate = await _eventStoreSession.Get<MyAggregateRoot>();
-            aggregate.MySecondDomainAction(command.Value);
-            await _eventStoreSession.SaveChanges();
+            _aggregate.MySecondDomainAction(command.Value);
+            await EventStoreSession.SaveChanges();
         }
 
         public Task Handle(MyDomainEvent domainEvent)

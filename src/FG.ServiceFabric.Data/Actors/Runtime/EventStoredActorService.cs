@@ -18,9 +18,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         Task<IEnumerable<string>> GetAllEventHistoryAsync(Guid aggregateRootId);
     }
 
-    public abstract class EventStoredActorService<TAggregateRoot, TEventStream> : ActorService, IEventStoredActorService
+    public abstract class EventStoredActorService<TEventStream> : ActorService, IEventStoredActorService
         where TEventStream : EventStreamBase, new()
-        where TAggregateRoot : class, CQRS.IEventStored, new()
     {
         protected readonly IEventStreamReader<TEventStream> StateProviderEventStreamReader;
 
@@ -35,9 +34,9 @@ namespace FG.ServiceFabric.Actors.Runtime
          IEventStreamReader<TEventStream> eventStreamReader = null)
             : base(context, actorTypeInfo, actorFactory, stateManagerFactory, new TempDatabaseStateProvider(actorTypeInfo, () => new FileSystemDbSession(),  stateProvider), settings, reliableStateManagerReplica)
         {
-            StateProviderEventStreamReader = eventStreamReader ?? new EventStreamReader<TEventStream>(StateProvider, EventStoredActor.EventStreamStateKey);
+            StateProviderEventStreamReader = eventStreamReader ?? new EventStreamReader<TEventStream>(StateProvider, EventStoredActor<TEventStream>.EventStreamStateKey);
         }
-
+        
         public async Task<IEnumerable<string>> GetAllEventHistoryAsync(Guid aggregateRootId)
         {
             var events = await StateProviderEventStreamReader.GetEventStreamAsync(aggregateRootId, CancellationToken.None);

@@ -10,7 +10,7 @@ using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 namespace FG.ServiceFabric.Tests.Actor
 {
     internal class EventStoredActorService 
-        : EventStoredActorService<MyAggregateRoot, MyEventStream>, IActorService
+        : EventStoredActorService<MyEventStream>, IActorService
     {
         public EventStoredActorService(
             StatefulServiceContext context,
