@@ -75,6 +75,9 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.6.220\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -98,11 +101,17 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Person.cs" />
+    <Compile Include="TempEventStoredActor.cs" />
+    <Compile Include="PersonEventStoredActor.cs" />
+    <Compile Include="TempEventStoredActorService.cs" />
+    <Compile Include="PersonEventStoredActorService.cs" />
     <Compile Include="ActorDemoActorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorDemo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorDemoEventSource.cs" />
+    <Compile Include="Query\PersonReadModelGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PackageRoot\ServiceManifest.xml" />
@@ -118,6 +127,14 @@
     <ProjectReference Include="..\FG.ServiceFabric.Common.ActorDemo.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2c6aefca-f4a1-47bc-8abf-8374f852ca89}</Project>
       <Name>FG.ServiceFabric.Tests.Actor.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+      <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
+      <Name>FG.ServiceFabric.CQRS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
+      <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
+      <Name>FG.ServiceFabric.CQRS.Actors</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
