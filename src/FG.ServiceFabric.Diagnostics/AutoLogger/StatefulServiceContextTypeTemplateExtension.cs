@@ -1,9 +1,8 @@
-﻿using System.Fabric;
-using CodeEffect.Diagnostics.EventSourceGenerator.Model;
+﻿using FG.Diagnostics.AutoLogger.Model;
 
-namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
+namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension<StatefulServiceContext>
+    public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension
     {
         private string Definition = @"{
                   ""Name"": ""StatefulServiceContext"",
@@ -57,6 +56,8 @@ namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
         protected override string GetDefinition()
         {
             return Definition;
-        }        
-    }
+        }
+		public override string Module => @"ServiceFabric";
+
+	}
 }
