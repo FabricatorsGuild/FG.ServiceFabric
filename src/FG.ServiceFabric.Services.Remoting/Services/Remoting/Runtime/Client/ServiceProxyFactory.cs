@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Fabric;
 using FG.ServiceFabric.Diagnostics;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Client;
@@ -15,7 +16,24 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 
         private static readonly ConcurrentDictionary<Type, IServiceProxyFactory> ServiceProxyFactoryMap = new ConcurrentDictionary<Type, IServiceProxyFactory>();
 
-        private IServiceClientLogger Logger { get; set; }
+	    private static volatile Func<ServiceProxyFactory, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
+
+	    static ServiceProxyFactory()
+	    {
+		    SetInnerFactory(null);
+	    }
+
+	    internal static void SetInnerFactory(Func<ServiceProxyFactory, Type, IServiceProxyFactory> innerFactory)
+	    {
+		    if (innerFactory == null)
+		    {
+			    innerFactory = (serviceProxyFactory, serviceInterfaceType) => new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
+					client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
+		    }
+		    _serviceProxyFactoryInnerFactory = innerFactory;
+	    }
+
+		private IServiceClientLogger Logger { get; set; }
 
         public ServiceProxyFactory(IServiceClientLogger logger)
         {
@@ -47,8 +65,7 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
                 {
                     return ServiceProxyFactoryMap[serviceInterfaceType];
                 }
-                var innerActorProxyFactory = new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
-                            client => CreateServiceRemotingClientFactory(client, serviceInterfaceType));
+	            var innerActorProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
                 ServiceProxyFactoryMap[serviceInterfaceType] = innerActorProxyFactory;
 
                 return innerActorProxyFactory;

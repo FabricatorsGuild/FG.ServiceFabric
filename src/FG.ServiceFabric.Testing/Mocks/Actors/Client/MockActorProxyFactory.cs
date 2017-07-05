@@ -1,20 +1,21 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Castle.DynamicProxy;
 using FG.Common.Utils;
 using FG.ServiceFabric.Actors.State;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
-using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
@@ -91,21 +92,109 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             return migrationContainerType;
         }
 
-        private object TryCreateDynamicProxy(Type actorInterface, object target)
-        {
-            var methodInfo = this.GetType().GetMethod(nameof(CreateDynamicProxy), System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            var genericMethodInfo = methodInfo?.MakeGenericMethod(actorInterface);
-            var result = genericMethodInfo?.Invoke(this, new[] {target});
-            return result;
-        }
+	    private class InterceptorSelector : IInterceptorSelector
+	    {
+			public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
+			{
+				if (method.DeclaringType == typeof(IActorProxy))
+				{
+					return interceptors.Where(i => (i is ActorProxyInterceptor)).ToArray();
+				}
+				return interceptors.Where(i => (i is ActorInterceptor)).ToArray();
+			}
+		}
 
-        private object CreateDynamicProxy<TActorInterface>(object target) where TActorInterface : class, IActor
-        {
-            var specificTarget = target as TActorInterface;
-            var proxy = DynamicObjectProxy.ObjectProxyFactory.Configure<TActorInterface>(specificTarget)
-                       .AddPreDecoration(ctx => { if (ctx.CallCtx.MethodBase.DeclaringType != typeof(object)) PreActorMethod(ctx.Target, ctx.CallCtx.MethodName); })
-                       .AddPostDecoration(ctx => { if (ctx.CallCtx.MethodBase.DeclaringType != typeof(object)) PostActorMethod(ctx.Target, ctx.CallCtx.MethodName); })
-                       .CreateProxy();
+	    private class ActorInterceptor : IInterceptor
+	    {
+		    private readonly Action<IActor, string> _preMethod;
+		    private readonly Action<IActor, string> _postMethod;
+
+		    public ActorInterceptor(Action<IActor, string> preMethod, Action<IActor, string> postMethod)
+		    {
+			    _preMethod = preMethod;
+			    _postMethod = postMethod;
+		    }
+
+			public void Intercept(IInvocation invocation)
+		    {
+				_preMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
+			    invocation.Proceed();
+				_postMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
+			}
+	    }
+
+	    private class ActorProxyInterceptor : IInterceptor
+		{
+			private readonly IActorProxy _actorProxy;
+
+			public ActorProxyInterceptor(IActorProxy actorProxy)
+			{
+				_actorProxy = actorProxy;
+			}
+
+			public void Intercept(IInvocation invocation)
+			{
+				invocation.ReturnValue = invocation.Method.Invoke(_actorProxy, invocation.Arguments);
+			}
+		}
+
+	    private class MockActorProxy : IActorProxy
+		{
+		    public MockActorProxy(
+				ActorId actorId, 
+				Uri serviceUri, 
+				ServicePartitionKey partitionKey, 
+				TargetReplicaSelector replicaSelector, 
+				string listenerName,
+			    ICommunicationClientFactory<IServiceRemotingClient> factory)
+		    {
+			    ActorId = actorId;
+			    ActorServicePartitionClient = new MockActorServicePartitionClient(actorId, serviceUri, partitionKey, replicaSelector, listenerName, factory);
+			}
+
+		    public ActorId ActorId { get; }
+		    public IActorServicePartitionClient ActorServicePartitionClient { get; }
+
+			private class MockActorServicePartitionClient : IActorServicePartitionClient
+		    {
+			    internal MockActorServicePartitionClient(
+				    ActorId actorId,
+				    Uri serviceUri,
+				    ServicePartitionKey partitionKey,
+				    TargetReplicaSelector replicaSelector,
+				    string listenerName,
+				    ICommunicationClientFactory<IServiceRemotingClient> factory)
+			    {
+				    ActorId = actorId;
+				    ServiceUri = serviceUri;
+				    PartitionKey = partitionKey;
+				    TargetReplicaSelector = replicaSelector;
+				    ListenerName = listenerName;
+				    Factory = factory;
+			    }
+
+			    public bool TryGetLastResolvedServicePartition(out ResolvedServicePartition resolvedServicePartition)
+			    {
+				    throw new NotImplementedException();
+			    }
+
+			    public Uri ServiceUri { get; }
+			    public ServicePartitionKey PartitionKey { get; }
+			    public TargetReplicaSelector TargetReplicaSelector { get; }
+			    public string ListenerName { get; }
+			    public ICommunicationClientFactory<IServiceRemotingClient> Factory { get; }
+			    public ActorId ActorId { get; }
+		    }
+		}
+
+		private object CreateDynamicProxy<TActorInterface>(object target, IActorProxy actorProxy) where TActorInterface : IActor
+		{
+			var generator = new ProxyGenerator(new PersistentProxyBuilder());
+			var selector = new InterceptorSelector();
+			var actorInterceptor = new ActorInterceptor(PreActorMethod, PostActorMethod);
+			var actorProxyInterceptor = new ActorProxyInterceptor(actorProxy);
+			var options = new ProxyGenerationOptions() { Selector = selector };
+			var proxy = generator.CreateInterfaceProxyWithTarget(typeof(TActorInterface), new Type[] { typeof(IActorProxy) }, target, options, actorInterceptor, actorProxyInterceptor);
             return proxy;
         }
 
@@ -153,8 +242,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
                 await actorStateProvider.ActorActivatedAsync(actorId);
 
-                var proxy = TryCreateDynamicProxy(typeof(TActorInterface), target);
-                _actorProxies.Add(proxy.GetHashCode(), target);
+	            var serviceUri = _fabricRuntime.ApplicationUriBuilder.Build(actorServiceName).ToUri();
+	            var actorProxy = new MockActorProxy(actorId, serviceUri, ServicePartitionKey.Singleton, TargetReplicaSelector.Default, "", null);
+	            var proxy = /*TryCreateDynamicProxy(typeof(TActorInterface), target, actorProxy);*/ CreateDynamicProxy<TActorInterface>(target, actorProxy);
+
+				_actorProxies.Add(proxy.GetHashCode(), target);
 
                 return (TActorInterface)proxy;
             }

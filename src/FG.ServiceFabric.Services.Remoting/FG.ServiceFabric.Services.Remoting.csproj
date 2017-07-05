@@ -126,10 +126,8 @@
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
-    <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Runtime\ServiceExtensions.cs" />
     <Compile Include="Services\Runtime\ServiceReference.cs" />
-    <Compile Include="Services\Runtime\ServiceUriBuilder.cs" />
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
     <Compile Include="Utils\HashUtil.cs" />
