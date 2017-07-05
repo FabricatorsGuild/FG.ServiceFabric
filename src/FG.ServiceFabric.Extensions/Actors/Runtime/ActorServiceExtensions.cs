@@ -14,7 +14,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 {
     public static class ActorServiceExtensions
     {
-
         public static async Task<IDictionary<ActorId, ActorInformation>> GetFromAllActors<TActorType>(IPartitionEnumerationManager partitionEnumerationManager, IActorProxyFactory actorProxyFactory, 
             Uri serviceUri, CancellationToken cancellationToken = default(CancellationToken), int maxResults = 100)
             where TActorType : IActor

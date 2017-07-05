@@ -16,7 +16,7 @@ namespace FG.ServiceFabric.Tests.Actor
         public ActorDemoActorService(
             StatefulServiceContext context, 
             ActorTypeInformation actorTypeInfo, 
-            Func<Microsoft.ServiceFabric.Actors.Runtime.ActorService, ActorId, ActorBase> actorFactory = null, 
+            Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null, 
             Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null, 
             IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) : 
             base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
