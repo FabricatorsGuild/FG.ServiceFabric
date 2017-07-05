@@ -1,26 +1,25 @@
-﻿using CodeEffect.Diagnostics.EventSourceGenerator.Model;
-using FG.ServiceFabric.Services.Remoting.FabricTransport;
+﻿using FG.Diagnostics.AutoLogger.Model;
 
-namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
+namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ActorMessageHeadersTypeTemplateExtension : BaseTemplateExtension<CustomServiceRequestHeader>
+    public class ActorMessageHeadersTypeTemplateExtension : BaseTemplateExtension
     {
         private string Definition = @"{
                   ""Name"": ""ActorMessageHeaders"",
                   ""CLRType"": ""FG.ServiceFabric.Actors.Remoting.Runtime.ActorMessageHeaders"",
                   ""Arguments"": [
                     {
-                      ""Name"": ""InterfaceId"",
+                      ""Name"": ""interfaceId"",
                       ""Type"": ""int"",
                       ""Assignment"": ""($this?.InterfaceId ?? 0)""
                     },
                     {
-                      ""Name"": ""MethodId"",
+                      ""Name"": ""methodId"",
                       ""Type"": ""int"",
                       ""Assignment"": ""($this?.MethodId ?? 0)""
                     },
                     {
-                      ""Name"": ""ActorId"",
+                      ""Name"": ""actorId"",
                       ""Type"": ""string"",
                       ""Assignment"": ""$this?.ActorId.ToString()""
                     }
@@ -31,5 +30,7 @@ namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
         {
             return Definition;
         }
+
+	    public override string Module => @"ServiceFabric";
     }
 }

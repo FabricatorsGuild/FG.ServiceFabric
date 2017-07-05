@@ -1,9 +1,8 @@
-﻿using CodeEffect.Diagnostics.EventSourceGenerator.Model;
-using FG.ServiceFabric.Services.Remoting.FabricTransport;
+﻿using FG.Diagnostics.AutoLogger.Model;
 
-namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
+namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension<CustomServiceRequestHeader>
+    public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension
     {
         private string Definition = @"{
                   ""Name"": ""ServiceRemotingMessageHeaders"",
@@ -26,5 +25,6 @@ namespace FG.ServiceFabric.Diagnostics.LoggerTypeTemplates
         {
             return Definition;
         }
-    }
+		public override string Module => @"ServiceFabric";
+	}
 }
