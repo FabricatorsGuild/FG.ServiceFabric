@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Async\ExecutionHelper.cs" />
+    <Compile Include="Utils\CRC64.cs" />
     <Compile Include="Utils\HashUtil.cs" />
     <Compile Include="Async\TaskHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

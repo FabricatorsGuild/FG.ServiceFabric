@@ -20,7 +20,23 @@ namespace FG.ServiceFabric.Actors.Client
         private static readonly ConcurrentDictionary<Type, IActorProxyFactory> ActorProxyFactoryMap = new ConcurrentDictionary<Type, IActorProxyFactory>();
         private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ActorMethodDispatcherMap = new ConcurrentDictionary<Type, MethodDispatcherBase>();
 
-        private IActorClientLogger Logger { get; set; }
+		private static volatile Func<ActorProxyFactory, Type, Type, IActorProxyFactory> _actorProxyFactoryInnerFactory;
+
+		static ActorProxyFactory()
+		{
+			SetInnerFactory(null);
+		}
+
+		internal static void SetInnerFactory(Func<ActorProxyFactory, Type, Type, IActorProxyFactory> innerFactory)
+		{
+			if (innerFactory == null)
+			{
+				innerFactory = (actorProxyFactory, serviceInterfaceType, actorInterfaceType) => new Microsoft.ServiceFabric.Actors.Client.ActorProxyFactory(
+					client => actorProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType, actorInterfaceType));
+			}
+			_actorProxyFactoryInnerFactory = innerFactory;
+		}
+		private IActorClientLogger Logger { get; set; }
 
         public ActorProxyFactory(IActorClientLogger logger)
         {
@@ -56,7 +72,7 @@ namespace FG.ServiceFabric.Actors.Client
                 {
                     return ActorProxyFactoryMap[interfaceType];
                 }
-                var innerActorProxyFactory = new Microsoft.ServiceFabric.Actors.Client.ActorProxyFactory(client => CreateServiceRemotingClientFactory(client, serviceInterfaceType, actorInterfaceType));
+	            var innerActorProxyFactory = _actorProxyFactoryInnerFactory(this, serviceInterfaceType, actorInterfaceType);
                 ActorProxyFactoryMap[interfaceType] = innerActorProxyFactory;
                 
                 return innerActorProxyFactory;
