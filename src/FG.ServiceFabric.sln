@@ -29,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{62824CA9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Diagnostics", "FG.ServiceFabric.Diagnostics\FG.ServiceFabric.Diagnostics.csproj", "{48E2C92E-4C29-431B-A048-EBFF8BF98828}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabricTests.WebApi", "FG.ServiceFabricTests.WebApi\FG.ServiceFabricTests.WebApi.csproj", "{E1058BBA-905C-438B-A196-B0CEEC68D49B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabricTests.WebApi", "FG.ServiceFabricTests.WebApi\FG.ServiceFabricTests.WebApi.csproj", "{E1058BBA-905C-438B-A196-B0CEEC68D49B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.CQRS.Actors", "FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj", "{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}"
 EndProject
