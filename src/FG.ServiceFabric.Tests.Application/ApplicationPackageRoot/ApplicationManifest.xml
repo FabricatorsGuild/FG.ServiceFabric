@@ -8,9 +8,6 @@
     <Parameter Name="EventStoredActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="EventStoredActorService_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="EventStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="TempEventStoredActorService_PartitionCount" DefaultValue="10" />
-    <Parameter Name="TempEventStoredActorService_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="TempEventStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -41,11 +38,6 @@
     <Service Name="EventStoredActorService" GeneratedIdRef="95a94c9b-4a1b-4f28-b1df-d347aeaee448|Volatile">
       <StatefulService ServiceTypeName="PersonEventStoredActorServiceType" TargetReplicaSetSize="[EventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EventStoredActorService_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[EventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
-      </StatefulService>
-    </Service>
-    <Service Name="TempEventStoredActorService" GeneratedIdRef="f76437f2-5280-4ffc-83f2-a949ebfe8f6c|Volatile">
-      <StatefulService ServiceTypeName="TempEventStoredActorServiceType" TargetReplicaSetSize="[TempEventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[TempEventStoredActorService_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[TempEventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
   </DefaultServices>

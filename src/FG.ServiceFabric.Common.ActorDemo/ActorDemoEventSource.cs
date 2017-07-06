@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace FG.ServiceFabric.Tests.Actor
 {
-    [EventSource(Name = "FFCG-ServiceFabric-Demo-ActorDemo")]
+    [EventSource(Name = "FG-ServiceFabric-Demo-ActorDemo")]
     internal sealed class ActorDemoEventSource : EventSource
     {
         public static readonly ActorDemoEventSource Current = new ActorDemoEventSource();

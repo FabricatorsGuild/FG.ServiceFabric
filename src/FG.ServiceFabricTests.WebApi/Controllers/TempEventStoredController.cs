@@ -9,7 +9,7 @@ using Microsoft.ServiceFabric.Actors.Client;
 namespace FG.ServiceFabricTests.WebApi.Controllers
 {
     [Route("api/[controller]")]
-    public class EventStored2Controller : Controller
+    public class TempEventStoredController : Controller
     {
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
@@ -34,13 +34,13 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpPost("{id}")]
         public async void Post(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<ITempEventStoredActor>(new ActorId(id)).BornAsync(new BornCommand { AggretateRootId = id, Name = value.Name });
+            await new ActorProxyFactory().CreateActorProxy<ITempEventStoredActor>(new ActorId(id)).GiveBirthAsync(new RegisterCommand { AggretateRootId = id, Name = value.Name });
         }
 
         [HttpPut("{id}")]
         public async void Put(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<ITempEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand() { AggretateRootId = id, Name = value.Name });
+            await new ActorProxyFactory().CreateActorProxy<ITempEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand { AggretateRootId = id});
         }
 
         public class UICommand

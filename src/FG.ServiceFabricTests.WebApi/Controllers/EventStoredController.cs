@@ -35,13 +35,13 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpPost("{id}")]
         public async void Post(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).GiveBirthAsync(new BornCommand {AggretateRootId = id, Name = value.Name});
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
         }
 
         [HttpPut("{id}")]
         public async void Put(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand() { AggretateRootId = id, Name = value.Name });
+            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand { AggretateRootId = id });
         }
 
         public class UICommand

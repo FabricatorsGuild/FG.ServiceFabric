@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.Tests.Actor.Domain;
@@ -24,24 +26,43 @@ namespace FG.ServiceFabric.Tests.Actor
             await base.OnActivateAsync();
         }
 
-        public Task GiveBirthAsync(BornCommand command)
+        public Task RegisterAsync(RegisterCommand command)
         {
-            // TODO: Check that command has not already been executed.
-            DomainState.GiveBirth(command.AggretateRootId, command.Name);
-            return Task.FromResult(true);
+            return ExecuteCommandAsync(
+                ct =>
+                {
+                    DomainState.Register(command.AggretateRootId, command.Name, command.CommandId);
+                },
+                command,
+                CancellationToken.None);
         }
+
         public Task MarryAsync(MarryCommand command)
         {
-            // TODO: Check that command has not already been executed.
-            DomainState.Marry(command.Name);
-            return Task.FromResult(true);
+            return ExecuteCommandAsync(
+                ct =>
+                {
+                    DomainState.Marry();
+                },
+                command,
+                CancellationToken.None);
         }
-        
+
+        public Task<int> RegisterChild(RegisterChildCommand command)
+        {
+            return ExecuteCommandAsync(
+                ct =>
+                {
+                    var childId = DomainState.RegisterChild(command.CommandId);
+                    return Task.FromResult(childId);
+                },
+                command,
+                CancellationToken.None);
+        }
+
         public Task Handle(PersonMarriedEvent domainEvent)
         {
             return Task.FromResult("Congratulations");
         }
-
-
     }
 }

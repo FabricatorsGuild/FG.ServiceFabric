@@ -10,7 +10,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
 
     public interface IEventStoredActor : IActor
     {
-        Task GiveBirthAsync(BornCommand command);
+        Task RegisterAsync(RegisterCommand command);
         Task MarryAsync(MarryCommand command);
     }
 
@@ -23,7 +23,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
 
     #region Commands
     [DataContract]
-    public class BornCommand : DomainCommandBase
+    public class RegisterCommand : DomainCommandBase
     {
         [DataMember]
         public Guid AggretateRootId { get; set; }
@@ -35,8 +35,11 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
     {
         [DataMember]
         public Guid AggretateRootId { get; set; }
+    }
+    public class RegisterChildCommand : DomainCommandBase
+    {
         [DataMember]
-        public string Name { get; set; }
+        public Guid AggretateRootId { get; set; }
     }
     #endregion
 

@@ -7,13 +7,6 @@
   <Section Name="ActorDemoActorServiceReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
-  <Section Name="TempEventStoredActorServiceReplicatorConfig">
-    <Parameter Name="ReplicatorEndpoint" Value="TempEventStoredActorServiceReplicatorEndpoint" />
-    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
-  </Section>
-  <Section Name="TempEventStoredActorServiceReplicatorSecurityConfig">
-    <Parameter Name="CredentialType" Value="None" />
-  </Section>
   <Section Name="PersonEventStoredActorServiceReplicatorConfig">
     <Parameter Name="ReplicatorEndpoint" Value="PersonEventStoredActorServiceReplicatorEndpoint" />
     <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />

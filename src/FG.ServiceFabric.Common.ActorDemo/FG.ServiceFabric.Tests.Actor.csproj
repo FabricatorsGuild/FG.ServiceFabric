@@ -102,9 +102,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Domain\Person.cs" />
-    <Compile Include="TempEventStoredActor.cs" />
     <Compile Include="PersonEventStoredActor.cs" />
-    <Compile Include="TempEventStoredActorService.cs" />
     <Compile Include="PersonEventStoredActorService.cs" />
     <Compile Include="ActorDemoActorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

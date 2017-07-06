@@ -24,15 +24,7 @@ namespace FG.ServiceFabric.Tests.Actor
                             ActorGarbageCollectionSettings =
                                 new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
                         })).GetAwaiter().GetResult();
-
-                ActorRuntime.RegisterActorAsync<TempEventStoredActor>(
-                    (context, actorType) => new TempEventStoredActorService(context, actorType, settings:
-                        new ActorServiceSettings()
-                        {
-                            ActorGarbageCollectionSettings =
-                                new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
-                        })).GetAwaiter().GetResult();
-
+                
                 ActorRuntime.RegisterActorAsync<ActorDemo>(
                     (context, actorType) => new ActorDemoActorService(context, actorType)).GetAwaiter().GetResult();
 

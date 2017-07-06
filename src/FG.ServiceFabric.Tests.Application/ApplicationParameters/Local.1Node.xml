@@ -8,8 +8,5 @@
     <Parameter Name="EventStoredActorService_PartitionCount" Value="1" />
     <Parameter Name="EventStoredActorService_TargetReplicaSetSize" Value="1" />
     <Parameter Name="EventStoredActorService_MinReplicaSetSize" Value="1" />
-    <Parameter Name="TempEventStoredActorService_PartitionCount" Value="1" />
-    <Parameter Name="TempEventStoredActorService_TargetReplicaSetSize" Value="1" />
-    <Parameter Name="TempEventStoredActorService_MinReplicaSetSize" Value="1" />
   </Parameters>
 </Application>

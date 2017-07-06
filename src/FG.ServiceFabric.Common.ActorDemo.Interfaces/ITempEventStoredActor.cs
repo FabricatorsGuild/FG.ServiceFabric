@@ -5,7 +5,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
 {
     public interface ITempEventStoredActor : IActor
     {
-        Task BornAsync(BornCommand command);
+        Task GiveBirthAsync(RegisterCommand command);
         Task MarryAsync(MarryCommand command);
     }
 

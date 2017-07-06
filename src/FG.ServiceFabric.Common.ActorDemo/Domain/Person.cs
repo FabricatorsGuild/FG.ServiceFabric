@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
@@ -10,13 +13,9 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
     #region Domain event interfaces
     public interface IPersonEvent : IAggregateRootEvent { }
 
-    public interface IFirstNameUpdated : IPersonEvent
+    public interface IPersonFirstNameUpdated : IPersonEvent
     {
         string FirstName { get; }
-    }
-    public interface ILastNameUpdated : IPersonEvent
-    {
-        string LastName { get; }
     }
 
     public interface IMaritalStatusUpdated : IPersonEvent
@@ -24,11 +23,25 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
         MaritalStatus MaritalStatus { get; }
     }
 
+    public interface IChildEvent : IPersonEvent
+    {
+        int ChildId { get; }
+    }
+
+    public interface IChildAdded : IChildEvent
+    {
+    }
+    
+    public interface IChildLastNameUpdated : IChildEvent
+    {
+        string LastName { get; set; }
+    }
+
     #endregion
 
     #region Domain events
     [DataContract]
-    public class PersonBornEvent : AggregateRootEventBase, IFirstNameUpdated, ILastNameUpdated, IAggregateRootCreatedEvent
+    public class PersonRegisteredEvent : AggregateRootEventBase, IPersonFirstNameUpdated, IAggregateRootCreatedEvent
     {
         [DataMember]
         public string FirstName { get; set; }
@@ -37,7 +50,7 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
     }
 
     [DataContract]
-    public class PersonMarriedEvent : AggregateRootEventBase, IMaritalStatusUpdated, ILastNameUpdated
+    public class PersonMarriedEvent : AggregateRootEventBase, IMaritalStatusUpdated
     {
         [DataMember]
         public MaritalStatus MaritalStatus { get; set; }
@@ -45,12 +58,23 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
         [DataMember]
         public string LastName { get; set; }
     }
+
+    [DataContract]
+    public class ChildRegisteredEvent : AggregateRootEventBase, IChildAdded, IChildLastNameUpdated
+    {
+        [DataMember]
+        public int ChildId { get; set; }
+
+        [DataMember]
+        public string LastName { get; set; }
+
+    }
     #endregion
 
     #region Event stream (service fabric specific)
 
     [DataContract]
-    [KnownType(typeof(PersonBornEvent))]
+    [KnownType(typeof(PersonRegisteredEvent))]
     [KnownType(typeof(PersonMarriedEvent))]
     public class PersonEventStream : EventStreamBase
     {
@@ -63,9 +87,14 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
         public Person()
         {
             RegisterEventAppliers()
-                .For<IFirstNameUpdated>(e => this.FirstName = e.FirstName)
-                .For<ILastNameUpdated>(e => this.LastName = e.LastName)
-                .For<IMaritalStatusUpdated>(e => this.MaritalStatus = e.MaritalStatus)
+                .For<IPersonFirstNameUpdated>(e => FirstName = e.FirstName)
+                .For<IMaritalStatusUpdated>(e => MaritalStatus = e.MaritalStatus)
+                .For<IChildAdded>(e =>
+                {
+                    _children.Add(new Child(this, e.ChildId));
+                    _maxChildId = Math.Max(_maxChildId, e.ChildId);
+                })
+                .For<IChildEvent>(e => _children.Single(c => c.ChildId == e.ChildId).ApplyEvent(e))
                 ;
         }
 
@@ -76,29 +105,48 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
 
             base.AssertInvariantsAreMet();
         }
-
-        public string LastName { get; private set; }
+        
         public string FirstName { get; private set; }
         public MaritalStatus MaritalStatus { get; private set; }
+        private readonly List<Child> _children = new List<Child>();
+        public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
+        private int _maxChildId = 0;
 
-        public void GiveBirth(Guid aggregateRootId, string firstName)
+        public void Register(Guid aggregateRootId, string firstName, Guid commandId)
         {
             if (string.IsNullOrWhiteSpace(firstName))
                 throw new Exception("Invalid first name");
 
-            //Business logic
-            var lastName = firstName + "son";
-
-            RaiseEvent(new PersonBornEvent { AggregateRootId = aggregateRootId, FirstName = firstName, LastName = lastName });
+            RaiseEvent(new PersonRegisteredEvent { AggregateRootId = aggregateRootId, FirstName = firstName });
         }
 
-        public void Marry(string lastName)
-        {
-            if (string.IsNullOrWhiteSpace(lastName))
-                throw new Exception("Invalid last name");
+        public void Marry()
+        {   
+            RaiseEvent(new PersonMarriedEvent { MaritalStatus = MaritalStatus.Married });
+        }
 
-            RaiseEvent(new PersonMarriedEvent { MaritalStatus = MaritalStatus.Married, LastName = lastName});
+        public int RegisterChild(Guid commandId)
+        {
+            //Business logic
+            var lastName = FirstName + "son";
+            var childId = _maxChildId + 1;
+
+            RaiseEvent(new ChildRegisteredEvent { ChildId = childId, LastName = lastName });
+            return childId;
+        }
+
+        public class Child : Entity<Person, IChildEvent>
+        {
+            public Child(Person aggregateRoot, int id) : base(aggregateRoot)
+            {
+                ChildId = id;
+
+                RegisterEventAppliers().For<IChildLastNameUpdated>(e => LastName = e.LastName);
+            }
+
+            public int ChildId { get; }
+
+            public string LastName { get; private set; }
         }
     }
-
 }
