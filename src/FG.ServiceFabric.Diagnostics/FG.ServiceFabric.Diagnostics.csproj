@@ -108,6 +108,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="AutoLogger\ActorMessageHeadersTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorOrActorServiceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
