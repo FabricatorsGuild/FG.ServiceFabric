@@ -97,6 +97,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Diagnostics\IServiceClientLogger.cs" />
     <Compile Include="Diagnostics\IServiceCommunicationLogger.cs" />
     <Compile Include="Diagnostics\IServiceRemotingLogger.cs" />
@@ -126,10 +129,8 @@
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
-    <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
     <Compile Include="Services\Runtime\ServiceExtensions.cs" />
     <Compile Include="Services\Runtime\ServiceReference.cs" />
-    <Compile Include="Services\Runtime\ServiceUriBuilder.cs" />
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
     <Compile Include="Utils\HashUtil.cs" />

@@ -18,9 +18,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 {
     public class MockFabricRuntime
     {
-        private MockReliableStateManager _stateManager;
-        private IServiceProxyFactory _serviceProxyFactory;
-        private IActorProxyFactory _actorProxyFactory;
+        private readonly MockReliableStateManager _stateManager;
+        private readonly IServiceProxyFactory _serviceProxyFactory;
+        private readonly IActorProxyFactory _actorProxyFactory;
 
         public string ApplicationName { get; set; }
 
@@ -120,6 +120,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 
             _serviceProxyFactory = serviceProxyFactory;
             _actorProxyFactory = actorProxyFactory;
+
+			FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory.SetInnerFactory((factory, serviceType) => _serviceProxyFactory); ;
+			FG.ServiceFabric.Actors.Client.ActorProxyFactory.SetInnerFactory((factory, serviceType, actorType) => _actorProxyFactory);;
         }
 
         public void SetupAutoDiscoverActors(params Assembly[] actorAssemblies)

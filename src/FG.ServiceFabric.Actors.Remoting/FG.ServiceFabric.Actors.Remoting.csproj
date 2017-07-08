@@ -102,6 +102,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="Actors\Client\ActorProxyFactory.cs" />
     <Compile Include="Actors\Remoting\FabricTransport\ActorServiceRemotingDispatcherAttribute.cs" />
     <Compile Include="Actors\Remoting\FabricTransport\Client\FabricTransportActorRemotingClient.cs" />

@@ -15,6 +15,34 @@
         </Extension>
       </Extensions>
     </StatefulServiceType>
+    <StatefulServiceType ServiceTypeName="TempEventStoredActorServiceType">
+      <Extensions>
+        <Extension Name="__GeneratedServiceType__" GeneratedId="f76437f2-5280-4ffc-83f2-a949ebfe8f6c|Volatile">
+          <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+            <DefaultService Name="TempEventStoredActorService" />
+            <ServiceEndpoint Name="TempEventStoredActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="TempEventStoredActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="TempEventStoredActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="TempEventStoredActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="TempEventStoredActorServiceLocalStoreConfig" />
+          </GeneratedNames>
+        </Extension>
+      </Extensions>
+    </StatefulServiceType>
+    <StatefulServiceType ServiceTypeName="PersonEventStoredActorServiceType">
+      <Extensions>
+        <Extension Name="__GeneratedServiceType__" GeneratedId="95a94c9b-4a1b-4f28-b1df-d347aeaee448|Volatile">
+          <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
+            <DefaultService Name="EventStoredActorService" />
+            <ServiceEndpoint Name="PersonEventStoredActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="PersonEventStoredActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="PersonEventStoredActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="PersonEventStoredActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="PersonEventStoredActorServiceLocalStoreConfig" />
+          </GeneratedNames>
+        </Extension>
+      </Extensions>
+    </StatefulServiceType>
   </ServiceTypes>
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
@@ -28,6 +56,10 @@
     <Endpoints>
       <Endpoint Name="ActorDemoActorServiceEndpoint" />
       <Endpoint Name="ActorDemoActorServiceReplicatorEndpoint" />
+      <Endpoint Name="TempEventStoredActorServiceEndpoint" />
+      <Endpoint Name="TempEventStoredActorServiceReplicatorEndpoint" />
+      <Endpoint Name="PersonEventStoredActorServiceEndpoint" />
+      <Endpoint Name="PersonEventStoredActorServiceReplicatorEndpoint" />
     </Endpoints>
   </Resources>
   <!-- The content will be generated during build -->

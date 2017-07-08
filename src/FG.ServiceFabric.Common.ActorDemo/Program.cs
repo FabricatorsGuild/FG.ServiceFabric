@@ -17,9 +17,24 @@ namespace FG.ServiceFabric.Tests.Actor
                 // The contents of your ServiceManifest.xml and ApplicationManifest.xml files
                 // are automatically populated when you build this project.
                 // For more information, see https://aka.ms/servicefabricactorsplatform
+                ActorRuntime.RegisterActorAsync<PersonEventStoredActor>(
+                    (context, actorType) => new PersonEventStoredActorService(context, actorType, settings:
+                        new ActorServiceSettings()
+                        {
+                            ActorGarbageCollectionSettings =
+                                new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
+                        })).GetAwaiter().GetResult();
+
+                ActorRuntime.RegisterActorAsync<TempEventStoredActor>(
+                    (context, actorType) => new TempEventStoredActorService(context, actorType, settings:
+                        new ActorServiceSettings()
+                        {
+                            ActorGarbageCollectionSettings =
+                                new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
+                        })).GetAwaiter().GetResult();
 
                 ActorRuntime.RegisterActorAsync<ActorDemo>(
-                   (context, actorType) => new  ActorDemoActorService(context, actorType)).GetAwaiter().GetResult();
+                    (context, actorType) => new ActorDemoActorService(context, actorType)).GetAwaiter().GetResult();
 
                 Thread.Sleep(Timeout.Infinite);
             }
