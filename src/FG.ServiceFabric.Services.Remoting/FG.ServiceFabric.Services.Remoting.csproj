@@ -142,6 +142,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
   </PropertyGroup>
 </Project>

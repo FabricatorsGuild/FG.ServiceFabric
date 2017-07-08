@@ -139,7 +139,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

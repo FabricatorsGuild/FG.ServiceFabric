@@ -177,7 +177,8 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.28\build\Microsoft.Diagnostics.Tracing.EventRegister.targets" Condition="Exists('..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.28\build\Microsoft.Diagnostics.Tracing.EventRegister.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

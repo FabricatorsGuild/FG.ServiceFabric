@@ -39,7 +39,7 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
                   ""CLRType"": ""string""
                 },
                 {
-                  ""Assignment"": ""$this.ToString()"",
+                  ""Assignment"": ""$this.ServiceName"",
                   ""Name"": ""serviceName"",
                   ""Type"": ""string"",
                   ""CLRType"": ""string""

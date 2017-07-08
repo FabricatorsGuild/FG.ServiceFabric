@@ -144,6 +144,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
   </PropertyGroup>
 </Project>
