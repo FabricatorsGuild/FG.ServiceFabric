@@ -15,7 +15,6 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
@@ -92,100 +91,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             return migrationContainerType;
         }
 
-	    private class InterceptorSelector : IInterceptorSelector
-	    {
-			public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
-			{
-				if (method.DeclaringType == typeof(IActorProxy))
-				{
-					return interceptors.Where(i => (i is ActorProxyInterceptor)).ToArray();
-				}
-				return interceptors.Where(i => (i is ActorInterceptor)).ToArray();
-			}
-		}
-
-	    private class ActorInterceptor : IInterceptor
-	    {
-		    private readonly Action<IActor, string> _preMethod;
-		    private readonly Action<IActor, string> _postMethod;
-
-		    public ActorInterceptor(Action<IActor, string> preMethod, Action<IActor, string> postMethod)
-		    {
-			    _preMethod = preMethod;
-			    _postMethod = postMethod;
-		    }
-
-			public void Intercept(IInvocation invocation)
-		    {
-				_preMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
-			    invocation.Proceed();
-				_postMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
-			}
-	    }
-
-	    private class ActorProxyInterceptor : IInterceptor
-		{
-			private readonly IActorProxy _actorProxy;
-
-			public ActorProxyInterceptor(IActorProxy actorProxy)
-			{
-				_actorProxy = actorProxy;
-			}
-
-			public void Intercept(IInvocation invocation)
-			{
-				invocation.ReturnValue = invocation.Method.Invoke(_actorProxy, invocation.Arguments);
-			}
-		}
-
-	    private class MockActorProxy : IActorProxy
-		{
-		    public MockActorProxy(
-				ActorId actorId, 
-				Uri serviceUri, 
-				ServicePartitionKey partitionKey, 
-				TargetReplicaSelector replicaSelector, 
-				string listenerName,
-			    ICommunicationClientFactory<IServiceRemotingClient> factory)
-		    {
-			    ActorId = actorId;
-			    ActorServicePartitionClient = new MockActorServicePartitionClient(actorId, serviceUri, partitionKey, replicaSelector, listenerName, factory);
-			}
-
-		    public ActorId ActorId { get; }
-		    public IActorServicePartitionClient ActorServicePartitionClient { get; }
-
-			private class MockActorServicePartitionClient : IActorServicePartitionClient
-		    {
-			    internal MockActorServicePartitionClient(
-				    ActorId actorId,
-				    Uri serviceUri,
-				    ServicePartitionKey partitionKey,
-				    TargetReplicaSelector replicaSelector,
-				    string listenerName,
-				    ICommunicationClientFactory<IServiceRemotingClient> factory)
-			    {
-				    ActorId = actorId;
-				    ServiceUri = serviceUri;
-				    PartitionKey = partitionKey;
-				    TargetReplicaSelector = replicaSelector;
-				    ListenerName = listenerName;
-				    Factory = factory;
-			    }
-
-			    public bool TryGetLastResolvedServicePartition(out ResolvedServicePartition resolvedServicePartition)
-			    {
-				    throw new NotImplementedException();
-			    }
-
-			    public Uri ServiceUri { get; }
-			    public ServicePartitionKey PartitionKey { get; }
-			    public TargetReplicaSelector TargetReplicaSelector { get; }
-			    public string ListenerName { get; }
-			    public ICommunicationClientFactory<IServiceRemotingClient> Factory { get; }
-			    public ActorId ActorId { get; }
-		    }
-		}
 
 		private object CreateDynamicProxy<TActorInterface>(object target, IActorProxy actorProxy) where TActorInterface : IActor
 		{
@@ -368,5 +273,51 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         {
             return CreateActorService<TServiceInterface>();
         }
-    }
+
+		private class InterceptorSelector : IInterceptorSelector
+		{
+			public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
+			{
+				if (method.DeclaringType == typeof(IActorProxy))
+				{
+					return interceptors.Where(i => (i is ActorProxyInterceptor)).ToArray();
+				}
+				return interceptors.Where(i => (i is ActorInterceptor)).ToArray();
+			}
+		}
+
+		private class ActorInterceptor : IInterceptor
+		{
+			private readonly Action<IActor, string> _preMethod;
+			private readonly Action<IActor, string> _postMethod;
+
+			public ActorInterceptor(Action<IActor, string> preMethod, Action<IActor, string> postMethod)
+			{
+				_preMethod = preMethod;
+				_postMethod = postMethod;
+			}
+
+			public void Intercept(IInvocation invocation)
+			{
+				_preMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
+				invocation.Proceed();
+				_postMethod?.Invoke(invocation.Proxy as IActor, invocation.Method.Name);
+			}
+		}
+
+		private class ActorProxyInterceptor : IInterceptor
+		{
+			private readonly IActorProxy _actorProxy;
+
+			public ActorProxyInterceptor(IActorProxy actorProxy)
+			{
+				_actorProxy = actorProxy;
+			}
+
+			public void Intercept(IInvocation invocation)
+			{
+				invocation.ReturnValue = invocation.Method.Invoke(_actorProxy, invocation.Arguments);
+			}
+		}
+	}
 }

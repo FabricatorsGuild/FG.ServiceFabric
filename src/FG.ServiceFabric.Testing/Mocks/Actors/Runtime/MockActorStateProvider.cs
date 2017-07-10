@@ -112,12 +112,12 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
         public Func<CancellationToken, Task<bool>> OnDataLossAsync { get; set; }
         public void Initialize(ActorTypeInformation actorTypeInformation)
         {
-            throw new NotImplementedException();
-        }
+			ActionsPerformed.Add($"{nameof(Initialize)} - {actorTypeInformation.ImplementationType}");
+		}
 
         public Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(ActorActivatedAsync));
+            ActionsPerformed.Add($"{nameof(ActorActivatedAsync)} - {actorId}");
             if (!_trackedActors.ContainsKey(actorId))
             {
                 _trackedActors.Add(actorId, new MockedInternalActorState() { });
@@ -134,7 +134,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 
         public Task<T> LoadStateAsync<T>(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(LoadStateAsync));
+            ActionsPerformed.Add($"{nameof(LoadStateAsync)} - {actorId} - {stateName}");
             if (_trackedActors.ContainsKey(actorId))
             {
                 var trackedActor = _trackedActors[actorId];
@@ -149,8 +149,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
         public Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(SaveStateAsync));
-            MockedInternalActorState mockedInternalActorState;
+			ActionsPerformed.Add($"{nameof(SaveStateAsync)} - {actorId} - {Newtonsoft.Json.JsonConvert.SerializeObject(stateChanges)}");
+
+			MockedInternalActorState mockedInternalActorState;
             if (_trackedActors.ContainsKey(actorId))
             {
                 mockedInternalActorState = _trackedActors[actorId];
@@ -182,8 +183,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 
         public Task<bool> ContainsStateAsync(ActorId actorId, string stateName, CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(ContainsStateAsync));
-            if (_trackedActors.ContainsKey(actorId))
+			ActionsPerformed.Add($"{nameof(ContainsStateAsync)} - {actorId} - {stateName}");
+			if (_trackedActors.ContainsKey(actorId))
             {
                 var actorState = _trackedActors[actorId];
                 if (actorState.State.ContainsKey(stateName)) return Task.FromResult(true);
@@ -194,21 +195,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 
         public Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(RemoveActorAsync));
+			ActionsPerformed.Add($"{nameof(RemoveActorAsync)} - {actorId}");
             _trackedActors.Remove(actorId);
             return Task.FromResult(true);
         }
 
         public Task<IEnumerable<string>> EnumerateStateNamesAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            ActionsPerformed.Add(nameof(EnumerateStateNamesAsync));
+			ActionsPerformed.Add($"{nameof(EnumerateStateNamesAsync)} - {actorId}");
             var stateNames = _trackedActors[actorId].State.Select(actorState => actorState.Key);
             return Task.FromResult(stateNames);
         }
 
         public Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            ActionsPerformed.Add(nameof(GetActorsAsync));
+			ActionsPerformed.Add($"{nameof(GetActorsAsync)} - {numItemsToReturn} - {continuationToken?.Marker}");
              
             var continueAt = continuationToken == null ? 0 : int.Parse((string)continuationToken.Marker);
             var actorsLeft = _trackedActors.Keys.Count - continueAt;

@@ -247,7 +247,7 @@ namespace FG.ServiceFabric.Testing.Mocks
                 activator: (Func<ActorService, ActorId, TActorImplementation>) ((actorService, actorId) => activator((TActorService)actorService, actorId)), 
                 createStateManager: createStateManager, 
                 createStateProvider: createStateProvider);
-            ((MockActorProxyFactory)ActorProxyFactory).AddActorRegistration(actorRegistration);
+            ((MockActorProxyFactory)ActorProxyFactory).AddActorRegistration(actorRegistration);			
         }
 
         public void SetupActor<TActorImplementation>(

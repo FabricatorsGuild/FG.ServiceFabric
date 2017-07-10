@@ -13,12 +13,10 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
     public class ServiceProxyFactory : ServiceProxyFactoryBase, IServiceProxyFactory
     {
         private readonly object _lock = new object();
+		private IServiceProxyFactory _innerProxyFactory;
+		private static volatile Func<ServiceProxyFactory, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
 
-        private static readonly ConcurrentDictionary<Type, IServiceProxyFactory> ServiceProxyFactoryMap = new ConcurrentDictionary<Type, IServiceProxyFactory>();
-
-	    private static volatile Func<ServiceProxyFactory, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
-
-	    static ServiceProxyFactory()
+		static ServiceProxyFactory()
 	    {
 		    SetInnerFactory(null);
 	    }
@@ -54,21 +52,16 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 
         private IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
         {
-            if (ServiceProxyFactoryMap.ContainsKey(serviceInterfaceType))
-            {
-                return ServiceProxyFactoryMap[serviceInterfaceType];
-            }
+	        if (_innerProxyFactory != null)
+	        {
+		        return _innerProxyFactory;
+	        }
 
             lock (_lock)
             {
-                if (ServiceProxyFactoryMap.ContainsKey(serviceInterfaceType))
-                {
-                    return ServiceProxyFactoryMap[serviceInterfaceType];
-                }
-	            var innerActorProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
-                ServiceProxyFactoryMap[serviceInterfaceType] = innerActorProxyFactory;
+				_innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
 
-                return innerActorProxyFactory;
+                return _innerProxyFactory;
             }
         }
 
