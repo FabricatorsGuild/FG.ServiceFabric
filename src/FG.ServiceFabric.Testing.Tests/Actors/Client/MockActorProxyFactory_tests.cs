@@ -32,7 +32,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
                 return actor.SetCountAsync(5);
             }, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
-            stateActions.Should().BeEquivalentTo(new[] { "ContainsStateAsync", "ActorActivatedAsync", "SaveStateAsync" });
+            stateActions.Should().BeEquivalentTo(new[] { "ContainsStateAsync - testivus - count", "ActorActivatedAsync - testivus", "SaveStateAsync - testivus - [{\"StateName\":\"count\",\"Type\":\"System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"Value\":5,\"ChangeKind\":1}]" });
         }
         
         [Test]
