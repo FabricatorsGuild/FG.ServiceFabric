@@ -9,6 +9,7 @@ using Castle.DynamicProxy;
 using FG.Common.Utils;
 using FG.ServiceFabric.Actors.State;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
+using FG.ServiceFabric.Testing.Mocks.Fabric;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -21,26 +22,30 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
     public class MockActorProxyFactory : IActorProxyFactory
     {
         private readonly MockFabricRuntime _fabricRuntime;
-        private readonly IDictionary<Type, IActorStateProvider> _actorStateProviders;
+        private readonly IDictionary<Type, IDictionary<Guid, IActorStateProvider>> _actorStateProviders;
 
         private readonly IList<IMockableActorRegistration> _actorRegistrations;
         private readonly IDictionary<object, object> _actorProxies;
 
-        public MockActorProxyFactory(
+        internal MockActorProxyFactory(
             MockFabricRuntime fabricRuntime,
             params IMockableActorRegistration[] actorRegistrations 
             )
         {
             _fabricRuntime = fabricRuntime;
             _actorRegistrations = new List<IMockableActorRegistration>(actorRegistrations);
-            _actorStateProviders = new Dictionary<Type, IActorStateProvider>();
+	        _actorStateProviders = new Dictionary<Type, IDictionary<Guid, IActorStateProvider>>();
             _actorProxies = new Dictionary<object, object>();
         }
 
-        private IActorStateProvider GetOrCreateActorStateProvider(Type actorImplementationType,
-            Func<IActorStateProvider> createStateProvider)
+        private IActorStateProvider GetOrCreateActorStateProvider(
+			IMockableActorRegistration actorRegistation,
+            Func<IActorStateProvider> createStateProvider,
+			ServicePartitionKey partitionKey)
         {
-            var actorStateProvider = GetActorStateProvider(actorImplementationType);
+	        var actorImplementationType = actorRegistation.ImplementationType;
+
+	        var actorStateProvider = GetActorStateProvider(actorRegistation, partitionKey);
             if (actorStateProvider != null) return actorStateProvider;
 
             actorStateProvider =  createStateProvider();
@@ -52,21 +57,44 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
                 actorStateProvider = new VersionedStateProvider(actorStateProvider, migrationContainer);
             }
 
-            _actorStateProviders.Add(actorImplementationType, actorStateProvider);
+			var partitionId = actorRegistation.ServiceDefinition.GetPartion(partitionKey);
+	        IDictionary<Guid, IActorStateProvider> stateProvidersForPartition = null;
+	        if (_actorStateProviders.ContainsKey(actorImplementationType))
+	        {
+		        stateProvidersForPartition = _actorStateProviders[actorImplementationType];
+	        }
+	        else
+	        {
+		        stateProvidersForPartition = new Dictionary<Guid, IActorStateProvider>();
+				_actorStateProviders.Add(actorImplementationType, stateProvidersForPartition);
+	        }
 
+			if (stateProvidersForPartition.ContainsKey(partitionId))
+			{
+				return stateProvidersForPartition[partitionId];
+			}
+
+			stateProvidersForPartition.Add(partitionId, actorStateProvider);
             return actorStateProvider;
         }
 
-        public IActorStateProvider GetActorStateProvider(Type actorImplementationType)
-        {
+	    private IActorStateProvider GetActorStateProvider(IMockableActorRegistration actorRegistation, ServicePartitionKey partitionKey)
+	    {
+		    var actorImplementationType = actorRegistation.ImplementationType;
+
+			var partitionId = actorRegistation.ServiceDefinition.GetPartion(partitionKey);
             if (_actorStateProviders.ContainsKey(actorImplementationType))
             {
-                return _actorStateProviders[actorImplementationType];
+	            var stateProvidersForPartition = _actorStateProviders[actorImplementationType];
+	            if (stateProvidersForPartition.ContainsKey(partitionId))
+	            {
+					return stateProvidersForPartition[partitionId];
+				}
             }
             return null;
-        }
+        }		
 
-        private ActorService GetMockActorService(
+	    private ActorService GetMockActorService(
             StatefulServiceContext serviceContext,
             ActorTypeInformation actorTypeInformation,
             IActorStateProvider actorStateProvider, 
@@ -116,13 +144,15 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             {
                 var actorServiceName = $"{actorRegistration.ImplementationType.Name}Service";
 
-                var createStateProvider = actorRegistration.CreateStateProvider ?? (() => (IActorStateProvider)new MockActorStateProvider(_fabricRuntime));
-                var actorStateProvider = GetOrCreateActorStateProvider(actorRegistration.ImplementationType, () => createStateProvider());
+	            var partitionKey = new ServicePartitionKey(actorId.GetPartitionKey());
+
+                var createStateProvider = actorRegistration.CreateActorStateProvider ?? (() => (IActorStateProvider)new MockActorStateProvider(_fabricRuntime));
+                var actorStateProvider = GetOrCreateActorStateProvider(actorRegistration, () => createStateProvider(), partitionKey);
 
                 var actorTypeInformation = ActorTypeInformation.Get(actorRegistration.ImplementationType);
                 var statefulServiceContext = _fabricRuntime.BuildStatefulServiceContext(actorServiceName);
-                var stateManagerFactory = actorRegistration.CreateStateManager != null ? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
-                    (actor, stateProvider) => actorRegistration.CreateStateManager(actor, stateProvider)) : null;
+                var stateManagerFactory = actorRegistration.CreateActorStateManager != null ? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
+                    (actor, stateProvider) => actorRegistration.CreateActorStateManager(actor, stateProvider)) : null;
                 var actorServiceFactory = actorRegistration.CreateActorService ?? GetMockActorService;
 
                 var actorService = actorServiceFactory(statefulServiceContext, actorTypeInformation, actorStateProvider, stateManagerFactory);
@@ -201,7 +231,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             saveStateTask.Wait(CancellationToken.None);
         }
 
-        public void AddActorRegistration(IMockableActorRegistration actorRegistration)
+        internal void AddActorRegistration(IMockableActorRegistration actorRegistration)
         {
             _actorRegistrations.Add(actorRegistration);
         }
@@ -220,7 +250,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             return task.Result;
         }
 
-        private TServiceInterface CreateActorService<TServiceInterface>() where TServiceInterface : IService
+        private TServiceInterface CreateActorService<TServiceInterface>(ServicePartitionKey partitionKey) where TServiceInterface : IService
         {
             var actorRegistration = _actorRegistrations.FirstOrDefault(
                 registration => GetActorServiceImplementationType<TServiceInterface>(registration).Any());
@@ -231,18 +261,20 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
                     $"Expected a MockableActorRegistration with ActorServiceType for the type {typeof(TServiceInterface).Name}");
             }
 
-            var createStateProvider = actorRegistration.CreateStateProvider ??
+            var createStateProviderFactory = actorRegistration.CreateActorStateProvider ??
                                       (() => (IActorStateProvider) new MockActorStateProvider(_fabricRuntime));
             
             var actorServiceName = GetActorServiceImplementationType<TServiceInterface>(actorRegistration).First().Name; //todo: actor service can be named differently
-            var actorStateProvider = GetOrCreateActorStateProvider(actorRegistration.ImplementationType,
-                () => createStateProvider());
+            var actorStateProvider = GetOrCreateActorStateProvider(
+				actorRegistration,
+                () => createStateProviderFactory(),
+				partitionKey);
 
             var actorTypeInformation = ActorTypeInformation.Get(actorRegistration.ImplementationType);
             var statefulServiceContext = _fabricRuntime.BuildStatefulServiceContext(actorServiceName);
-            var stateManagerFactory = actorRegistration.CreateStateManager != null
+            var stateManagerFactory = actorRegistration.CreateActorStateManager != null
                 ? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
-                    (actor, stateProvider) => actorRegistration.CreateStateManager(actor, stateProvider))
+                    (actor, stateProvider) => actorRegistration.CreateActorStateManager(actor, stateProvider))
                 : null;
             var actorServiceFactory = actorRegistration.CreateActorService ?? GetMockActorService;
 
@@ -258,20 +290,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             return (TServiceInterface) (object) actorService;
         }
 
-        private static IEnumerable<Type> GetActorServiceImplementationType<TServiceInterface>(IMockableActorRegistration registration) where TServiceInterface : IService
+	    private static IEnumerable<Type> GetActorServiceImplementationType<TServiceInterface>(IMockableActorRegistration registration) where TServiceInterface : IService
         {
             return registration.GetType().GetGenericArguments().Where(a => a.ImplementsInterface(typeof(TServiceInterface)));
         }
 
         public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri actorServiceUri, ActorId actorId, string listenerName = null) where TServiceInterface : IService
         {
-            return CreateActorService<TServiceInterface>();
+			var partitionKey = new ServicePartitionKey(actorId.GetPartitionKey());
+            return CreateActorService<TServiceInterface>(partitionKey);
         }
 
         public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri serviceUri, long partitionKey,
             string listenerName = null) where TServiceInterface : IService
         {
-            return CreateActorService<TServiceInterface>();
+            return CreateActorService<TServiceInterface>(new ServicePartitionKey(partitionKey));
         }
 
 		private class InterceptorSelector : IInterceptorSelector

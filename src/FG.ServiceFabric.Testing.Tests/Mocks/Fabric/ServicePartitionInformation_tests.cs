@@ -18,7 +18,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateless_service_with_Singleton_Partotioning()
 		{
 			var serviceName = new Uri(@"fabric:/TestApp/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(MockPartition.CreateStatelessPartition(MockPartition.SingletonPartitionInformation));
+			var partitionEnumerationManager = new MockPartitionEnumerationManager();
+			partitionEnumerationManager.AddPartitions(serviceName, MockPartition.CreateStatelessPartition(MockPartition.SingletonPartitionInformation));
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.
@@ -43,7 +44,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Uniform_Int64_Partitioning()
 		{
 			var serviceName = new Uri(@"fabric:/TestApp/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(MockPartition.CreateStatefulPartition(MockPartition.Int64RangePartitionInformation));
+			var partitionEnumerationManager = new MockPartitionEnumerationManager();
+			partitionEnumerationManager.AddPartitions(serviceName, MockPartition.CreateStatelessPartition(MockPartition.SingletonPartitionInformation));
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.
@@ -68,7 +70,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Named_Partitioning()
 		{
 			var serviceName = new Uri(@"fabric:/TestApp/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(MockPartition.CreateStatefulPartition(MockPartition.NamedPartitionInformation));
+			var partitionEnumerationManager = new MockPartitionEnumerationManager();
+			partitionEnumerationManager.AddPartitions(serviceName, MockPartition.CreateStatelessPartition(MockPartition.SingletonPartitionInformation));
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.

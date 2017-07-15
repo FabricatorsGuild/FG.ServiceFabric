@@ -9,6 +9,40 @@ namespace FG.Common.Utils
 {
     public static class ReflectionUtils
     {
+	    public class InternallyActivatedClass
+	    {
+		    internal InternallyActivatedClass()
+		    {
+			    
+		    }
+
+		    internal InternallyActivatedClass(string a, int b)
+		    {
+			    
+		    }
+	    }
+		public static T ActivateInternalCtor<T>(params object[] args)
+		{
+			var type = typeof(T);
+			var instance = type.ActivateInternalCtor(args);
+			return (T) instance;
+		}
+
+
+		public static object ActivateInternalCtor(this Type type, params object [] args)
+	    {
+		    var constructorInfos = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+
+		    var matchingCtor = constructorInfos.FirstOrDefault(c => 
+				c.GetParameters().Length == args.Length &&
+				c.GetParameters().Select((a,i) => new { Type = a?.ParameterType ?? typeof(object), Index = i}).All(a => a.Type.IsAssignableFrom(args[a.Index]?.GetType()??typeof(object))));
+
+			if( matchingCtor == null) return null;
+
+		    var instance = matchingCtor.Invoke(BindingFlags.CreateInstance, null, args, CultureInfo.CurrentCulture);
+		    return instance;
+	    }
+
         public static void SetPrivateProperty<TImplementingType, TPropertyValue>(this TImplementingType that,
             Expression<Func<TPropertyValue>> propertyExpression, TPropertyValue value)
         {
@@ -95,7 +129,6 @@ namespace FG.Common.Utils
 
             return true;
         }
-
 
         public static void SetPrivateField<TImplementingType, TPropertyValue>(this TImplementingType that, 
             string fieldName, TPropertyValue value)

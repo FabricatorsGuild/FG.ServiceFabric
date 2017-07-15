@@ -119,6 +119,7 @@
     <Compile Include="Actors\State\VersionedStateProvider.cs" />
     <Compile Include="Data\ReliableStateInfo.cs" />
     <Compile Include="Data\ReliableStateExtensions.cs" />
+    <Compile Include="Fabric\FabricClientQueryManagerExtensions.cs" />
     <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
     <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
     <Compile Include="Services\Runtime\ServiceContextExtensions.cs" />

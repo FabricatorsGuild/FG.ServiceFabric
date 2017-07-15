@@ -122,9 +122,14 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="Assertion\AsyncAssertions.cs" />
+    <Compile Include="Mocks\Services\Runtime\MockStatefulService.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\IMockableServiceRegistration.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxy.cs" />
     <Compile Include="Mocks\Fabric\MockPartition.cs" />
     <Compile Include="Mocks\Fabric\MockPartitionEnumerationManager.cs" />
+    <Compile Include="Mocks\MockServiceDefinition.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\MockableServiceRegistration.cs" />
+    <Compile Include="Mocks\Services\Runtime\MockStatelessService.cs" />
     <Compile Include="Validation\EventSourceValidator.cs" />
     <Compile Include="Assertion\ObjectPropertyAssertions.cs" />
     <Compile Include="Mocks\Actors\Client\IMockableActorRegistration.cs" />
