@@ -13,6 +13,7 @@
     <tags>service fabric fabric transport remoting</tags>
     <dependencies>
       <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$" />
+      <dependency id="FG.Common" version="$version$" />
     </dependencies>
   </metadata>
 </package>

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using FG.ServiceFabric.Diagnostics;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using FG.ServiceFabric.Services.Runtime;
-using FG.ServiceFabric.Utils;
+using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 

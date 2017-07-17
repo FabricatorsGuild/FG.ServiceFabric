@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,13 +8,13 @@ using Microsoft.ServiceFabric.Actors.Client;
 namespace FG.ServiceFabricTests.WebApi.Controllers
 {
     [Route("api/[controller]")]
-    public class EventStoredController : Controller
+    public class PersonEventStoredController : Controller
     {
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var person = await new ActorProxyFactory().CreateActorServiceProxy<IEventStoredActorService>(
+            var person = await new ActorProxyFactory().CreateActorServiceProxy<IPersonEventStoredActorService>(
                serviceUri: new Uri("fabric:/FG.ServiceFabric.Tests.Application/EventStoredActorService"),
                actorId: new ActorId(id)).GetAsync(id);
 
@@ -25,7 +24,7 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpGet("{id}/history")]
         public async Task<IActionResult> GetHistory(Guid id)
         {
-            var history = await new ActorProxyFactory().CreateActorServiceProxy<IEventStoredActorService>(
+            var history = await new ActorProxyFactory().CreateActorServiceProxy<IPersonEventStoredActorService>(
                 serviceUri: new Uri("fabric:/FG.ServiceFabric.Tests.Application/EventStoredActorService"), 
                 actorId: new ActorId(id)).GetAllEventHistoryAsync(id);
 
@@ -35,15 +34,16 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpPost("{id}")]
         public async void Post(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
+            await new ActorProxyFactory().CreateActorProxy<IPersonEventStoredActor>(new ActorId(id)).RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
         }
 
         [HttpPut("{id}")]
         public async void Put(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand { AggretateRootId = id });
+            await new ActorProxyFactory().CreateActorProxy<IPersonEventStoredActor>(new ActorId(id)).MarryAsync(new MarryCommand { AggretateRootId = id });
         }
 
+        // ReSharper disable once InconsistentNaming
         public class UICommand
         {
             public string Name { get; set; }

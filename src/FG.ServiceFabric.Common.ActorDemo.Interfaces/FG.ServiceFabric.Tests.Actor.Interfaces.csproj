@@ -79,8 +79,7 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IEventStoredActor.cs" />
-    <Compile Include="ITempEventStoredActor.cs" />
+    <Compile Include="IPersonEventStoredActor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IActorDemo.cs" />
   </ItemGroup>

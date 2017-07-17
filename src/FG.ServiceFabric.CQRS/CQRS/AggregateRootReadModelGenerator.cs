@@ -2,10 +2,9 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.CQRS.Exceptions;
 
-namespace FG.ServiceFabric.Actors.Runtime
+namespace FG.ServiceFabric.CQRS
 {
     public abstract class ReadModelGenerator<TAggregateRootEventInterface, TReadModel> : IDisposable
         where TAggregateRootEventInterface : class, IAggregateRootEvent

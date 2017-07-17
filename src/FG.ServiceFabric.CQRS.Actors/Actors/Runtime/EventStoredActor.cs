@@ -1,31 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.CQRS;
+using FG.ServiceFabric.CQRS.Exceptions;
+using FG.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController 
+    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController, IReliableMessageReceiver
         where TEventStream : IDomainEventStream, new()
         where TAggregateRoot : class, IEventStored, new()
     {
         public const string EventStreamStateKey = @"fg__eventstream_state";
+        public const string ReliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
+        public const string DeadLetterStateKey = @"fg__deadletter_state";
        
         protected EventStoredActor(
             Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId, 
-            ITimeProvider timeProvider = null, 
-            Func<IActorStateManager, IEventStoreSession> eventStoreSessionFactory = null) 
+            ITimeProvider timeProvider = null) 
             : base(actorService, actorId)
         {
             TimeProvider = timeProvider;
-            eventStoreSessionFactory = eventStoreSessionFactory ?? (sm => new EventStoreSession<TEventStream>(sm, this));
-            EventStoreSession = eventStoreSessionFactory(StateManager);
         }
         
-        public IEventStoreSession EventStoreSession { get; }
         public ITimeProvider TimeProvider { get; }
         protected TAggregateRoot DomainState = null;
 
@@ -40,6 +41,47 @@ namespace FG.ServiceFabric.Actors.Runtime
                 DomainState.Initialize(this, eventStream.DomainEvents, TimeProvider);
                 return DomainState;
             }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
+        }
+
+        private IActorTimer _timer;
+
+        protected Task InitializeReliableMessageQueue()
+        {
+            if (_timer == null)
+            {
+                _timer = RegisterTimer(async _ =>
+                {
+                    await ProcessQueueAsync();
+                }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+            }
+
+            return
+                ExecutionHelper.ExecuteWithRetriesAsync(
+                    ct =>
+                        this.StateManager.GetOrAddStateAsync(ReliableMessageQueueStateKey, new ReliableMessageQueue(),
+                            ct), 3, TimeSpan.FromSeconds(1), CancellationToken.None);
+
+        }
+
+        private async Task ProcessQueueAsync()
+        {
+            var queue =
+                await ExecutionHelper.ExecuteWithRetriesAsync(
+                    ct => this.StateManager.GetStateAsync<Queue<ReliableActorMessage>>(ReliableMessageQueueStateKey, ct),
+                    3, TimeSpan.FromSeconds(1), CancellationToken.None);
+
+            await SendMessagesAsync(queue);
+        }
+
+        private async Task SendMessagesAsync(Queue<ReliableActorMessage> queue)
+        {
+            while (queue.Count > 0)
+            {
+                // TODO: Error handling and logging.
+                var message = queue.Dequeue();
+                await SendMessageAsync(message);
+                // TODO: On error, move to dead letter (retry?)
+            }
         }
 
         protected async Task ExecuteCommandAsync
@@ -78,9 +120,30 @@ namespace FG.ServiceFabric.Actors.Runtime
             var handleDomainEvent = this as IHandleDomainEvent<TDomainEvent>;
 
             if (handleDomainEvent == null)
-                return;
+                throw new EventHandlerNotFoundException($"No handler found for event {nameof(TDomainEvent)}. Did you forget to implement {nameof(IHandleDomainEvent<TDomainEvent>)}?");
             
             await handleDomainEvent.Handle(domainEvent);
+        }
+
+        public abstract Task ReceiveMessageAsync(ReliableMessage message);
+
+        public Task ReliablySendMessageAsync(ReliableActorMessage message)
+        {
+            // TODO: Proper state handling.
+            return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
+            {
+                var queue = await this.StateManager.GetOrAddStateAsync(ReliableMessageQueueStateKey, new ReliableMessageQueue(), ct);
+                queue.Queue.Enqueue(message);
+                await this.StateManager.SetStateAsync(EventStreamStateKey, queue, ct);
+                return Task.FromResult(true);
+            }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
+        }
+
+        private Task SendMessageAsync(ReliableActorMessage message)
+        {
+            return ((IReliableMessageReceiver)message.ActorReference
+               .Bind(typeof(IReliableMessageReceiver)))
+               .ReceiveMessageAsync(message);
         }
     }
 }

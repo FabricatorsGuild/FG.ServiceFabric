@@ -8,13 +8,13 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
 {
     #region Contracts
 
-    public interface IEventStoredActor : IActor
+    public interface IPersonEventStoredActor : IActor
     {
         Task RegisterAsync(RegisterCommand command);
         Task MarryAsync(MarryCommand command);
     }
 
-    public interface IEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
+    public interface IPersonEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
     {
         Task<PersonReadModel> GetAsync(Guid aggregateRootId);
     }
@@ -40,6 +40,8 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
     {
         [DataMember]
         public Guid AggretateRootId { get; set; }
+        [DataMember]
+        public string Name { get; set; }
     }
     #endregion
 

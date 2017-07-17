@@ -9,7 +9,6 @@ namespace FG.ServiceFabric.CQRS
         where TAggregateRootEventInterface : class, IAggregateRootEvent
     {
         private ITimeProvider _timeProvider;
-        private readonly IList<TAggregateRootEventInterface> _uncommittedEvents = new List<TAggregateRootEventInterface>();
         protected int Version;
 
         public Guid AggregateRootId { get; private set; }
@@ -61,8 +60,6 @@ namespace FG.ServiceFabric.CQRS
 
             ApplyEvent(aggregateRootEvent);
             AssertInvariantsAreMet();
-            _uncommittedEvents.Add(aggregateRootEvent);
-            _eventController.StoreDomainEventAsync(aggregateRootEvent);
             _eventController.RaiseDomainEvent(aggregateRootEvent);
         }
 
@@ -112,16 +109,6 @@ namespace FG.ServiceFabric.CQRS
         {
             _timeProvider = timeProvider ?? UtcNowTimeProvider.Instance;
             _eventController = eventController;
-        }
-
-        public IEnumerable<IDomainEvent> GetChanges()
-        {
-            return _uncommittedEvents;
-        }
-
-        public void ClearChanges()
-        {
-            _uncommittedEvents.Clear();
         }
 
         #endregion
