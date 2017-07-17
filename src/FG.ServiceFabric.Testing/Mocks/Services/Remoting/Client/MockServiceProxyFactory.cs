@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Fabric;
 using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
@@ -32,10 +33,19 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             where TServiceInterface : IService
         {
             var serviceProxy = new MockServiceProxy();
-            
-            serviceProxy.Supports<TServiceInterface>((mockUri) => _mockServiceLookupTable[serviceUri]);
-            
-            var service = serviceProxy.Create<TServiceInterface>(serviceUri, partitionKey, targetReplicaSelector, listenerName);
+
+	        Func<Uri, object> createServiceInstance = null;
+	        if (_mockServiceLookupTable.ContainsKey(serviceUri))
+	        {
+				createServiceInstance = (uri) => _mockServiceLookupTable[uri];
+	        }
+	        else
+	        {
+				createServiceInstance = (uri) => _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<TServiceInterface>(uri, (partitionKey?.Value as Int64RangePartitionInformation)?.LowKey ?? 0, listenerName);
+	        }
+			serviceProxy.Supports<TServiceInterface>(createServiceInstance);
+
+			var service = serviceProxy.Create<TServiceInterface>(serviceUri, partitionKey, targetReplicaSelector, listenerName);
             // ReSharper disable once SuspiciousTypeConversion.Global
 
             var target = (object) (service as FG.ServiceFabric.Services.Runtime.StatelessService) ??

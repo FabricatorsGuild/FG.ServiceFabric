@@ -16,11 +16,9 @@ namespace FG.ServiceFabric.Actors.Client
     public class ActorProxyFactory : ServiceProxyFactoryBase, IActorProxyFactory
     {
         private readonly object _lock = new object();
-
-        private static readonly ConcurrentDictionary<Type, IActorProxyFactory> ActorProxyFactoryMap = new ConcurrentDictionary<Type, IActorProxyFactory>();
         private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ActorMethodDispatcherMap = new ConcurrentDictionary<Type, MethodDispatcherBase>();
-
 		private static volatile Func<ActorProxyFactory, Type, Type, IActorProxyFactory> _actorProxyFactoryInnerFactory;
+	    private IActorProxyFactory _innerActorProxyFactory;
 
 		static ActorProxyFactory()
 		{
@@ -60,23 +58,17 @@ namespace FG.ServiceFabric.Actors.Client
 
         private IActorProxyFactory GetInnerActorProxyFactory(Type serviceInterfaceType, Type actorInterfaceType)
         {
-            var interfaceType = actorInterfaceType ?? serviceInterfaceType;
-            if (ActorProxyFactoryMap.ContainsKey(interfaceType))
-            {
-                return ActorProxyFactoryMap[interfaceType];
-            }
+			if (_innerActorProxyFactory != null)
+			{
+				return _innerActorProxyFactory;
+			}
 
-            lock (_lock)
-            {
-                if (ActorProxyFactoryMap.ContainsKey(interfaceType))
-                {
-                    return ActorProxyFactoryMap[interfaceType];
-                }
-	            var innerActorProxyFactory = _actorProxyFactoryInnerFactory(this, serviceInterfaceType, actorInterfaceType);
-                ActorProxyFactoryMap[interfaceType] = innerActorProxyFactory;
-                
-                return innerActorProxyFactory;
-            }
+			lock (_lock)
+			{
+				_innerActorProxyFactory = _actorProxyFactoryInnerFactory(this, serviceInterfaceType, actorInterfaceType);
+
+				return _innerActorProxyFactory;
+			}
         }
 
         private MethodDispatcherBase GetOrDiscoverActorMethodDispatcher(Type actorInterfaceType)

@@ -117,6 +117,7 @@
     <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcher.cs" />
     <Compile Include="Actors\Remoting\Runtime\ActorServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Actors\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
+    <Compile Include="Actors\Runtime\ActorStateProviderExtensions.cs" />
     <Compile Include="Diagnostics\ActorDescription.cs" />
     <Compile Include="Diagnostics\ActorOrActorServiceDescription.cs" />
     <Compile Include="Diagnostics\ActorServiceDescription.cs" />
@@ -124,9 +125,7 @@
     <Compile Include="Diagnostics\IActorServiceCommunicationLogger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Actors\Runtime\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
       <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
