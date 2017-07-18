@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;

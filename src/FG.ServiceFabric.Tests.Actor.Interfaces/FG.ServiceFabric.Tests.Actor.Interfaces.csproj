@@ -79,8 +79,6 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPersonIndexActor.cs" />
-    <Compile Include="IPersonEventStoredActor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IActorDemo.cs" />
   </ItemGroup>

@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.CQRS.Exceptions;
-using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 
-namespace FG.ServiceFabric.Tests.Actor.Domain
+namespace FG.ServiceFabric.Tests.PersonActor
 {
     #region Domain event interfaces
     public interface IPersonEvent : IAggregateRootEvent { }
@@ -73,12 +71,13 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
     [DataContract]
     [KnownType(typeof(PersonRegisteredEvent))]
     [KnownType(typeof(PersonMarriedEvent))]
-    public class PersonEventStream : EventStreamBase
+    public class PersonEventStream : EventStreamStateBase
     {
     }
 
     #endregion
 
+    #region Aggregate
     public class Person : AggregateRoot<IPersonEvent>
     {
         public Person()
@@ -109,7 +108,7 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
         public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
         private int _maxChildId = 0;
 
-        public void Register(Guid aggregateRootId, string firstName, Guid commandId)
+        public void Register(Guid aggregateRootId, string firstName)
         {
             if (string.IsNullOrWhiteSpace(firstName))
                 throw new Exception("Invalid first name");
@@ -146,4 +145,20 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
             public string LastName { get; private set; }
         }
     }
+    #endregion
+
+    #region Read Models
+
+    public class PersonReadModelGenerator : AggregateRootReadModelGenerator<PersonEventStream, IPersonEvent, PersonReadModel>
+    {
+        public PersonReadModelGenerator(IEventStreamReader<PersonEventStream> eventStreamReader) : base(eventStreamReader)
+        {
+            RegisterEventAppliers()
+                .For<IPersonFirstNameUpdated>(e => ReadModel.FirstName = e.FirstName)
+                .For<IMaritalStatusUpdated>(e => ReadModel.MaritalStatus = e.MaritalStatus)
+                ;
+        }
+    }
+
+    #endregion
 }

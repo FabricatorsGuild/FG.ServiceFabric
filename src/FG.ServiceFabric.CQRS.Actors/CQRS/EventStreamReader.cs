@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.CQRS.Exceptions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
-namespace FG.ServiceFabric.Actors.Runtime
+namespace FG.ServiceFabric.CQRS
 {
     public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IDomainEventStream
     {

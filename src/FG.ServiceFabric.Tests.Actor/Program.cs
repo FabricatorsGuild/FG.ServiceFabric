@@ -10,16 +10,6 @@ namespace FG.ServiceFabric.Tests.Actor
         {
             try
             {
-                ActorRuntime.RegisterActorAsync<PersonEventStoredActor>(
-                    (context, actorType) => new PersonEventStoredActorService(context, actorType, settings:
-                        new ActorServiceSettings()
-                        {
-                            ActorGarbageCollectionSettings =
-                                new ActorGarbageCollectionSettings(idleTimeoutInSeconds: 15, scanIntervalInSeconds: 15)
-                        })).GetAwaiter().GetResult();
-
-                ActorRuntime.RegisterActorAsync<PersonIndexActor>().GetAwaiter().GetResult();
-                
                 ActorRuntime.RegisterActorAsync<ActorDemo>(
                     (context, actorType) => new ActorDemoActorService(context, actorType)).GetAwaiter().GetResult();
 

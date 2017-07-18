@@ -1,20 +1,20 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FG.ServiceFabric.CQRS;
 using Microsoft.ServiceFabric.Actors;
 
-namespace FG.ServiceFabric.Tests.Actor.Interfaces
+namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
 {
     #region Contracts
 
-    public interface IPersonEventStoredActor : IActor
+    public interface IPersonActor : IActor
     {
         Task RegisterAsync(RegisterCommand command);
         Task MarryAsync(MarryCommand command);
     }
 
-    public interface IPersonEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
+    public interface IPersonActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
     {
         Task<PersonReadModel> GetAsync(Guid aggregateRootId);
     }
@@ -59,7 +59,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
         [EnumMember]
         Divorsed = 3
     }
-    
+
     [DataContract]
     public class PersonReadModel : IAggregateReadModel
     {

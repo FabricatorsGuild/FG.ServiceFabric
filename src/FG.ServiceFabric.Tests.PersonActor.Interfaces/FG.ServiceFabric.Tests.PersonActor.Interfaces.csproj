@@ -1,53 +1,36 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}</ProjectGuid>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{7BBAA4B3-B05B-4132-B363-20B279CA4F14}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FG.ServiceFabric</RootNamespace>
-    <AssemblyName>FG.ServiceFabric.CQRS.Actors</AssemblyName>
+    <RootNamespace>FG.ServiceFabric.Tests.PersonActor.Interfaces</RootNamespace>
+    <AssemblyName>FG.ServiceFabric.Tests.PersonActor.Interfaces</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\x64\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
     <OutputPath>bin\x64\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <PlatformTarget>x64</PlatformTarget>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
@@ -76,13 +59,7 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.6.210\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
-    <Reference Include="System.Collections.Immutable, Version=1.0.34.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.Immutable.1.0.34\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
-    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.5.6.210\lib\net45\System.Fabric.dll</HintPath>
@@ -100,54 +77,25 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CQRS\ReliableMessaging\IInboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\InboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageChannelLogger.cs" />
-    <Compile Include="CQRS\ReliableMessaging\OutboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ActorReliableMessage.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IOutboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageHandler.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageReceiverActor.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ReliableMessageChannelState.cs" />
-    <Compile Include="CQRS\Idempotency\CommandDeduplicationHelper.cs" />
-    <Compile Include="Actors\Runtime\EventStoredActor.cs" />
-    <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
-    <Compile Include="CQRS\EventStreamStateBase.cs" />
-    <Compile Include="CQRS\EventStreamReader.cs" />
-    <Compile Include="CQRS\CommandBase.cs" />
+    <Compile Include="IPersonIndexActor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ReliableMessage.cs" />
+    <Compile Include="IPersonActor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
-      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
-      <Name>FG.Common</Name>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
+      <Project>{3D50A2BA-C14E-4A82-B76B-3DE20C97D558}</Project>
+      <Name>FG.ServiceFabric.CQRS.Actors</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
-      <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
+      <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
       <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
-      <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
-      <Name>FG.ServiceFabric.Extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
-      <Project>{1A4F9C49-629B-4331-BE3C-698FFFAA294C}</Project>
-      <Name>FG.ServiceFabric.Services.Remoting</Name>
-    </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.6.210\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.210\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

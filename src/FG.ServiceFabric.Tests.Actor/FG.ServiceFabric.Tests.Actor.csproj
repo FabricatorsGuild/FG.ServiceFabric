@@ -101,17 +101,11 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Domain\Person.cs" />
-    <Compile Include="PersonIndexActorService.cs" />
-    <Compile Include="PersonIndexActor.cs" />
-    <Compile Include="PersonEventStoredActor.cs" />
-    <Compile Include="PersonEventStoredActorService.cs" />
     <Compile Include="ActorDemoActorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ActorDemo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorDemoEventSource.cs" />
-    <Compile Include="Query\PersonReadModelGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PackageRoot\ServiceManifest.xml" />

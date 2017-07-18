@@ -31,7 +31,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor\FG.ServiceFabric.Tests.Actor.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor\FG.ServiceFabric.Tests.PersonActor.csproj" />
     <ProjectReference Include="..\FG.ServiceFabric.Tests.WebApi\FG.ServiceFabric.Tests.WebApi.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />

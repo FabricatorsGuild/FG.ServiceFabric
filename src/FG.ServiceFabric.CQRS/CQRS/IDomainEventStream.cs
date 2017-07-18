@@ -6,6 +6,5 @@ namespace FG.ServiceFabric.CQRS
     {
         IDomainEvent[] DomainEvents { get; }
         void Append(IDomainEvent domainEvent);
-        void Append(IDomainEvent[] domainEvents);
     }
 }

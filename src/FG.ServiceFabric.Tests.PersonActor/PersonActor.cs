@@ -3,22 +3,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
-using FG.ServiceFabric.Tests.Actor.Domain;
-using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.CQRS.ReliableMessaging;
+using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 
-namespace FG.ServiceFabric.Tests.Actor
+namespace FG.ServiceFabric.Tests.PersonActor
 {
-    [ActorService(Name = nameof(PersonEventStoredActor))]
-    [StatePersistence(StatePersistence.Volatile)]
-    public class PersonEventStoredActor : EventStoredActor<Person, PersonEventStream>, IPersonEventStoredActor,
+    [ActorService(Name = nameof(PersonActorService))]
+    [StatePersistence(StatePersistence.Persisted)]
+    public class PersonActor : EventStoredActor<Person, PersonEventStream>, IPersonActor,
         IHandleDomainEvent<PersonMarriedEvent>,
         IHandleDomainEvent<PersonRegisteredEvent>,
         IHandleDomainEvent<ChildRegisteredEvent>
     {
-        public PersonEventStoredActor(ActorService actorService, ActorId actorId)
+        public PersonActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
         }
@@ -26,17 +26,13 @@ namespace FG.ServiceFabric.Tests.Actor
         protected override async Task OnActivateAsync()
         {
             await GetAndSetDomainAsync();
-            await InitializeReliableMessageQueue();
             await base.OnActivateAsync();
         }
 
         public Task RegisterAsync(RegisterCommand command)
         {
             return ExecuteCommandAsync(
-                ct =>
-                {
-                    DomainState.Register(command.AggretateRootId, command.Name, command.CommandId);
-                },
+                () => DomainState.Register(command.AggretateRootId, command.Name),
                 command,
                 CancellationToken.None);
         }
@@ -44,10 +40,7 @@ namespace FG.ServiceFabric.Tests.Actor
         public Task MarryAsync(MarryCommand command)
         {
             return ExecuteCommandAsync(
-                ct =>
-                {
-                    DomainState.Marry();
-                },
+                () => DomainState.Marry(),
                 command,
                 CancellationToken.None);
         }
@@ -55,11 +48,7 @@ namespace FG.ServiceFabric.Tests.Actor
         public Task<int> RegisterChild(RegisterChildCommand command)
         {
             return ExecuteCommandAsync(
-                ct =>
-                {
-                    var childId = DomainState.RegisterChild(command.CommandId);
-                    return Task.FromResult(childId);
-                },
+                ct => Task.FromResult(DomainState.RegisterChild(command.CommandId)),
                 command,
                 CancellationToken.None);
         }
@@ -68,16 +57,10 @@ namespace FG.ServiceFabric.Tests.Actor
         {
             await StoreDomainEventAsync(domainEvent);
         }
-        
+
         public async Task Handle(PersonRegisteredEvent domainEvent)
         {
-            var actorProxy = ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(new ActorId("PersonIndex"));
-            var actorReference = ActorReference.Get(actorProxy);
-
-            // Since this command will be asynchronous and pass the state of this actor (transaction), we can assure it sent at least once..
-            await ReliablySendMessageAsync(
-                new ReliableActorMessage(new IndexCommand { PersonId = domainEvent.AggregateRootId}, actorReference));
-
+            await OutboundMessageChannel.SendMessageAsync<IPersonIndexActor>(ReliableMessage.Create(new IndexCommand { PersonId = domainEvent.AggregateRootId }), new ActorId("PersonIndex"));
             await StoreDomainEventAsync(domainEvent);
         }
 

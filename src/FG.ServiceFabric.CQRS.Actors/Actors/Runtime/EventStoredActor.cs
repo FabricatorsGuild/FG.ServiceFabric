@@ -1,33 +1,72 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.CQRS.Exceptions;
-using FG.ServiceFabric.Services.Remoting;
+using FG.ServiceFabric.CQRS.Idempotency;
+using FG.ServiceFabric.CQRS.ReliableMessaging;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController, IReliableMessageReceiver
+    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController, IReliableMessageHandler
         where TEventStream : IDomainEventStream, new()
         where TAggregateRoot : class, IEventStored, new()
     {
         public const string EventStreamStateKey = @"fg__eventstream_state";
-        public const string ReliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
-        public const string DeadLetterStateKey = @"fg__deadletter_state";
-       
+
+        public ITimeProvider TimeProvider { get; }
+
         protected EventStoredActor(
-            Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId, 
+            Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId,
             ITimeProvider timeProvider = null) 
             : base(actorService, actorId)
         {
             TimeProvider = timeProvider;
+            OutboundMessageChannel = new OutboundReliableMessageChannel(StateManager, ActorProxyFactory, null);
+            InboundMessageChannel = new InboundReliableMessageChannel(this);
+        }
+
+        public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
+        public IInboundReliableMessageChannel InboundMessageChannel { get; set; }
+
+        private IActorTimer _timer;
+        protected override Task OnActivateAsync()
+        {
+            if (_timer == null)
+            {
+                _timer = RegisterTimer(async _ =>
+                {
+                    await OutboundMessageChannel.ProcessQueueAsync();
+                }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+            }
+
+            return base.OnActivateAsync();
         }
         
-        public ITimeProvider TimeProvider { get; }
+        protected async Task ExecuteCommandAsync
+           (Func<CancellationToken, Task> func, ICommand command, CancellationToken cancellationToken)
+        {
+            await CommandDeduplicationHelper.ProcessOnceAsync(func, command, StateManager, cancellationToken);
+        }
+
+        protected async Task ExecuteCommandAsync
+            (Action action, ICommand command, CancellationToken cancellationToken)
+        {
+            await CommandDeduplicationHelper.ProcessOnceAsync(action, command, StateManager, CancellationToken.None);
+        }
+
+        protected async Task<T> ExecuteCommandAsync<T>
+            (Func<CancellationToken, Task<T>> func, ICommand command, CancellationToken cancellationToken)
+            where T : struct
+        {
+            return await CommandDeduplicationHelper.ProcessOnceAsync(func, command, StateManager, cancellationToken);
+        }
+        
+        #region IDomainEventController  
+
         protected TAggregateRoot DomainState = null;
 
         protected Task<TAggregateRoot> GetAndSetDomainAsync()
@@ -43,74 +82,13 @@ namespace FG.ServiceFabric.Actors.Runtime
             }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
         }
 
-        private IActorTimer _timer;
-
-        protected Task InitializeReliableMessageQueue()
-        {
-            if (_timer == null)
-            {
-                _timer = RegisterTimer(async _ =>
-                {
-                    await ProcessQueueAsync();
-                }, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
-            }
-
-            return
-                ExecutionHelper.ExecuteWithRetriesAsync(
-                    ct =>
-                        this.StateManager.GetOrAddStateAsync(ReliableMessageQueueStateKey, new ReliableMessageQueue(),
-                            ct), 3, TimeSpan.FromSeconds(1), CancellationToken.None);
-
-        }
-
-        private async Task ProcessQueueAsync()
-        {
-            var queue =
-                await ExecutionHelper.ExecuteWithRetriesAsync(
-                    ct => this.StateManager.GetStateAsync<Queue<ReliableActorMessage>>(ReliableMessageQueueStateKey, ct),
-                    3, TimeSpan.FromSeconds(1), CancellationToken.None);
-
-            await SendMessagesAsync(queue);
-        }
-
-        private async Task SendMessagesAsync(Queue<ReliableActorMessage> queue)
-        {
-            while (queue.Count > 0)
-            {
-                // TODO: Error handling and logging.
-                var message = queue.Dequeue();
-                await SendMessageAsync(message);
-                // TODO: On error, move to dead letter (retry?)
-            }
-        }
-
-        protected async Task ExecuteCommandAsync
-           (Func<CancellationToken, Task> func, ICommand command, CancellationToken cancellationToken)
-        {
-            await CommandExecutionHelper.ExecuteCommandAsync(func, command, StateManager, cancellationToken);
-        }
-
-        protected async Task ExecuteCommandAsync
-            (Action<CancellationToken> action, ICommand command, CancellationToken cancellationToken)
-        {
-            await CommandExecutionHelper.ExecuteCommandAsync(action, command, StateManager, cancellationToken);
-        }
-
-        protected async Task<T> ExecuteCommandAsync<T>
-            (Func<CancellationToken, Task<T>> func, ICommand command, CancellationToken cancellationToken)
-            where T : struct
-        {
-            return await CommandExecutionHelper.ExecuteCommandAsync(func, command, StateManager, cancellationToken);
-        }
-
-        public Task StoreDomainEventAsync(IDomainEvent domainEvent)
+        protected Task StoreDomainEventAsync(IDomainEvent domainEvent)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
             {
-                var eventStream = await this.StateManager.GetOrAddStateAsync<TEventStream>(EventStreamStateKey, new TEventStream(), ct);
+                var eventStream = await this.StateManager.GetOrAddStateAsync(EventStreamStateKey, new TEventStream(), ct);
                 eventStream.Append(domainEvent);
                 await this.StateManager.SetStateAsync(EventStreamStateKey, eventStream, ct);
-                return Task.FromResult(true);
             }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
         }
 
@@ -121,32 +99,25 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             if (handleDomainEvent == null)
                 throw new EventHandlerNotFoundException($"No handler found for event {nameof(TDomainEvent)}. Did you forget to implement {nameof(IHandleDomainEvent<TDomainEvent>)}?");
-            
+
             await handleDomainEvent.Handle(domainEvent);
         }
-
-        public virtual Task ReceiveMessageAsync(ReliableMessage message)
+        
+        #endregion
+        
+        #region IReliableMessageHandler
+        
+        public async Task ReceiveAsync<TMessage>(TMessage message)
         {
-            return Task.FromResult(true); // Null-op.
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            var handleDomainEvent = this as IHandleCommand<TMessage>;
+
+            if (handleDomainEvent == null)
+                return;
+
+            await handleDomainEvent.Handle(message);
         }
 
-        public Task ReliablySendMessageAsync(ReliableActorMessage message)
-        {
-            // TODO: Proper state handling.
-            return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
-            {
-                var queue = await this.StateManager.GetOrAddStateAsync(ReliableMessageQueueStateKey, new ReliableMessageQueue(), ct);
-                queue.Queue.Enqueue(message);
-                await this.StateManager.SetStateAsync(EventStreamStateKey, queue, ct);
-                return Task.FromResult(true);
-            }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
-        }
-
-        private Task SendMessageAsync(ReliableActorMessage message)
-        {
-            return ((IReliableMessageReceiver)message.ActorReference
-               .Bind(typeof(IReliableMessageReceiver)))
-               .ReceiveMessageAsync(message);
-        }
+        #endregion
     }
 }

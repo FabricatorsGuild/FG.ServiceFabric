@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FG.ServiceFabric.CQRS;
+using FG.ServiceFabric.CQRS.ReliableMessaging;
 using Microsoft.ServiceFabric.Actors;
 
-namespace FG.ServiceFabric.Tests.Actor.Interfaces
+namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
 {
     #region Contracts
 
-    public interface IPersonIndexActor : IReliableMessageReceiver, IActor
+    public interface IPersonIndexActor : IReliableMessageReceiverActor, IActor
     {
         Task<IEnumerable<Guid>> ListReceivedCommands();
     }
@@ -20,6 +21,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
     [DataContract]
     public class IndexCommand : DomainCommandBase
     {
+        [DataMember]
         public Guid PersonId { get; set; }
     }
     
