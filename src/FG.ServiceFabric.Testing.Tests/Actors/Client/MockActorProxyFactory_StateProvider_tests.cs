@@ -68,7 +68,6 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var result = await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
             {
                return _proxy.GetCountAsync(new ActorId("second"), CancellationToken.None);
-
             }, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
             
             result.Should().Be(2);
@@ -88,7 +87,6 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
         [Test]
         public async Task Should_be_able_to_remove_actor_from_ActorService()
         {
-            
             await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
             {
                 _proxy.RemoveAsync(new ActorId("first"), CancellationToken.None);

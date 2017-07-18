@@ -36,6 +36,7 @@ namespace FG.ServiceFabric.Tests.Actor.Interfaces
         [DataMember]
         public Guid AggretateRootId { get; set; }
     }
+
     public class RegisterChildCommand : DomainCommandBase
     {
         [DataMember]

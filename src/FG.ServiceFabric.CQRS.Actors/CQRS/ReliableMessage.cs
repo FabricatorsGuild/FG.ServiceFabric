@@ -12,7 +12,7 @@ namespace FG.ServiceFabric.CQRS
         [Obsolete("Serialization only.")]
         public ReliableActorMessage() { }
 
-        public ReliableActorMessage(ICommand command, ActorReference actorReference) : base(command)
+        public ReliableActorMessage(ICommand message, ActorReference actorReference) : base(message)
         {
             ActorReference = actorReference;
         }
@@ -27,10 +27,10 @@ namespace FG.ServiceFabric.CQRS
         [Obsolete("Serialization only.")]
         protected ReliableMessage() { }
 
-        protected ReliableMessage(object command)
+        protected ReliableMessage(object message)
         {
-            CLRType = command.GetType().FullName;
-            Payload =  command.Serialize();
+            CLRType = message.GetType().FullName;
+            Payload =  message.Serialize();
         }
         
         [DataMember]

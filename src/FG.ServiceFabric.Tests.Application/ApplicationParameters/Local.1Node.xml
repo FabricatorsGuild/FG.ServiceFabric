@@ -8,5 +8,8 @@
     <Parameter Name="PersonEventStoredActor_PartitionCount" Value="1" />
     <Parameter Name="PersonEventStoredActor_TargetReplicaSetSize" Value="1" />
     <Parameter Name="PersonEventStoredActor_MinReplicaSetSize" Value="1" />
+    <Parameter Name="PersonIndexActorService_PartitionCount" Value="1" />
+    <Parameter Name="PersonIndexActorService_TargetReplicaSetSize" Value="1" />
+    <Parameter Name="PersonIndexActorService_MinReplicaSetSize" Value="1" />
   </Parameters>
 </Application>

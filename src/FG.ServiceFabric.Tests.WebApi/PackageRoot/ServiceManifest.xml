@@ -14,7 +14,7 @@
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
       <ExeHost>
-        <Program>FG.ServiceFabricTests.WebApi.exe</Program>
+        <Program>FG.ServiceFabric.Tests.WebApi.exe</Program>
         <WorkingFolder>CodePackage</WorkingFolder>
       </ExeHost>
     </EntryPoint>

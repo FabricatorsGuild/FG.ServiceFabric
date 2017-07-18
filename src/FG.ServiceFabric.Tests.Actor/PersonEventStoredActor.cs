@@ -71,34 +71,19 @@ namespace FG.ServiceFabric.Tests.Actor
         
         public async Task Handle(PersonRegisteredEvent domainEvent)
         {
+            var actorProxy = ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(new ActorId("PersonIndex"));
+            var actorReference = ActorReference.Get(actorProxy);
+
+            // Since this command will be asynchronous and pass the state of this actor (transaction), we can assure it sent at least once..
+            await ReliablySendMessageAsync(
+                new ReliableActorMessage(new IndexCommand { PersonId = domainEvent.AggregateRootId}, actorReference));
+
             await StoreDomainEventAsync(domainEvent);
         }
 
         public async Task Handle(ChildRegisteredEvent domainEvent)
         {
-
-            var aggregateRootId = Guid.NewGuid();
-            var actorProxy = ActorProxyFactory.CreateActorProxy<IPersonEventStoredActor>(new ActorId(aggregateRootId));
-            var actorReference = ActorReference.Get(actorProxy);
-
-            // A child is also a person, reliably send that command.
-            // Since this command will be asynchronous and pass state of this actor, we can assure it sent atleast once..
-            await ReliablySendMessageAsync(
-                new ReliableActorMessage(new RegisterCommand { AggretateRootId = aggregateRootId, Name = "Jr" }, actorReference));
-
             await StoreDomainEventAsync(domainEvent);
-        }
-
-        public override Task ReceiveMessageAsync(ReliableMessage message)
-        {
-            var command = message.Deserialize();
-
-            if (command.GetType().IsAssignableFrom(typeof(RegisterCommand)))
-            {
-                RegisterAsync((RegisterCommand) command);
-            }
-
-            return Task.FromResult(true);
         }
     }
 }

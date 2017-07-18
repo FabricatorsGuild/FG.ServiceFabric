@@ -125,7 +125,10 @@ namespace FG.ServiceFabric.Actors.Runtime
             await handleDomainEvent.Handle(domainEvent);
         }
 
-        public abstract Task ReceiveMessageAsync(ReliableMessage message);
+        public virtual Task ReceiveMessageAsync(ReliableMessage message)
+        {
+            return Task.FromResult(true); // Null-op.
+        }
 
         public Task ReliablySendMessageAsync(ReliableActorMessage message)
         {

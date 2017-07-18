@@ -54,9 +54,6 @@ namespace FG.ServiceFabric.Tests.Actor.Domain
     {
         [DataMember]
         public MaritalStatus MaritalStatus { get; set; }
-
-        [DataMember]
-        public string LastName { get; set; }
     }
 
     [DataContract]

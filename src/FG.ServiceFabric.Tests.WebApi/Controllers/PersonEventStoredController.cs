@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 
-namespace FG.ServiceFabricTests.WebApi.Controllers
+namespace FG.ServiceFabric.Tests.WebApi.Controllers
 {
     [Route("api/[controller]")]
     public class PersonEventStoredController : Controller
@@ -34,7 +34,8 @@ namespace FG.ServiceFabricTests.WebApi.Controllers
         [HttpPost("{id}")]
         public async void Post(Guid id, [FromBody]UICommand value)
         {
-            await new ActorProxyFactory().CreateActorProxy<IPersonEventStoredActor>(new ActorId(id)).RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
+            var proxy = new ActorProxyFactory().CreateActorProxy<IPersonEventStoredActor>(new ActorId(id));
+            await proxy.RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
         }
 
         [HttpPut("{id}")]

@@ -14,5 +14,12 @@
   <Section Name="PersonEventStoredActorReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
+  <Section Name="PersonIndexActorServiceReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="PersonIndexActorServiceReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="PersonIndexActorServiceReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
   <!-- The content will be generated during build -->
 </Settings>

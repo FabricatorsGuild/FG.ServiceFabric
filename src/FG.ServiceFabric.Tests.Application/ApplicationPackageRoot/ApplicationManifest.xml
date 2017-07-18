@@ -8,6 +8,9 @@
     <Parameter Name="PersonEventStoredActor_PartitionCount" DefaultValue="10" />
     <Parameter Name="PersonEventStoredActor_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="PersonEventStoredActor_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="PersonIndexActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="PersonIndexActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="PersonIndexActorService_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -38,6 +41,11 @@
     <Service Name="PersonEventStoredActor" GeneratedIdRef="8bf760d5-6aa2-4210-b3a9-214d27e03e6b|Volatile">
       <StatefulService ServiceTypeName="PersonEventStoredActorType" TargetReplicaSetSize="[PersonEventStoredActor_TargetReplicaSetSize]" MinReplicaSetSize="[PersonEventStoredActor_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[PersonEventStoredActor_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="PersonIndexActorService" GeneratedIdRef="536fbfe8-adf8-449f-9232-a4aa48cf4c5f|Volatile">
+      <StatefulService ServiceTypeName="PersonIndexActorServiceType" TargetReplicaSetSize="[PersonIndexActorService_TargetReplicaSetSize]" MinReplicaSetSize="[PersonIndexActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[PersonIndexActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
   </DefaultServices>

@@ -24,7 +24,8 @@
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="1.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FG.ServiceFabric.Common.ActorDemo.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>
