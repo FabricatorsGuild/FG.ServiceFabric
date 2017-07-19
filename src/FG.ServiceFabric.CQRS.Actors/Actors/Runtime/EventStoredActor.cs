@@ -4,14 +4,12 @@ using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.CQRS.Exceptions;
-using FG.ServiceFabric.CQRS.Idempotency;
-using FG.ServiceFabric.CQRS.ReliableMessaging;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController, IReliableMessageHandler
+    public abstract class EventStoredActor<TAggregateRoot, TEventStream> : ActorBase, IDomainEventController, IReliableMessageEndpoint<ICommand>
         where TEventStream : IDomainEventStream, new()
         where TAggregateRoot : class, IEventStored, new()
     {
@@ -26,7 +24,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             TimeProvider = timeProvider;
             OutboundMessageChannel = new OutboundReliableMessageChannel(StateManager, ActorProxyFactory, null);
-            InboundMessageChannel = new InboundReliableMessageChannel(this);
+            InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
         }
 
         public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
@@ -65,8 +63,6 @@ namespace FG.ServiceFabric.Actors.Runtime
             return await CommandDeduplicationHelper.ProcessOnceAsync(func, command, StateManager, cancellationToken);
         }
         
-        #region IDomainEventController  
-
         protected TAggregateRoot DomainState = null;
 
         protected Task<TAggregateRoot> GetAndSetDomainAsync()
@@ -102,22 +98,16 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             await handleDomainEvent.Handle(domainEvent);
         }
-        
-        #endregion
-        
-        #region IReliableMessageHandler
-        
-        public async Task ReceiveAsync<TMessage>(TMessage message)
+
+        public async Task HandleMessageAsync<TMessage>(TMessage message) where TMessage : ICommand
         {
-            // ReSharper disable once SuspiciousTypeConversion.Global
+            //    // ReSharper disable once SuspiciousTypeConversion.Global
             var handleDomainEvent = this as IHandleCommand<TMessage>;
 
             if (handleDomainEvent == null)
-                return;
+                throw new EventHandlerNotFoundException($"No handler found for command {nameof(TMessage)}. Did you forget to implement {nameof(IHandleCommand<TMessage>)}?");
 
             await handleDomainEvent.Handle(message);
         }
-
-        #endregion
     }
 }

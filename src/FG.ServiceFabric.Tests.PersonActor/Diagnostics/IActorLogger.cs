@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FG.ServiceFabric.CQRS.ReliableMessaging;
+﻿using FG.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Tests.PersonActor.Diagnostics
 {
-    public interface IActorLogger : IReliableMessageChannelLogger
+    public interface IActorLogger : IOutboundMessageChannelLogger
     {
     }
 }

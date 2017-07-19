@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
 
-namespace FG.ServiceFabric.CQRS.ReliableMessaging
+namespace FG.ServiceFabric.Actors.Runtime
 {
     public interface IOutboundReliableMessageChannel
     {

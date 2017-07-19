@@ -65,7 +65,6 @@
     <Compile Include="CQRS\AggregateRoot.Component.cs" />
     <Compile Include="CQRS\AggregateRoot.cs" />
     <Compile Include="CQRS\AggregateRoot.Entity.cs" />
-    <Compile Include="CQRS\AggregateRootEvent.cs" />
     <Compile Include="CQRS\AggregateRootReadModelGenerator.cs" />
     <Compile Include="CQRS\DomainEventDispatcher.cs" />
     <Compile Include="CQRS\Exceptions\AggregateRootException.cs" />

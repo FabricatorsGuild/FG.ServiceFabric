@@ -9,8 +9,17 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
-namespace FG.ServiceFabric.CQRS.ReliableMessaging
+namespace FG.ServiceFabric.Actors.Runtime
 {
+    [DataContract]
+    internal sealed class ActorReliableMessage
+    {
+        [DataMember]
+        public ActorReference ActorReference { get; set; }
+        [DataMember]
+        public ReliableMessage Message { get; set; }
+    }
+
     [DataContract]
     internal sealed class ReliableMessageChannelState
     {
@@ -48,15 +57,20 @@ namespace FG.ServiceFabric.CQRS.ReliableMessaging
     {
         private readonly IActorStateManager _stateManager;
         private readonly IActorProxyFactory _actorProxyFactory;
-        private readonly IReliableMessageChannelLogger _logger;
-        private string _reliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
-        private string _deadLetterQueue = @"fg__deadLetterqueue_state";
+        private readonly Func<IOutboundMessageChannelLogger> _loggerFactory;
+        private readonly string _reliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
+        private readonly string _deadLetterQueue = @"fg__deadletterqueue_state";
 
-        public OutboundReliableMessageChannel(IActorStateManager stateManager, IActorProxyFactory actorProxyFactory, IReliableMessageChannelLogger logger)
+        public OutboundReliableMessageChannel(IActorStateManager stateManager, IActorProxyFactory actorProxyFactory, Func<IOutboundMessageChannelLogger> loggerFactory = null)
         {
             _stateManager = stateManager;
             _actorProxyFactory = actorProxyFactory;
-            _logger = logger;
+            _loggerFactory = loggerFactory ?? DefaultLoggerFactory();
+        }
+
+        private static Func<IOutboundMessageChannelLogger> DefaultLoggerFactory()
+        {
+            return () => new NullOpOutboundMessageChannelLogger();
         }
         
         public async Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, string applicationName = null, string serviceName = null, string listerName = null) 
@@ -64,33 +78,33 @@ namespace FG.ServiceFabric.CQRS.ReliableMessaging
         {
             var proxy = _actorProxyFactory.CreateActorProxy<TActorInterface>(actorId, applicationName, serviceName, listerName);
 
-            var channelState = await GetOrAddStateAsync(_reliableMessageQueueStateKey, _stateManager);
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
             channelState.Enqueue(new ActorReliableMessage { ActorReference = ActorReference.Get(proxy), Message = message});
-            await AddOrUpdateState(_reliableMessageQueueStateKey, channelState, _stateManager);
+            await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
         }
         
         public async Task ProcessQueueAsync()
         {
-            var channelState = await GetOrAddStateAsync(_reliableMessageQueueStateKey, _stateManager);
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
             while (channelState != null && !channelState.IsEmpty)
             {
                 var actorMessage = channelState.Dequeue();
                 try
                 {
                     await SendMessageAsync(actorMessage.Message, actorMessage.ActorReference);
-                    await AddOrUpdateState(_reliableMessageQueueStateKey, channelState, _stateManager);
+                    await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
                 }
                 catch (Exception e)
                 {
-                    //_logger.FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
-                    var deadLetterState = await GetOrAddStateAsync(_deadLetterQueue, _stateManager);
+                    _loggerFactory().FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
+                    var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager);
                     deadLetterState.Enqueue(actorMessage);
-                    await AddOrUpdateState(_deadLetterQueue, channelState, _stateManager);
-                    //_logger.MovedToDeadLetters(deadLetterState.Depth);
+                    await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, channelState, _stateManager);
+                    _loggerFactory().MovedToDeadLetters(deadLetterState.Depth);
                 }
             }
         }
-
+        
         // ReSharper disable once SuggestBaseTypeForParameter
         private static Task SendMessageAsync(ReliableMessage message, ActorReference actorReference)
         {
@@ -99,14 +113,14 @@ namespace FG.ServiceFabric.CQRS.ReliableMessaging
                 .ReceiveMessageAsync(message);
         }
         
-        private static Task AddOrUpdateState(string stateName, ReliableMessageChannelState state, IActorStateManager stateManager)
+        private static Task AddOrUpdateStateWithRetriesAsync(string stateName, ReliableMessageChannelState state, IActorStateManager stateManager)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.AddOrUpdateStateAsync(stateName, state, (k, v) => state, ct), 3,
                 TimeSpan.FromSeconds(1), CancellationToken.None);
         }
 
-        private static Task<ReliableMessageChannelState> GetOrAddStateAsync(string stateName, IActorStateManager stateManager)
+        private static Task<ReliableMessageChannelState> GetOrAddStateWithRetriesAsync(string stateName, IActorStateManager stateManager)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.GetOrAddStateAsync(stateName, new ReliableMessageChannelState(), ct),

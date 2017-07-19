@@ -108,23 +108,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CQRS\ReliableMessaging\IInboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\InboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageChannelLogger.cs" />
-    <Compile Include="CQRS\ReliableMessaging\OutboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ActorReliableMessage.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IOutboundReliableMessageChannel.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageHandler.cs" />
-    <Compile Include="CQRS\ReliableMessaging\IReliableMessageReceiverActor.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ReliableMessageChannelState.cs" />
-    <Compile Include="CQRS\Idempotency\CommandDeduplicationHelper.cs" />
+    <Compile Include="Actors\Runtime\CommandDeduplicationHelper.cs" />
+    <Compile Include="CQRS\AggregateRootEventBase.cs" />
+    <Compile Include="Actors\Runtime\IInboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\Runtime\InboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\Runtime\IReliableMessageChannelLogger.cs" />
+    <Compile Include="Actors\Runtime\OutboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\Runtime\IOutboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\Runtime\IReliableMessageEndpoint.cs" />
+    <Compile Include="Actors\IReliableMessageReceiverActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
     <Compile Include="CQRS\EventStreamStateBase.cs" />
-    <Compile Include="CQRS\EventStreamReader.cs" />
+    <Compile Include="Actors\Runtime\EventStreamReader.cs" />
     <Compile Include="CQRS\CommandBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="CQRS\ReliableMessaging\ReliableMessage.cs" />
+    <Compile Include="Actors\Runtime\ReliableMessage.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

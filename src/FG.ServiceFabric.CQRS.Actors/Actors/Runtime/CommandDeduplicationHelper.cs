@@ -4,9 +4,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.Common.Utils;
+using FG.ServiceFabric.CQRS;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
-namespace FG.ServiceFabric.CQRS.Idempotency
+namespace FG.ServiceFabric.Actors.Runtime
 {
     [DataContract]
     internal sealed class CommandReturnValue

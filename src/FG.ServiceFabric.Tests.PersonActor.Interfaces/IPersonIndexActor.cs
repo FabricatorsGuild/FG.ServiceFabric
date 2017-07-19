@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Actors;
+using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
-using FG.ServiceFabric.CQRS.ReliableMessaging;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
