@@ -10,8 +10,10 @@ namespace FG.ServiceFabric.Actors.Runtime
         public static IReliableMessageSerializer Serializer { get; set; } = new DefaultReliableMessageSerializer();
 
         [Obsolete("Serialization only.")]
-        protected ReliableMessage() { }
-        
+        protected ReliableMessage()
+        {
+        }
+
         protected ReliableMessage(byte[] payload, Type type)
         {
             AssemblyQualifiedName = type.AssemblyQualifiedName;
@@ -20,10 +22,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         [DataMember]
         public string AssemblyQualifiedName { get; private set; }
-        
+
         [DataMember]
         public byte[] Payload { get; private set; }
-        
+
         internal object Deserialize()
         {
             var type = Type.GetType(this.AssemblyQualifiedName);

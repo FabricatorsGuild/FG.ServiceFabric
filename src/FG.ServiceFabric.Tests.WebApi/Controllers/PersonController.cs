@@ -14,18 +14,12 @@ namespace FG.ServiceFabric.Tests.WebApi.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            try
-            {
-                var person = await new ActorProxyFactory().CreateActorServiceProxy<IPersonActorService>(
-                    serviceUri: new Uri("fabric:/FG.ServiceFabric.Tests.Application/PersonActorService"),
-                    actorId: new ActorId(id)).GetAsync(id);
+            var person = await new ActorProxyFactory().CreateActorServiceProxy<IPersonActorService>(
+                serviceUri: new Uri("fabric:/FG.ServiceFabric.Tests.Application/PersonActorService"),
+                actorId: new ActorId(id)).GetAsync(id);
 
-                return Ok(person);
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            return Ok(person);
+
         }
 
         [HttpGet("{id}/history")]
@@ -39,30 +33,17 @@ namespace FG.ServiceFabric.Tests.WebApi.Controllers
         }
 
         [HttpPost("{id}")]
-        public async void Post(Guid id, [FromBody]UICommand value)
+        public async void Post(Guid id, [FromBody] UICommand value)
         {
-            try
-            {
-                var proxy = new ActorProxyFactory().CreateActorProxy<IPersonActor>(new ActorId(id));
-                await proxy.RegisterAsync(new RegisterCommand {AggretateRootId = id, Name = value.Name});
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            var proxy = new ActorProxyFactory().CreateActorProxy<IPersonActor>(new ActorId(id));
+            await proxy.RegisterAsync(new RegisterCommand {FirstName = value.Name});
         }
 
         [HttpPut("{id}")]
-        public async void Put(Guid id, [FromBody]UICommand value)
+        public async void Put(Guid id, [FromBody] UICommand value)
         {
-            try
-            {
-                await new ActorProxyFactory().CreateActorProxy<IPersonActor>(new ActorId(id)).MarryAsync(new MarryCommand { AggretateRootId = id });
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            await new ActorProxyFactory().CreateActorProxy<IPersonActor>(new ActorId(id))
+                .MarryAsync(new MarryCommand {AggretateRootId = id});
         }
 
         // ReSharper disable once InconsistentNaming

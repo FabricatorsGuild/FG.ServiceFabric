@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using FG.CQRS;
 using FG.ServiceFabric.CQRS;
 using Microsoft.ServiceFabric.Actors;
 
@@ -26,9 +27,7 @@ namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
     public class RegisterCommand : DomainCommandBase
     {
         [DataMember]
-        public Guid AggretateRootId { get; set; }
-        [DataMember]
-        public string Name { get; set; }
+        public string FirstName { get; set; }
     }
 
     public class MarryCommand : DomainCommandBase
@@ -65,9 +64,7 @@ namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
     {
         public Guid Id { get; set; }
         [DataMember]
-        public string FirstName { get; set; }
-        [DataMember]
-        public string LastName { get; set; }
+        public string Name { get; set; }
         [DataMember]
         public MaritalStatus MaritalStatus { get; set; }
     }

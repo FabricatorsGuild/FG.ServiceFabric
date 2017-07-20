@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using FG.CQRS;
+using FG.CQRS.Exceptions;
 using FG.ServiceFabric.CQRS;
-using FG.ServiceFabric.CQRS.Exceptions;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 
 namespace FG.ServiceFabric.Tests.PersonActor
@@ -154,7 +155,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         public PersonReadModelGenerator(IEventStreamReader<PersonEventStream> eventStreamReader) : base(eventStreamReader)
         {
             RegisterEventAppliers()
-                .For<IPersonFirstNameUpdated>(e => ReadModel.FirstName = e.FirstName)
+                .For<IPersonFirstNameUpdated>(e => ReadModel.Name = e.FirstName)
                 .For<IMaritalStatusUpdated>(e => ReadModel.MaritalStatus = e.MaritalStatus)
                 ;
         }

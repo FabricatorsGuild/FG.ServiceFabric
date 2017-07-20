@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.CQRS;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
@@ -18,7 +19,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         IHandleDomainEvent<ChildRegisteredEvent>
     {
         public PersonActor(ActorService actorService, ActorId actorId)
-            : base(actorService, actorId)
+            : base(actorService, actorId, outboundMessageChannelLoggerFactory: () => new ActorLogger())
         {
         }
 
@@ -31,7 +32,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         public Task RegisterAsync(RegisterCommand command)
         {
             return ExecuteCommandAsync(
-                () => DomainState.Register(command.AggretateRootId, command.Name),
+                () => DomainState.Register(this.GetActorId().GetGuidId(), command.FirstName),
                 command,
                 CancellationToken.None);
         }
@@ -59,7 +60,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
         public async Task Handle(PersonRegisteredEvent domainEvent)
         {
-            await OutboundMessageChannel.SendMessageAsync<IPersonIndexActor>(ReliableMessage.Create(new IndexCommand { PersonId = domainEvent.AggregateRootId }), new ActorId("PersonIndex"));
+            await OutboundMessageChannel.SendMessageAsync<IPersonIndexActor>(ReliableMessage.Create(new IndexCommand { PersonId = domainEvent.AggregateRootId }), new ActorId("PersonIndex"), applicationName: "FG.ServiceFabric.Tests.Application");
             await StoreDomainEventAsync(domainEvent);
         }
 

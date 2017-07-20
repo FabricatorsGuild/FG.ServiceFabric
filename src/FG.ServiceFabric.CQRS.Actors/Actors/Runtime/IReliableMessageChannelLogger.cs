@@ -6,6 +6,7 @@ namespace FG.ServiceFabric.Actors.Runtime
     public interface IOutboundMessageChannelLogger
     {
         void FailedToSendMessage(ActorId actorId, Uri serviceUri, Exception ex);
+        void SentMessage(ActorId actorId, Uri serviceUri, string messageType);
         void MovedToDeadLetters(int depth);
     }
 
@@ -16,6 +17,10 @@ namespace FG.ServiceFabric.Actors.Runtime
         }
 
         public void MovedToDeadLetters(int depth)
+        {
+        }
+
+        public void SentMessage(ActorId actorId, Uri serviceUri, string messageType)
         {
         }
     }

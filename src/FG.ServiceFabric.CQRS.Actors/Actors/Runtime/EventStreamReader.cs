@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.CQRS;
-using FG.ServiceFabric.CQRS.Exceptions;
+using FG.CQRS;
+using FG.CQRS.Exceptions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream> where TEventStream : IDomainEventStream
+    public class EventStreamReader<TEventStream> : IEventStreamReader<TEventStream>
+        where TEventStream : IDomainEventStream
     {
         private readonly IActorStateProvider _stateProvider;
         private readonly string _stateKey;
@@ -21,7 +22,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         protected async Task<TEventStream> LoadEventStream(Guid id, CancellationToken cancellationToken)
         {
-            if(!await _stateProvider.ContainsStateAsync(new ActorId(id), _stateKey, cancellationToken))
+            if (!await _stateProvider.ContainsStateAsync(new ActorId(id), _stateKey, cancellationToken))
             {
                 throw new AggregateRootNotFoundException(id);
             }

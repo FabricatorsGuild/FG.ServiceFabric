@@ -122,13 +122,13 @@
       <Project>{2c6aefca-f4a1-47bc-8abf-8374f852ca89}</Project>
       <Name>FG.ServiceFabric.Tests.Actor.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+    <ProjectReference Include="..\FG.CQRS\FG.CQRS.csproj">
       <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
-      <Name>FG.ServiceFabric.CQRS</Name>
+      <Name>FG.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.csproj">
       <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
-      <Name>FG.ServiceFabric.CQRS.Actors</Name>
+      <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>

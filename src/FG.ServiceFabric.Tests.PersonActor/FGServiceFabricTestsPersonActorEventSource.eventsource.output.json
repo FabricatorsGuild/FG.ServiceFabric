@@ -1,0 +1,70 @@
+{
+  "EventSources": [
+    {
+      "Name": "FGServiceFabricTestsPersonActorEventSource.eventsource.json",
+      "Hash": "5805efbfbdefbfbdefbfbd39efbfbd7542efbfbdefbfbd6753efbfbd1138"
+    }
+  ],
+  "References": [
+    "..\\packages\\FG.Diagnostics.AutoLogger.Model.1.4.2\\lib\\net452\\CodeEffect.Diagnostics.EventSourceGenerator.Model.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\FG.Diagnostics.AutoLogger.AI.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\FG.Diagnostics.AutoLogger.Generator.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\FG.Diagnostics.AutoLogger.Model.dll",
+    "..\\packages\\Microsoft.ApplicationInsights.Agent.Intercept.2.0.7\\lib\\net45\\Microsoft.AI.Agent.Intercept.dll",
+    "..\\packages\\Microsoft.ApplicationInsights.DependencyCollector.2.3.0\\lib\\net45\\Microsoft.AI.DependencyCollector.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\Microsoft.AI.PerfCounterCollector.dll",
+    "..\\packages\\Microsoft.ApplicationInsights.WindowsServer.TelemetryChannel.2.3.0\\lib\\net45\\Microsoft.AI.ServerTelemetryChannel.dll",
+    "..\\packages\\Microsoft.ApplicationInsights.WindowsServer.2.3.0\\lib\\net45\\Microsoft.AI.WindowsServer.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\Microsoft.ApplicationInsights.dll",
+    "..\\packages\\Microsoft.ServiceFabric.Actors.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.Actors.dll",
+    "..\\packages\\Microsoft.ServiceFabric.Data.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.Data.dll",
+    "..\\packages\\Microsoft.ServiceFabric.Data.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.Data.Interfaces.dll",
+    "..\\packages\\Microsoft.ServiceFabric.FabricTransport.Internal.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.FabricTransport.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\Microsoft.ServiceFabric.Internal.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\Microsoft.ServiceFabric.Internal.Strings.dll",
+    "..\\packages\\Microsoft.ServiceFabric.Services.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.Services.dll",
+    "..\\packages\\Microsoft.ServiceFabric.Services.Remoting.2.6.210\\lib\\net45\\Microsoft.ServiceFabric.Services.Remoting.dll",
+    "..\\packages\\FG.Diagnostics.AutoLogger.AI.1.4.2\\lib\\net452\\Newtonsoft.Json.dll",
+    "System.dll",
+    "System.Core.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\System.Fabric.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\System.Fabric.Management.ServiceModel.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\System.Fabric.Management.ServiceModel.XmlSerializers.dll",
+    "..\\packages\\Microsoft.ServiceFabric.5.6.210\\lib\\net45\\System.Fabric.Strings.dll",
+    "System.Runtime.Serialization.dll",
+    "System.ServiceModel.dll"
+  ],
+  "ProjectReferences": [
+    {
+      "ReferenceName": "..\\FG.Common\\bin\\Debug\\FG.Common.dll",
+      "Hash": "8:42:54 AM"
+    },
+    {
+      "ReferenceName": "..\\FG.ServiceFabric.Actors.Remoting\\bin\\Debug\\FG.ServiceFabric.Actors.Remoting.dll",
+      "Hash": "8:42:58 AM"
+    },
+    {
+      "ReferenceName": "..\\FG.ServiceFabric.CQRS.Actors\\bin\\x64\\Debug\\FG.ServiceFabric.CQRS.dll",
+      "Hash": "10:47:44 AM"
+    },
+    {
+      "ReferenceName": "..\\FG.CQRS\\bin\\Debug\\FG.CQRS.dll",
+      "Hash": "9:52:17 AM"
+    },
+    {
+      "ReferenceName": "..\\FG.ServiceFabric.Extensions\\bin\\Debug\\FG.ServiceFabric.Extensions.dll",
+      "Hash": "8:42:57 AM"
+    },
+    {
+      "ReferenceName": "..\\FG.ServiceFabric.Tests.PersonActor.Interfaces\\bin\\x64\\Debug\\FG.ServiceFabric.Tests.PersonActor.Interfaces.dll",
+      "Hash": "10:47:44 AM"
+    }
+  ],
+  "CompileTargets": [
+    {
+      "Name": "Diagnostics\\IActorLogger.cs",
+      "Hash": "30542defbfbd21efbfbdefbfbd56efbfbd017f40efbfbd5723efbfbd"
+    }
+  ],
+  "Hash": "3eefbfbd5f09efbfbd5fefbfbdefbfbd43efbfbdefbfbd01efbfbd6a21"
+}

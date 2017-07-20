@@ -110,6 +110,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CQRS\TestBase.cs" />
+    <Compile Include="CQRS\When_registering_a_person\After_registering_a_person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -125,13 +127,13 @@
       <Project>{9ab85068-ef28-4659-9c8f-d6afc45d097a}</Project>
       <Name>FG.ServiceFabric.Tests.Actor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+    <ProjectReference Include="..\FG.CQRS\FG.CQRS.csproj">
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
-      <Name>FG.ServiceFabric.CQRS</Name>
+      <Name>FG.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.Actors.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.csproj">
       <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
-      <Name>FG.ServiceFabric.CQRS.Actors</Name>
+      <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
@@ -140,6 +142,14 @@
     <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
       <Project>{2f2b5701-77b5-4467-9504-8be73a3725a7}</Project>
       <Name>FG.ServiceFabric.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj">
+      <Project>{7bbaa4b3-b05b-4132-b363-20b279ca4f14}</Project>
+      <Name>FG.ServiceFabric.Tests.PersonActor.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor\FG.ServiceFabric.Tests.PersonActor.csproj">
+      <Project>{de7e952c-9ddd-492f-a29b-e3bae42a8fbe}</Project>
+      <Name>FG.ServiceFabric.Tests.PersonActor</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

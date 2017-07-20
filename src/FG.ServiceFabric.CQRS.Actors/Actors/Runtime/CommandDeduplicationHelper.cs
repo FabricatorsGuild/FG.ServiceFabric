@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.Common.Utils;
-using FG.ServiceFabric.CQRS;
+using FG.CQRS;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
@@ -14,12 +14,14 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         [DataMember]
         public object ReturnValue { get; set; }
+
         [IgnoreDataMember]
         public bool HasReturnValue => ReturnValue != null;
 
         private CommandReturnValue()
         {
         }
+
         private CommandReturnValue(object returnValue)
         {
             ReturnValue = returnValue;
@@ -44,7 +46,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         private const string CommandStateKeyPrefix = "fg__command_";
 
         public static async Task<TReturnValue> ProcessOnceAsync<TReturnValue>
-            (Func<CancellationToken, Task<TReturnValue>> func, ICommand command, IActorStateManager stateManager, CancellationToken cancellationToken)
+        (Func<CancellationToken, Task<TReturnValue>> func, ICommand command, IActorStateManager stateManager,
+            CancellationToken cancellationToken)
             where TReturnValue : struct
         {
             if (await HasPreviousExecution(command, stateManager, cancellationToken))
@@ -53,7 +56,8 @@ namespace FG.ServiceFabric.Actors.Runtime
                 await ExecutionHelper.ExecuteWithRetriesAsync(
                     async ct =>
                     {
-                        var conditionalValue = await stateManager.TryGetStateAsync<CommandReturnValue>(GetStateKey(command), ct);
+                        var conditionalValue =
+                            await stateManager.TryGetStateAsync<CommandReturnValue>(GetStateKey(command), ct);
 
                         if (conditionalValue.HasValue && conditionalValue.Value.HasReturnValue)
                         {
@@ -71,14 +75,16 @@ namespace FG.ServiceFabric.Actors.Runtime
 
                 return default(TReturnValue);
             }
-            
+
             var returnValue = await func(cancellationToken);
-            await StoreCommandAndReturnValue(command, stateManager, CommandReturnValue.Create(returnValue), cancellationToken);
+            await StoreCommandAndReturnValue(command, stateManager, CommandReturnValue.Create(returnValue),
+                cancellationToken);
             return returnValue;
         }
-        
+
         public static async Task ProcessOnceAsync
-            (Func<CancellationToken, Task> func, ICommand command, IActorStateManager stateManager, CancellationToken cancellationToken)
+        (Func<CancellationToken, Task> func, ICommand command, IActorStateManager stateManager,
+            CancellationToken cancellationToken)
         {
             if (await HasPreviousExecution(command, stateManager, cancellationToken))
             {
@@ -92,7 +98,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         public static async Task ProcessOnceAsync
             (Action action, ICommand command, IActorStateManager stateManager, CancellationToken cancellationToken)
         {
-            if(await HasPreviousExecution(command, stateManager, cancellationToken))
+            if (await HasPreviousExecution(command, stateManager, cancellationToken))
             {
                 return;
             }
@@ -101,7 +107,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             await StoreCommand(command, stateManager, cancellationToken);
         }
 
-        private static async Task<bool> HasPreviousExecution(ICommand command, IActorStateManager stateManager, CancellationToken cancellationToken)
+        private static async Task<bool> HasPreviousExecution(ICommand command, IActorStateManager stateManager,
+            CancellationToken cancellationToken)
         {
             return await ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.ContainsStateAsync(GetStateKey(command), ct),
@@ -110,12 +117,14 @@ namespace FG.ServiceFabric.Actors.Runtime
                 userCancellationToken: cancellationToken);
         }
 
-        private static Task StoreCommand(ICommand command, IActorStateManager stateManager, CancellationToken cancellationToken)
+        private static Task StoreCommand(ICommand command, IActorStateManager stateManager,
+            CancellationToken cancellationToken)
         {
             return StoreCommandAndReturnValue(command, stateManager, CommandReturnValue.None(), cancellationToken);
         }
 
-        private static Task StoreCommandAndReturnValue(ICommand command, IActorStateManager stateManager, CommandReturnValue returnValue, CancellationToken cancellationToken)
+        private static Task StoreCommandAndReturnValue(ICommand command, IActorStateManager stateManager,
+            CommandReturnValue returnValue, CancellationToken cancellationToken)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 async ct => { await stateManager.AddStateAsync(GetStateKey(command), returnValue, ct); },
@@ -128,6 +137,5 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             return $"{CommandStateKeyPrefix}{command.CommandId}";
         }
-
     }
 }
