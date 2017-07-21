@@ -8,10 +8,16 @@
     <Parameter Name="PersonIndexActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="PersonIndexActorService_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="PersonIndexActorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DbStoredActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="DbStoredActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DbStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
        ServiceManifest.xml file. -->
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.DbStoredActorPkg" ServiceManifestVersion="1.0.0" />
+  </ServiceManifestImport>
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.PersonActorPkg" ServiceManifestVersion="1.0.0" />
   </ServiceManifestImport>
@@ -39,6 +45,11 @@
       <StatelessService ServiceTypeName="WebApiType" InstanceCount="[WebApi_InstanceCount]">
         <SingletonPartition />
       </StatelessService>
+    </Service>
+    <Service Name="DbStoredActorService" GeneratedIdRef="3f0523e0-3fcd-446f-869d-4e2144ea4ee6|Persisted">
+      <StatefulService ServiceTypeName="DbStoredActorServiceType" TargetReplicaSetSize="[DbStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[DbStoredActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[DbStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
     </Service>
   </DefaultServices>
 </ApplicationManifest>

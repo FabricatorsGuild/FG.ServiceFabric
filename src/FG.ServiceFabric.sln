@@ -39,7 +39,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.Pers
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.PersonActor.Interfaces", "FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj", "{7BBAA4B3-B05B-4132-B363-20B279CA4F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DummyAI", "DummyAI\DummyAI.csproj", "{4213B96F-9EB1-4340-9B10-D6C485051C80}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DummyAI", "DummyAI\DummyAI.csproj", "{4213B96F-9EB1-4340-9B10-D6C485051C80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.DbStoredActor", "FG.ServiceFabric.Tests.DbStoredActor\FG.ServiceFabric.Tests.DbStoredActor.csproj", "{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.DbStoredActor.Interfaces", "FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj", "{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -185,6 +189,18 @@ Global
 		{4213B96F-9EB1-4340-9B10-D6C485051C80}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4213B96F-9EB1-4340-9B10-D6C485051C80}.Release|x64.ActiveCfg = Release|Any CPU
 		{4213B96F-9EB1-4340-9B10-D6C485051C80}.Release|x64.Build.0 = Release|Any CPU
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Debug|x64.ActiveCfg = Debug|x64
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Debug|x64.Build.0 = Debug|x64
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Release|Any CPU.ActiveCfg = Release|x64
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Release|x64.ActiveCfg = Release|x64
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}.Release|x64.Build.0 = Release|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Debug|x64.ActiveCfg = Debug|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Debug|x64.Build.0 = Debug|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Release|Any CPU.ActiveCfg = Release|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Release|x64.ActiveCfg = Release|x64
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,5 +214,7 @@ Global
 		{DE7E952C-9DDD-492F-A29B-E3BAE42A8FBE} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{7BBAA4B3-B05B-4132-B363-20B279CA4F14} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{4213B96F-9EB1-4340-9B10-D6C485051C80} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 	EndGlobalSection
 EndGlobal

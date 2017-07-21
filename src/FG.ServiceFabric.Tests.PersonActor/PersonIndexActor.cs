@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.CQRS;
-using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.CQRS;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -26,6 +23,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         public PersonIndexActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
+
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
         }
 
@@ -33,6 +31,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         {
             return base.OnActivateAsync();
         }
+        
 
         public async Task ReceiveMessageAsync(ReliableMessage message)
         {
@@ -48,10 +47,15 @@ namespace FG.ServiceFabric.Tests.PersonActor
         
         public Task Handle(IndexCommand command)
         {
+            return UpdateIndexAsync(command.PersonId);
+        }
+
+        private Task UpdateIndexAsync(Guid personId)
+        {
             return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
             {
                 var index = await this.StateManager.GetOrAddStateAsync(IndexStateKey, new List<Guid>(), ct);
-                index.Add(command.PersonId);
+                index.Add(personId);
                 await this.StateManager.SetStateAsync(IndexStateKey, index, ct);
             }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
         }
@@ -66,6 +70,5 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
             await handleDomainEvent.Handle(message);
         }
-
     }
 }
