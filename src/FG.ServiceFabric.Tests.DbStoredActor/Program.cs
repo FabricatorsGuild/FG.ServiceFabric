@@ -22,8 +22,15 @@ namespace FG.ServiceFabric.Tests.DbStoredActor
                 // For more information, see https://aka.ms/servicefabricactorsplatform
 
                 ActorRuntime.RegisterActorAsync<DbStoredActor>(
-                   (context, actorType) => new ActorService(context, actorType)).GetAwaiter().GetResult();
-
+                   (context, actorType) => new ActorService(
+                       context, 
+                       actorType, 
+                       actorFactory: (actorService, actorId) =>
+                                              new DbStoredActor(
+                                                  actorService,
+                                                  actorId,
+                                                  new DbStoredActorSettingsProvider(context),
+                                                  new CosmosDocumentClientFactory()))).GetAwaiter().GetResult();
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)

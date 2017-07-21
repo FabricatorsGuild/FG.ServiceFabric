@@ -95,6 +95,8 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CosmosDbFactory.cs" />
+    <Compile Include="DbStoredActorSettingsProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbStoredActor.cs" />
     <Compile Include="Program.cs" />
@@ -108,6 +110,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
+      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
+      <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj">
       <Project>{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}</Project>
       <Name>FG.ServiceFabric.Tests.DbStoredActor.Interfaces</Name>

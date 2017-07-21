@@ -1,71 +1,82 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
-using Microsoft.ServiceFabric.Actors.Client;
 using FG.ServiceFabric.Tests.DbStoredActor.Interfaces;
+using FG.ServiceFabric.Utils;
+using Microsoft.Azure.Documents.Client;
+using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor
 {
-    /// <remarks>
-    /// This class represents an actor.
-    /// Every ActorID maps to an instance of this class.
-    /// The StatePersistence attribute determines persistence and replication of actor state:
-    ///  - Persisted: State is written to disk and replicated.
-    ///  - Volatile: State is kept in memory only and replicated.
-    ///  - None: State is kept in memory only and not replicated.
-    /// </remarks>
     [StatePersistence(StatePersistence.Persisted)]
     internal class DbStoredActor : Actor, IDbStoredActor
     {
-        /// <summary>
-        /// Initializes a new instance of DbStoredActor
-        /// </summary>
-        /// <param name="actorService">The Microsoft.ServiceFabric.Actors.Runtime.ActorService that will host this actor instance.</param>
-        /// <param name="actorId">The Microsoft.ServiceFabric.Actors.ActorId for this actor instance.</param>
-        public DbStoredActor(ActorService actorService, ActorId actorId)
+        private readonly ISettingsProvider _settingsProvider;
+        private readonly ICosmosDocumentClientFactory _documentClientFactory;
+        private DocumentClient _documentClient;
+        private string _stateName = "count";
+
+        private string DatabaseName => _settingsProvider["Database_Name"];
+        private string DatabaseCollection => _settingsProvider["Database_Collection"];
+
+        public DbStoredActor(ActorService actorService, ActorId actorId, ISettingsProvider settingsProvider, ICosmosDocumentClientFactory documentClientFactory)
             : base(actorService, actorId)
         {
+            _settingsProvider = settingsProvider;
+            _documentClientFactory = documentClientFactory;
         }
 
-        /// <summary>
-        /// This method is called whenever an actor is activated.
-        /// An actor is activated the first time any of its methods are invoked.
-        /// </summary>
+        protected override Task OnDeactivateAsync()
+        {
+            _documentClient.Dispose();
+            return base.OnDeactivateAsync();
+        }
+
         protected override Task OnActivateAsync()
         {
             ActorEventSource.Current.ActorMessage(this, "Actor activated.");
-
-            // The StateManager is this actor's private state store.
-            // Data stored in the StateManager will be replicated for high-availability for actors that use volatile or persisted state storage.
-            // Any serializable object can be saved in the StateManager.
-            // For more information, see https://aka.ms/servicefabricactorsstateserialization
-
-            return this.StateManager.TryAddStateAsync("count", 0);
+            _documentClient = _documentClientFactory.Create(DatabaseName, DatabaseCollection, _settingsProvider).GetAwaiter().GetResult();
+            return StateManager.TryAddStateAsync(_stateName, new CountState() { Count = 0});
         }
+        
 
-        /// <summary>
-        /// TODO: Replace with your own actor method.
-        /// </summary>
-        /// <returns></returns>
-        Task<int> IDbStoredActor.GetCountAsync(CancellationToken cancellationToken)
+        Task<CountState> IDbStoredActor.GetCountAsync(CancellationToken cancellationToken)
         {
-            return this.StateManager.GetStateAsync<int>("count", cancellationToken);
+            return StateManager.GetStateAsync<CountState>(_stateName, cancellationToken);
         }
 
-        /// <summary>
-        /// TODO: Replace with your own actor method.
-        /// </summary>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        Task IDbStoredActor.SetCountAsync(int count, CancellationToken cancellationToken)
+        async Task IDbStoredActor.SetCountAsync(CountState count, CancellationToken cancellationToken)
         {
-            // Requests are not guaranteed to be processed in order nor at most once.
-            // The update function here verifies that the incoming count is greater than the current count to preserve order.
-            return this.StateManager.AddOrUpdateStateAsync("count", count, (key, value) => count > value ? count : value, cancellationToken);
+            var uri = UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection);
+
+            var document = new StateWrapper<CountState> {Payload = count, StateName = _stateName};
+
+            await Task.WhenAll(new List<Task>
+            {
+                _documentClient.UpsertDocumentAsync(uri, document),
+
+            });
+            await StateManager.AddOrUpdateStateAsync(_stateName, count, (key, value) => count, cancellationToken);
         }
+    }
+
+
+    [Serializable]
+    [DataContract]
+    public class StateWrapper<T>
+    {
+        [JsonProperty(PropertyName = "id")]
+        [DataMember]
+        public string Id { get; set; }
+        
+        [DataMember]
+        public string StateName { get; set; }
+
+        [DataMember]
+        public T Payload { get; set; }
     }
 }

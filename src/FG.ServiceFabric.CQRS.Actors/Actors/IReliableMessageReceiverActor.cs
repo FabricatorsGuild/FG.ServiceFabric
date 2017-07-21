@@ -8,4 +8,5 @@ namespace FG.ServiceFabric.Actors
     {
         Task ReceiveMessageAsync(ReliableMessage message);
     }
+    
 }

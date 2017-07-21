@@ -8,4 +8,10 @@
     <Parameter Name="CredentialType" Value="None" />
   </Section>
   <!-- The content will be generated during build -->
+  <Section Name="Database">
+    <Parameter Name="Database_EndpointUri" Value="" />
+    <Parameter Name="Database_PrimaryKey" Value="" />
+    <Parameter Name="Database_Name" Value="" />
+    <Parameter Name="Database_Collection" Value="" />
+  </Section>
 </Settings>
