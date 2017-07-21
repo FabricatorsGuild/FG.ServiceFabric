@@ -59,6 +59,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         private readonly IActorStateManager _stateManager;
         private readonly IActorProxyFactory _actorProxyFactory;
         private readonly Func<IOutboundMessageChannelLogger> _loggerFactory;
+
         private readonly string _reliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
         private readonly string _deadLetterQueue = @"fg__deadletterqueue_state";
 
@@ -74,7 +75,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             return () => new NullOpOutboundMessageChannelLogger();
         }
-        
+
+        // TODO: Use JSON as default serializer instead?
         public async Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId,
             string applicationName = null, string serviceName = null, string listerName = null)
             where TActorInterface : IReliableMessageReceiverActor
@@ -106,12 +108,15 @@ namespace FG.ServiceFabric.Actors.Runtime
                 }
                 catch (Exception e)
                 {
+                    // TODO: Retry logic?
+                    // TODO: Make it possible to modify persisted commands (through api) before retrying?
                     _loggerFactory().FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
 
                     var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager);
                     deadLetterState.Enqueue(actorMessage);
                     await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, channelState, _stateManager);
 
+                    // TODO: Manual retries?
                     _loggerFactory().MovedToDeadLetters(deadLetterState.Depth);
                 }
             }

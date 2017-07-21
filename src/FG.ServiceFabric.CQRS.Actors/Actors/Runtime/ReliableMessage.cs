@@ -16,6 +16,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         protected ReliableMessage(byte[] payload, Type type)
         {
+            // TODO: As AssemblyQualifiedName would be included when the JSON serializer does it work it might be something related to the data contract serializer instead. Break out into a PayloadWrapper?
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Payload = payload;
         }
@@ -44,6 +45,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         byte[] Serialize<T>(T message);
     }
 
+    // TODO: Use JSON as default serializer instead?
     public class DefaultReliableMessageSerializer : IReliableMessageSerializer
     {
         public object Deserialize(Type type, byte[] data)

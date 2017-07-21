@@ -33,17 +33,27 @@ namespace FG.ServiceFabric.Actors.Runtime
         public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
         public IInboundReliableMessageChannel InboundMessageChannel { get; set; }
 
-        private IActorTimer _timer;
-
+        private IActorTimer _outboundMessageChannelTimer;
         protected override Task OnActivateAsync()
         {
-            if (_timer == null)
+            // TODO: Configurable due/period time?
+            if (_outboundMessageChannelTimer == null)
             {
-                _timer = RegisterTimer(async _ => { await OutboundMessageChannel.ProcessQueueAsync(); }, null,
+                _outboundMessageChannelTimer = RegisterTimer(async _ => { await OutboundMessageChannel.ProcessQueueAsync(); }, null,
                     TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
             }
 
             return base.OnActivateAsync();
+        }
+
+        protected override Task OnDeactivateAsync()
+        {
+            if (_outboundMessageChannelTimer != null)
+            {
+                UnregisterTimer(_outboundMessageChannelTimer);
+            }
+
+            return base.OnDeactivateAsync();
         }
 
         protected async Task ExecuteCommandAsync
