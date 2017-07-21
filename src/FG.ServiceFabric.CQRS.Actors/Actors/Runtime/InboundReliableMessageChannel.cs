@@ -13,8 +13,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public Task ReceiveMessageAsync(ReliableMessage message)
         {
+            // Resolves type at runtime. 
             dynamic deserializedMessage = message.Deserialize();
             return _endpoint.HandleMessageAsync(deserializedMessage);
         }
     }
 }
+
