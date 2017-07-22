@@ -73,10 +73,22 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		private void CreateStatefulReplica()
 		{
-			var instance = ReflectionUtils.ActivateInternalCtor<StatefulServiceReplica>();
-			instance.SetPrivateProperty(() => instance.ReplicaRole, ReplicaRole.Primary);
-			instance.SetPrivateProperty(() => instance.ServiceKind, ServiceKind.Stateful);
-			instance.SetPrivateProperty(() => instance.HealthState, HealthState.Ok);
+			var replicaStatus = ServiceReplicaStatus.Ready;
+			var healthState = System.Fabric.Health.HealthState.Ok;
+			var replicaRole = System.Fabric.ReplicaRole.Primary;
+			var replicaAddress = "";
+			var nodeName = "";
+			var replicaId = (long)CRC64.ToCRC64((Guid.NewGuid().ToByteArray()));
+			var lastInBuildDuration = System.TimeSpan.FromSeconds(1);
+
+			var instance = ReflectionUtils.ActivateInternalCtor<StatefulServiceReplica>(
+				replicaStatus,
+				healthState,
+				replicaRole,
+				replicaAddress,
+				nodeName,
+				replicaId,
+				lastInBuildDuration);
 			instance.SetPrivateProperty(() => instance.Id, instance.GetHashCode());
 
 			_instances.Add(instance);

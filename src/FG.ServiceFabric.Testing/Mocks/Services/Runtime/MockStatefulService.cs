@@ -11,14 +11,12 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 		private readonly ICodePackageActivationContext _codePackageActivationContext;
 		private readonly IServiceProxyFactory _serviceProxyFactory;
 		private readonly NodeContext _nodeContext;
-		private readonly ServiceTypeInformation _serviceTypeInfo;
 
 		public MockStatefulService(
 			ICodePackageActivationContext codePackageActivationContext,
 			IServiceProxyFactory serviceProxyFactory,
 			NodeContext nodeContext,
 			StatefulServiceContext statefulServiceContext,
-			ServiceTypeInformation serviceTypeInfo,
 			IReliableStateManagerReplica stateManager = null
 		) :
 			base(
@@ -30,7 +28,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			_serviceProxyFactory = serviceProxyFactory;
 			
 			_nodeContext = nodeContext;
-			_serviceTypeInfo = serviceTypeInfo;
 		}
 	}
 }

@@ -10,7 +10,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 	public interface IMockableServiceRegistration
 	{
 		bool IsStateful { get; }
-		Type InterfaceType { get; }
+		Type[] InterfaceTypes { get; }
 		Type ImplementationType { get; }
 		CreateStatefulService CreateStatefulService { get; }
 		CreateStatelessService CreateStatelessService { get; }
@@ -24,22 +24,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 
 	public delegate StatefulService CreateStatefulService(
 		StatefulServiceContext context,
-		ServiceTypeInformation serviceTypeInformation,
 		IReliableStateManagerReplica stateManager);
 
 	public delegate TService CreateStatefulService<out TService>(
 		StatefulServiceContext context,
-		ServiceTypeInformation serviceTypeInformation,
 		IReliableStateManagerReplica stateManager)
 		where TService : IService;
 
 	public delegate StatelessService CreateStatelessService(
-		StatelessServiceContext context,
-		ServiceTypeInformation serviceTypeInformation);
+		StatelessServiceContext context);
 
 
 	public delegate TService CreateStatelessService<out TService>(
-		StatelessServiceContext context,
-		ServiceTypeInformation serviceTypeInformation)
+		StatelessServiceContext context)
 		where TService : IService;
 }

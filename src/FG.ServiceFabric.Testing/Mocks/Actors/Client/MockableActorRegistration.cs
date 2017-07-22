@@ -1,5 +1,6 @@
 using System;
 using System.Fabric;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
@@ -10,21 +11,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         where TActorImplementation : class, TActorInterface
     {
         public MockableActorRegistration(
-            Func<ActorService, ActorId, TActorImplementation> activator,
+			IMockableServiceRegistration serviceRegistration,
+			Func<ActorService, ActorId, TActorImplementation> activator,
             CreateActorStateManager createActorStateManager = null,
             CreateActorStateProvider createActorStateProvider = null,
 			MockServiceDefinition serviceDefinition = null,
 			Uri serviceUri = null)
         {
-	        ServiceUri = serviceUri;
             InterfaceType = typeof(TActorInterface);
             ImplementationType = typeof(TActorImplementation);
             Activator = activator;
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
             CreateActorService = null;
-	        ServiceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
-        }
+	        ServiceRegistration = serviceRegistration;
+		}
 
         public Type InterfaceType { get; private set; }
         public Type ImplementationType { get; private set; }
@@ -32,29 +33,31 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         public CreateActorStateManager CreateActorStateManager { get; private set; }
         public CreateActorStateProvider CreateActorStateProvider { get; private set; }
         public CreateActorService CreateActorService { get; private set; }
-	    public MockServiceDefinition ServiceDefinition { get; set; }
-	    public Uri ServiceUri { get; set; }
+	    public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
     public class MockableActorRegistration : IMockableActorRegistration
     {
         public MockableActorRegistration(
-            Type interfaceType, 
+			IMockableServiceRegistration serviceRegistration,
+			Type interfaceType, 
             Type implementationType, 
             Func<ActorService, ActorId, object> activator,
             CreateActorStateManager createActorStateManager = null,
-            CreateActorStateProvider createActorStateProvider = null,
-			MockServiceDefinition serviceDefinition = null,
-			Uri serviceUri = null)
+            CreateActorStateProvider createActorStateProvider = null)
         {
             InterfaceType = interfaceType;
             ImplementationType = implementationType;
             Activator = activator;
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
-	        ServiceUri = serviceUri;
-	        CreateActorService = null;
-	        ServiceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
+	        ServiceRegistration = serviceRegistration;
+
+
+	        //ServiceUri = serviceUri;
+	        //CreateActorService = null;
+	        //ServiceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
+	        //Name = serviceName ?? $"{ImplementationType.Name}Service";
         }
 
         public Type InterfaceType { get; private set; }
@@ -63,24 +66,22 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         public CreateActorStateManager CreateActorStateManager { get; private set; }
         public CreateActorStateProvider CreateActorStateProvider { get; }
         public CreateActorService CreateActorService { get; }
-	    public MockServiceDefinition ServiceDefinition { get; set; }
-	    public Uri ServiceUri { get; set; }
+	    public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
     public class MockableActorRegistration<TActorService> : IMockableActorRegistration
         where TActorService : ActorService
     {
         public MockableActorRegistration(
-            Type interfaceType, 
+			IMockableServiceRegistration serviceRegistration,
+			Type interfaceType, 
             Type implementationType, 
             CreateActorService<TActorService> createActorService, 
             Func<TActorService, ActorId, object> activator,
             CreateActorStateManager createActorStateManager = null,
-            CreateActorStateProvider createActorStateProvider = null,
-			MockServiceDefinition serviceDefinition = null,
-			Uri serviceUri = null)
+            CreateActorStateProvider createActorStateProvider = null
+			)
         {
-	        serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
             InterfaceType = interfaceType;
             ImplementationType = implementationType;
             CreateActorService = (CreateActorService) ((
@@ -92,8 +93,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             Activator = (Func<ActorService, ActorId, object>)((service, actorId) => activator((TActorService)service, actorId));
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
-	        ServiceDefinition = serviceDefinition;
-	        ServiceUri = serviceUri;
+
+	        ServiceRegistration = serviceRegistration;
         }
 
         public Type InterfaceType { get; private set; }
@@ -102,7 +103,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         public CreateActorStateManager CreateActorStateManager { get; private set; }
         public CreateActorStateProvider CreateActorStateProvider { get; }
         public CreateActorService CreateActorService { get; }
-		public MockServiceDefinition ServiceDefinition { get; set; }
-	    public Uri ServiceUri { get; set; }
+	    public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 }

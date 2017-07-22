@@ -1,5 +1,6 @@
 using System;
 using System.Fabric;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Data;
@@ -16,9 +17,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         Func<ActorService, ActorId, object> Activator { get; }
         CreateActorStateManager CreateActorStateManager { get; }
         CreateActorStateProvider CreateActorStateProvider { get; }
-		MockServiceDefinition ServiceDefinition { get; set; }
-	    Uri ServiceUri { get; set; }
-	}
+		IMockableServiceRegistration ServiceRegistration { get; set; }
+    }
 
     public delegate IActorStateProvider CreateActorStateProvider();
 

@@ -11,7 +11,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 	public class MockableServiceRegistration : IMockableServiceRegistration
 	{
 		public MockableServiceRegistration(
-			Type interfaceType,
+			Type[] interfaceTypes,
 			Type implementationType,
 			CreateStatefulService createStatefulService = null,
 			CreateStatelessService createStatelessService = null,
@@ -21,7 +21,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			Uri serviceUri = null,
 			string serviceName= null)
 		{
-			InterfaceType = interfaceType;
+			InterfaceTypes = interfaceTypes;
 			ImplementationType = implementationType;
 			CreateStatefulService = createStatefulService;
 			CreateStatelessService = createStatelessService;
@@ -32,7 +32,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			Name = serviceName ?? implementationType.Name;
 		}
 
-		public Type InterfaceType { get; }
+		public Type[] InterfaceTypes{ get; }
 		public Type ImplementationType { get; }
 		
 		public CreateStateManager CreateStateManager { get; }

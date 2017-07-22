@@ -122,6 +122,9 @@
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
     <Compile Include="Assertion\AsyncAssertions.cs" />
+    <Compile Include="Mocks\Actors\Client\IMockActorProxyManager.cs" />
+    <Compile Include="Mocks\MockServiceInstance.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\IMockServiceProxyManager.cs" />
     <Compile Include="Mocks\Services\Runtime\MockStatefulService.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\IMockableServiceRegistration.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxy.cs" />
