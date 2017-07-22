@@ -7,15 +7,16 @@ namespace FG.ServiceFabric.Fabric
 {
     public class FabricClientQueryManagerPartitionEnumerationManager : IPartitionEnumerationManager
     {
-        private readonly FabricClient _fabricClient;
-        public FabricClientQueryManagerPartitionEnumerationManager(FabricClient fabricClient)
+        private readonly FabricClient.QueryClient _fabricClientQueryManager;
+
+        public FabricClientQueryManagerPartitionEnumerationManager(FabricClient.QueryClient queryManager)
         {
-            _fabricClient = fabricClient;
+            _fabricClientQueryManager = queryManager;
         }
 
         public Task<ServicePartitionList> GetPartitionListAsync(Uri serviceName)
         {
-            return _fabricClient.QueryManager.GetPartitionListAsync(serviceName);
+            return _fabricClientQueryManager.GetPartitionListAsync(serviceName);
         }
     }
 }

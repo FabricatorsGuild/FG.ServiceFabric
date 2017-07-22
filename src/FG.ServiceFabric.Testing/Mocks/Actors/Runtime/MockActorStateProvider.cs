@@ -9,10 +9,11 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Data.Notifications;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 {
-    public class MockActorStateProvider : IActorStateProvider
+	public class MockActorStateProvider : IActorStateProvider
     {
         public IList<string> ActionsPerformed { get; }
 

@@ -23,7 +23,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var fabricRuntime = new MockFabricRuntime("Overlord");
             var stateActions = new List<string>();
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
-            fabricRuntime.SetupActor((service, actorId) => new ActorDemo(service, actorId), createStateProvider: () => mockActorStateProvider);
+            fabricRuntime.SetupActor(
+				(service, actorId) => new ActorDemo(service, actorId), 
+				createActorStateProvider: () => mockActorStateProvider, 
+				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
             // Only to get around the kinda stupid introduced 1/20 msec 'bug'
             await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
@@ -32,7 +35,12 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
                 return actor.SetCountAsync(5);
             }, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
-            stateActions.Should().BeEquivalentTo(new[] { "ContainsStateAsync", "ActorActivatedAsync", "SaveStateAsync" });
+	        stateActions.Should().BeEquivalentTo(new string[]
+	        {
+				"ContainsStateAsync - testivus - count",
+				"ActorActivatedAsync - testivus",
+				"SaveStateAsync - testivus - [{\"StateName\":\"count\",\"Type\":\"System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089\",\"Value\":5,\"ChangeKind\":1}]"
+			});
         }
         
         [Test]
@@ -43,7 +51,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
                 (service, actorId) => new ActorDemo(service, actorId),
                 (context, actorTypeInformation, stateProvider, stateManagerFactory) => new ActorDemoActorService(context, actorTypeInformation,
-                stateProvider: stateProvider, stateManagerFactory: stateManagerFactory));
+                stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
             IActorDemo proxy = null;
            
@@ -63,7 +71,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var fabricRuntime = new MockFabricRuntime("Overlord");
             fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
                 (service, actorId) => new ActorDemo(service, actorId),
-                (context, actorTypeInformation, stateProvider, stateManagerFactory) => new ActorDemoActorService(context, actorTypeInformation));
+                (context, actorTypeInformation, stateProvider, stateManagerFactory) => new ActorDemoActorService(context, actorTypeInformation),
+				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
             IActorDemoActorService proxy = null;
             await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
@@ -85,8 +94,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
                 (service, actorId) => new ActorDemo(service, actorId),                
-                createStateProvider: () => mockActorStateProvider
-            );
+                createActorStateProvider: () => mockActorStateProvider,
+				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue)
+			);
 
             await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
             {
