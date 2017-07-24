@@ -9,9 +9,9 @@
   </Section>
   <!-- The content will be generated during build -->
   <Section Name="Database">
-    <Parameter Name="Database_EndpointUri" Value="" />
-    <Parameter Name="Database_PrimaryKey" Value="" />
-    <Parameter Name="Database_Name" Value="" />
-    <Parameter Name="Database_Collection" Value="" />
+    <Parameter Name="EndpointUri" Value="" />
+    <Parameter Name="PrimaryKey" Value="" />
+    <Parameter Name="DatabaseName" Value="" />
+    <Parameter Name="Collection" Value="" />
   </Section>
 </Settings>

@@ -1,82 +1,51 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.DocumentDb;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.DbStoredActor.Interfaces;
-using FG.ServiceFabric.Utils;
-using Microsoft.Azure.Documents.Client;
-using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor
 {
     [StatePersistence(StatePersistence.Persisted)]
     internal class DbStoredActor : Actor, IDbStoredActor
     {
-        private readonly ISettingsProvider _settingsProvider;
-        private readonly ICosmosDocumentClientFactory _documentClientFactory;
-        private DocumentClient _documentClient;
-        private string _stateName = "count";
-
-        private string DatabaseName => _settingsProvider["Database_Name"];
-        private string DatabaseCollection => _settingsProvider["Database_Collection"];
-
-        public DbStoredActor(ActorService actorService, ActorId actorId, ISettingsProvider settingsProvider, ICosmosDocumentClientFactory documentClientFactory)
+        private readonly Func<IDocumentDbStateWriter> _stateWriterFactory;
+        private IDocumentDbStateWriter _stateWriter;
+        private const string StateName = "count";
+        
+        public DbStoredActor(ActorService actorService, ActorId actorId, Func<IDocumentDbStateWriter> stateWriterFactory)
             : base(actorService, actorId)
         {
-            _settingsProvider = settingsProvider;
-            _documentClientFactory = documentClientFactory;
+            _stateWriterFactory = stateWriterFactory;
         }
-
+        
         protected override Task OnDeactivateAsync()
         {
-            _documentClient.Dispose();
+            _stateWriter.Dispose();
             return base.OnDeactivateAsync();
         }
 
         protected override Task OnActivateAsync()
         {
+            _stateWriter = _stateWriterFactory();
             ActorEventSource.Current.ActorMessage(this, "Actor activated.");
-            _documentClient = _documentClientFactory.Create(DatabaseName, DatabaseCollection, _settingsProvider).GetAwaiter().GetResult();
-            return StateManager.TryAddStateAsync(_stateName, new CountState() { Count = 0});
+            return StateManager.TryAddStateAsync(StateName, new CountState(this.GetActorId().ToString()));
         }
         
-
         Task<CountState> IDbStoredActor.GetCountAsync(CancellationToken cancellationToken)
         {
-            return StateManager.GetStateAsync<CountState>(_stateName, cancellationToken);
+            return StateManager.GetStateAsync<CountState>(StateName, cancellationToken);
         }
 
-        async Task IDbStoredActor.SetCountAsync(CountState count, CancellationToken cancellationToken)
+        async Task IDbStoredActor.SetCountAsync(int count, CancellationToken cancellationToken)
         {
-            var uri = UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection);
-
-            var document = new StateWrapper<CountState> {Payload = count, StateName = _stateName};
-
-            await Task.WhenAll(new List<Task>
-            {
-                _documentClient.UpsertDocumentAsync(uri, document),
-
-            });
-            await StateManager.AddOrUpdateStateAsync(_stateName, count, (key, value) => count, cancellationToken);
+            var state = await StateManager.GetStateAsync<CountState>(StateName, cancellationToken);
+            state = state.UpdateCount(count);
+            
+            await _stateWriter.UpsertAsync(state, StateName);
+            await StateManager.AddOrUpdateStateAsync(StateName, state, (key, value) => state, cancellationToken);
         }
-    }
-
-
-    [Serializable]
-    [DataContract]
-    public class StateWrapper<T>
-    {
-        [JsonProperty(PropertyName = "id")]
-        [DataMember]
-        public string Id { get; set; }
-        
-        [DataMember]
-        public string StateName { get; set; }
-
-        [DataMember]
-        public T Payload { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.DocumentDb;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor
@@ -29,8 +30,7 @@ namespace FG.ServiceFabric.Tests.DbStoredActor
                                               new DbStoredActor(
                                                   actorService,
                                                   actorId,
-                                                  new DbStoredActorSettingsProvider(context),
-                                                  new CosmosDocumentClientFactory()))).GetAwaiter().GetResult();
+                                                  () => new CosmosDbStateWriter(new DatabaseSettingsProvider(context))))).GetAwaiter().GetResult();
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)

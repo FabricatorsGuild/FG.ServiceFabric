@@ -71,9 +71,8 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.6.210\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -95,13 +94,11 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CosmosDbFactory.cs" />
-    <Compile Include="DbStoredActorSettingsProvider.cs" />
+    <Compile Include="DatabaseSettingsProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbStoredActor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ActorEventSource.cs" />
-    <Compile Include="StateRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="PackageRoot\ServiceManifest.xml" />
@@ -113,6 +110,10 @@
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistance\FG.ServiceFabric.Persistance.csproj">
+      <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
+      <Name>FG.ServiceFabric.Persistance</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj">
       <Project>{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}</Project>

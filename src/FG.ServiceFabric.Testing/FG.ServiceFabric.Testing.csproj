@@ -125,6 +125,7 @@
     <Compile Include="Mocks\Actors\Client\MockActorProxy.cs" />
     <Compile Include="Mocks\Fabric\MockPartition.cs" />
     <Compile Include="Mocks\Fabric\MockPartitionEnumerationManager.cs" />
+    <Compile Include="Mocks\ForTestsSettingsProvider.cs" />
     <Compile Include="Validation\EventSourceValidator.cs" />
     <Compile Include="Assertion\ObjectPropertyAssertions.cs" />
     <Compile Include="Mocks\Actors\Client\IMockableActorRegistration.cs" />

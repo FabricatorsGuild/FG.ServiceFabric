@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="FG.ServiceFabric.Tests.ApplicationType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
+    <Parameter Name="Database_EndpointUri" DefaultValue="https://localhost:8081/" />
+    <Parameter Name="Database_PrimaryKey" DefaultValue="C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" />
+    <Parameter Name="Database_DatabaseName" DefaultValue="fabricators" />
     <Parameter Name="WebApi_InstanceCount" DefaultValue="-1" />
     <Parameter Name="PersonActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="PersonActorService_MinReplicaSetSize" DefaultValue="3" />
@@ -11,10 +14,7 @@
     <Parameter Name="DbStoredActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="DbStoredActorService_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="DbStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="Database_EndpointUri" DefaultValue="https://localhost:8081/" />
-    <Parameter Name="Database_PrimaryKey" DefaultValue="C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" />
-    <Parameter Name="Database_Name" DefaultValue="fabricators" />
-    <Parameter Name="Database_Collection" DefaultValue="dbstoredactor" />
+    <Parameter Name="DbStoredActorService_DatabaseCollection" DefaultValue="dbstoredactor" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
@@ -25,10 +25,10 @@
       <ConfigOverride Name="Config">
         <Settings>
           <Section Name="Database">
-            <Parameter Name="Database_EndpointUri" Value="[Database_EndpointUri]" />
-            <Parameter Name="Database_PrimaryKey" Value="[Database_PrimaryKey]" />
-            <Parameter Name="Database_Name" Value="[Database_Name]" />
-            <Parameter Name="Database_Collection" Value="[Database_Collection]" />
+            <Parameter Name="EndpointUri" Value="[Database_EndpointUri]" />
+            <Parameter Name="PrimaryKey" Value="[Database_PrimaryKey]" />
+            <Parameter Name="DatabaseName" Value="[Database_DatabaseName]" />
+            <Parameter Name="Collection" Value="[DbStoredActorService_DatabaseCollection]" />
           </Section>
         </Settings>
       </ConfigOverride>

@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.DocumentDb;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor.Interfaces
@@ -8,13 +9,31 @@ namespace FG.ServiceFabric.Tests.DbStoredActor.Interfaces
     public interface IDbStoredActor : IActor
     {
         Task<CountState> GetCountAsync(CancellationToken cancellationToken);
-        Task SetCountAsync(CountState count, CancellationToken cancellationToken);
+        Task SetCountAsync(int count, CancellationToken cancellationToken);
     }
 
     [DataContract]
-    public class CountState
+    public class CountState : IPersistedIdentity
     {
+        private CountState()
+        {
+            
+        }
+
+        public CountState(string id)
+        {
+            Id = id;
+        }
+
         [DataMember]
-        public int Count { get; set; }
+        public int Count { get; private set; }
+        
+        [DataMember]
+        public string Id { get; private set; }
+
+        public CountState UpdateCount(int count)
+        {
+            return new CountState(Id) {Count = count};
+        }
     }
 }

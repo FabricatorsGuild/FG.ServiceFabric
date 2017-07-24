@@ -7,7 +7,6 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using ActorBase = FG.ServiceFabric.Actors.Runtime.ActorBase;
 
 namespace FG.ServiceFabric.Tests.Actor
 {

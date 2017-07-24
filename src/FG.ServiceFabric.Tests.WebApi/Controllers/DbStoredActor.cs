@@ -28,7 +28,7 @@ namespace FG.ServiceFabric.Tests.WebApi.Controllers
         public async void Post(Guid id, [FromBody] UICommand value)
         {
             var proxy = new ActorProxyFactory().CreateActorProxy<IDbStoredActor>(new ActorId(id));
-            await proxy.SetCountAsync(new CountState { Count = value.Count }, CancellationToken.None);
+            await proxy.SetCountAsync(value.Count, CancellationToken.None);
         }
 
         // ReSharper disable once InconsistentNaming

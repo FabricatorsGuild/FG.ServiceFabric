@@ -51,7 +51,12 @@ namespace FG.ServiceFabric.Utils
         {
             get
             {
-                _values.TryGetValue(key, out string value);
+                if (!_values.TryGetValue(key, out string value))
+                {
+                    throw new IndexOutOfRangeException(
+                        $"Setting not found. Check your service configuration, configuration overloads and make sure to configure your {nameof(GetType)} with a setting named {key}.");
+                }
+
                 return value;
             }
         }

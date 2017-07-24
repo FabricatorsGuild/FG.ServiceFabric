@@ -56,6 +56,9 @@
     <Reference Include="FluentAssertions.Core, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.15.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.15.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.ServiceFabric.Actors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.6.210\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
     </Reference>
@@ -80,6 +83,9 @@
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.6.210\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
@@ -112,12 +118,18 @@
   <ItemGroup>
     <Compile Include="CQRS\TestBase.cs" />
     <Compile Include="CQRS\When_registering_a_person\After_registering_a_person.cs" />
+    <Compile Include="Persistance\Should_write_to_document_db_on_state_change.cs" />
+    <Compile Include="Persistance\TestBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FG.Common\FG.Common.csproj">
       <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
       <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistance\FG.ServiceFabric.Persistance.csproj">
+      <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
+      <Name>FG.ServiceFabric.Persistance</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2c6aefca-f4a1-47bc-8abf-8374f852ca89}</Project>
@@ -143,6 +155,14 @@
       <Project>{2f2b5701-77b5-4467-9504-8be73a3725a7}</Project>
       <Name>FG.ServiceFabric.Testing</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj">
+      <Project>{6e846eb1-8ab5-49d0-ab13-2d83c53587f4}</Project>
+      <Name>FG.ServiceFabric.Tests.DbStoredActor.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor\FG.ServiceFabric.Tests.DbStoredActor.csproj">
+      <Project>{b78feb5d-a6d3-47cd-9614-4b8815ac78df}</Project>
+      <Name>FG.ServiceFabric.Tests.DbStoredActor</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj">
       <Project>{7bbaa4b3-b05b-4132-b363-20b279ca4f14}</Project>
       <Name>FG.ServiceFabric.Tests.PersonActor.Interfaces</Name>
@@ -163,5 +183,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.210\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.6.210\build\Microsoft.ServiceFabric.Actors.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets')" />
 </Project>
