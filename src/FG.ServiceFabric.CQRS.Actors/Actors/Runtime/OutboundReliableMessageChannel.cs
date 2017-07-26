@@ -105,7 +105,7 @@ namespace FG.ServiceFabric.Actors.Runtime
                     await SendAsync(actorMessage.Message, actorMessage.ActorReference);
                     await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
 
-                    _loggerFactory().SentMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.AssemblyQualifiedName);
+                    _loggerFactory().SentMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.MessageType);
                 }
                 catch (Exception e)
                 {

@@ -69,7 +69,7 @@
     <Compile Include="DomainEventDispatcher.cs" />
     <Compile Include="Exceptions\AggregateRootException.cs" />
     <Compile Include="Exceptions\AggregateRootNotFoundException.cs" />
-    <Compile Include="Exceptions\EventHandlerNotFoundException.cs" />
+    <Compile Include="Exceptions\HandlerNotFoundException.cs" />
     <Compile Include="Exceptions\InvariantsNotMetException.cs" />
     <Compile Include="IAggregateReadModel.cs" />
     <Compile Include="IAggregateRoot.cs" />

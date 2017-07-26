@@ -1,61 +1,83 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using FG.Common.Utils;
+using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
     [DataContract]
     public class ReliableMessage
     {
-        public static IReliableMessageSerializer Serializer { get; set; } = new DefaultReliableMessageSerializer();
+        public static IReliableMessageSerializer Serializer { get; set; } = new JsonReliableMessageSerializer();
 
         [Obsolete("Serialization only.")]
         protected ReliableMessage()
         {
         }
 
-        protected ReliableMessage(byte[] payload, Type type)
+        protected ReliableMessage(string payload, string messageType)
         {
-            // TODO: As AssemblyQualifiedName would be included when the JSON serializer does it work it might be something related to the data contract serializer instead. Break out into a PayloadWrapper?
-            AssemblyQualifiedName = type.AssemblyQualifiedName;
             Payload = payload;
+            MessageType = messageType;
         }
-
+        
         [DataMember]
-        public string AssemblyQualifiedName { get; private set; }
-
+        public string Payload { get; private set; }
         [DataMember]
-        public byte[] Payload { get; private set; }
+        public string MessageType { get; private set; }
 
         internal object Deserialize()
         {
-            var type = Type.GetType(this.AssemblyQualifiedName);
-            return Serializer.Deserialize(type, Payload);
+            return Serializer.Deserialize(Payload);
         }
 
         public static ReliableMessage Create<T>(T message)
         {
-            return new ReliableMessage(Serializer.Serialize(message), message.GetType());
+            return new ReliableMessage(Serializer.Serialize(message), message.GetType().FullName);
         }
     }
 
     public interface IReliableMessageSerializer
     {
-        object Deserialize(Type type, byte[] data);
-        byte[] Serialize<T>(T message);
+        object Deserialize(string data);
+        string Serialize<T>(T message);
     }
-
-    // TODO: Use JSON as default serializer instead?
-    public class DefaultReliableMessageSerializer : IReliableMessageSerializer
+    
+    public class JsonReliableMessageSerializer : IReliableMessageSerializer
     {
-        public object Deserialize(Type type, byte[] data)
+        private readonly JsonSerializerSettings _settings;
+
+        public JsonReliableMessageSerializer()
         {
-            return data.Deserialize(type);
+            _settings = new JsonSerializerSettings()
+            {
+                TypeNameHandling = TypeNameHandling.All
+            };
         }
 
-        public byte[] Serialize<T>(T message)
+        public object Deserialize(string data)
         {
-            return message.Serialize();
+            return JsonConvert.DeserializeObject<PayloadWrapper>(data, _settings);
+        }
+
+        public string Serialize<T>(T message)
+        {
+            return JsonConvert.SerializeObject(new PayloadWrapper(message), Formatting.Indented, _settings);
+        }
+
+        internal sealed class PayloadWrapper
+        {
+            [Obsolete("Serialization only", true)]
+            public PayloadWrapper()
+            {
+            }
+
+            public PayloadWrapper(object payload)
+            {
+                Payload = payload;
+            }
+
+            public object Payload { get; set; }
         }
     }
 }

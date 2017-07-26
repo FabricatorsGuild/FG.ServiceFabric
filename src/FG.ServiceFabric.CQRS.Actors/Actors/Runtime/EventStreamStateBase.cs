@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+using System;
 using System.Linq;
 using System.Runtime.Serialization;
 using FG.CQRS;
@@ -10,17 +10,20 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         protected EventStreamStateBase()
         {
-            InnerEvents = ImmutableList<IDomainEvent>.Empty;
+            DomainEvents = new IDomainEvent[] { };
         }
 
         [DataMember]
-        private ImmutableList<IDomainEvent> InnerEvents { get; set; }
+        public IDomainEvent[] DomainEvents { get; private set; }
 
         public void Append(IDomainEvent domainEvent)
         {
-            InnerEvents = InnerEvents.Add(domainEvent);
+            DomainEvents = DomainEvents.Union(new[] { domainEvent }).ToArray();
+
+            // Raise the event
+            EventAppended?.Invoke(this, domainEvent);
         }
 
-        public IDomainEvent[] DomainEvents => InnerEvents.ToArray();
+        public event EventHandler<IDomainEvent> EventAppended;
     }
 }
