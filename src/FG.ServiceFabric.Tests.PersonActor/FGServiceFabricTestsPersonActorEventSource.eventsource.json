@@ -41,7 +41,7 @@
     }
   ],
   "Settings": {
-    "Modules": ["AI"],
+    "Modules": ["ServiceFabric", "AI"],
     "AutogenerateLoggerInterfaces": true
   }
 }

@@ -2,7 +2,7 @@
   "EventSources": [
     {
       "Name": "FGServiceFabricTestsPersonActorEventSource.eventsource.json",
-      "Hash": "5805efbfbdefbfbdefbfbd39efbfbd7542efbfbdefbfbd6753efbfbd1138"
+      "Hash": "efbfbd64d88f26efbfbdefbfbd2b6b616defbfbdefbfbd6eefbfbdefbfbd"
     }
   ],
   "References": [
@@ -37,34 +37,38 @@
   "ProjectReferences": [
     {
       "ReferenceName": "..\\FG.Common\\bin\\Debug\\FG.Common.dll",
-      "Hash": "8:42:54 AM"
+      "Hash": "8:58:52 PM"
     },
     {
       "ReferenceName": "..\\FG.ServiceFabric.Actors.Remoting\\bin\\Debug\\FG.ServiceFabric.Actors.Remoting.dll",
-      "Hash": "8:42:58 AM"
+      "Hash": "8:58:58 PM"
     },
     {
       "ReferenceName": "..\\FG.ServiceFabric.CQRS.Actors\\bin\\x64\\Debug\\FG.ServiceFabric.CQRS.dll",
-      "Hash": "10:47:44 AM"
+      "Hash": "8:53:53 PM"
     },
     {
-      "ReferenceName": "..\\FG.CQRS\\bin\\Debug\\FG.CQRS.dll",
-      "Hash": "9:52:17 AM"
+      "ReferenceName": "..\\FG.CQRS\\bin\\x64\\Debug\\FG.CQRS.dll",
+      "Hash": "8:58:52 PM"
     },
     {
       "ReferenceName": "..\\FG.ServiceFabric.Extensions\\bin\\Debug\\FG.ServiceFabric.Extensions.dll",
-      "Hash": "8:42:57 AM"
+      "Hash": "8:58:57 PM"
+    },
+    {
+      "ReferenceName": "..\\FG.ServiceFabric.Services.Remoting\\bin\\Debug\\FG.ServiceFabric.Services.Remoting.dll",
+      "Hash": "8:58:55 PM"
     },
     {
       "ReferenceName": "..\\FG.ServiceFabric.Tests.PersonActor.Interfaces\\bin\\x64\\Debug\\FG.ServiceFabric.Tests.PersonActor.Interfaces.dll",
-      "Hash": "10:47:44 AM"
+      "Hash": "9:50:37 PM"
     }
   ],
   "CompileTargets": [
     {
       "Name": "Diagnostics\\IActorLogger.cs",
-      "Hash": "30542defbfbd21efbfbdefbfbd56efbfbd017f40efbfbd5723efbfbd"
+      "Hash": "5befbfbdefbfbdefbfbd42671eefbfbdefbfbd5befbfbdefbfbd0f1f21efbfbd"
     }
   ],
-  "Hash": "3eefbfbd5f09efbfbd5fefbfbdefbfbd43efbfbdefbfbd01efbfbd6a21"
+  "Hash": "efbfbd7440efbfbdefbfbdefbfbdefbfbd1cf0b6b189efbfbdefbfbd20"
 }

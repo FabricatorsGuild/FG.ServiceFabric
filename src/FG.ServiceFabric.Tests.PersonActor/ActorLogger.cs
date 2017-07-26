@@ -148,18 +148,18 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
 
 
-		public void SentMessage(
+		public void MessageSent(
 			Microsoft.ServiceFabric.Actors.ActorId actorId,
 			System.Uri serviceUri,
 			string messageType)
 		{
-			FGServiceFabricTestsPersonActorEventSource.Current.SentMessage(
+			FGServiceFabricTestsPersonActorEventSource.Current.MessageSent(
 				actorId, 
 				serviceUri, 
 				messageType
 			);
 			_telemetryClient.TrackEvent(
-	            nameof(SentMessage),
+	            nameof(MessageSent),
 	            new System.Collections.Generic.Dictionary<string, string>()
 	            {
 	                {"ActorId", actorId.ToString()},
@@ -168,9 +168,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 	            });
     
 		}
-
-
-
+        
 		public void MovedToDeadLetters(
 			int depth)
 		{

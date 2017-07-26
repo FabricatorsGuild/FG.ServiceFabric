@@ -54,7 +54,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 		private const int SentMessageEventId = 2002;
 
 		[Event(SentMessageEventId, Level = EventLevel.LogAlways, Message = "Sent Message {0} {1} {2}", Keywords = Keywords.Actor)]
-		private void SentMessage(
+		private void MessageSent(
 			string actorId, 
 			string serviceUri, 
 			string messageType)
@@ -67,14 +67,14 @@ namespace FG.ServiceFabric.Tests.PersonActor
 		}
 
 		[NonEvent]
-		public void SentMessage(
+		public void MessageSent(
 			Microsoft.ServiceFabric.Actors.ActorId actorId, 
 			System.Uri serviceUri, 
 			string messageType)
 		{
 			if (this.IsEnabled())
 			{
-				SentMessage(
+				MessageSent(
 					actorId.ToString(), 
 					serviceUri.ToString(), 
 					messageType);

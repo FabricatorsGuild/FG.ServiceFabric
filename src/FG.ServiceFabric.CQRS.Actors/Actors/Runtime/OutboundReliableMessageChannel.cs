@@ -13,10 +13,10 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 namespace FG.ServiceFabric.Actors.Runtime
 {
     [DataContract]
-    internal sealed class ActorReliableMessage
+    public sealed class ActorReliableMessage
     {
         [DataMember]
-        public ActorReference ActorReference { get; set; }
+        public ActorReference ActorReference { get; internal set; }
 
         [DataMember]
         public ReliableMessage Message { get; set; }
@@ -59,25 +59,29 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         private readonly IActorStateManager _stateManager;
         private readonly IActorProxyFactory _actorProxyFactory;
+        private readonly Func<ActorReliableMessage, Task> _messageDrop;
         private readonly Func<IOutboundMessageChannelLogger> _loggerFactory;
 
         private readonly string _reliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
         private readonly string _deadLetterQueue = @"fg__deadletterqueue_state";
 
-        public OutboundReliableMessageChannel(IActorStateManager stateManager, IActorProxyFactory actorProxyFactory,
-            Func<IOutboundMessageChannelLogger> loggerFactory = null)
+        public OutboundReliableMessageChannel(
+            IActorStateManager stateManager, 
+            IActorProxyFactory actorProxyFactory,
+            Func<IOutboundMessageChannelLogger> loggerFactory = null,
+            Func<ActorReliableMessage, Task> messageDrop = null)
         {
             _stateManager = stateManager;
             _actorProxyFactory = actorProxyFactory;
+            _messageDrop = messageDrop;
             _loggerFactory = loggerFactory ?? DefaultLoggerFactory();
         }
 
         private static Func<IOutboundMessageChannelLogger> DefaultLoggerFactory()
         {
-            return () => new NullOpOutboundMessageChannelLogger();
+            return () => null;
         }
-
-        // TODO: Use JSON as default serializer instead?
+        
         public async Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId,
             string applicationName = null, string serviceName = null, string listerName = null)
             where TActorInterface : IReliableMessageReceiverActor
@@ -93,7 +97,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             });
             await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
         }
-
+        
         public async Task ProcessQueueAsync()
         {
             var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
@@ -105,21 +109,28 @@ namespace FG.ServiceFabric.Actors.Runtime
                     await SendAsync(actorMessage.Message, actorMessage.ActorReference);
                     await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
 
-                    _loggerFactory().SentMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.MessageType);
+                    _loggerFactory()?.MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.MessageType);
                 }
                 catch (Exception e)
                 {
-                    // TODO: Retry logic?
-                    // TODO: Make it possible to modify persisted commands (through api) before retrying?
-                    _loggerFactory().FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
-
-                    var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager);
-                    deadLetterState.Enqueue(actorMessage);
-                    await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, channelState, _stateManager);
-
-                    // TODO: Manual retries?
-                    _loggerFactory().MovedToDeadLetters(deadLetterState.Depth);
+                    _loggerFactory()?.FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
+                    await DropMessageAsync(actorMessage);
                 }
+            }
+        }
+
+        private async Task DropMessageAsync(ActorReliableMessage actorMessage)
+        {
+            if (_messageDrop == null)
+            {
+                var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager);
+                deadLetterState.Enqueue(actorMessage);
+                await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, deadLetterState, _stateManager);
+                _loggerFactory()?.MovedToDeadLetters(deadLetterState.Depth);
+            }
+            else
+            {
+                await _messageDrop(actorMessage);
             }
         }
 

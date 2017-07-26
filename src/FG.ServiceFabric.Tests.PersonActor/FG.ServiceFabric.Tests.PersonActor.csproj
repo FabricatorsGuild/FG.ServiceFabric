@@ -179,6 +179,10 @@
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
+      <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
+      <Name>FG.ServiceFabric.Services.Remoting</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj">
       <Project>{7BBAA4B3-B05B-4132-B363-20B279CA4F14}</Project>
       <Name>FG.ServiceFabric.Tests.PersonActor.Interfaces</Name>

@@ -19,10 +19,10 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         public const string EventStreamStateKey = @"fg__eventstream_state";
 
-        public ITimeProvider TimeProvider { get; }
-        public TimeSpan OutboundMessageChannelPeriod { get; }
-        public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
-        public IInboundReliableMessageChannel InboundMessageChannel { get; set; }
+        protected ITimeProvider TimeProvider { get; }
+        protected TimeSpan OutboundMessageChannelPeriod { get; }
+        protected IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
+        protected IInboundReliableMessageChannel InboundMessageChannel { get; set; }
 
         protected EventStoredActor(
             Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId,
@@ -32,10 +32,16 @@ namespace FG.ServiceFabric.Actors.Runtime
             : base(actorService, actorId)
         {
             TimeProvider = timeProvider;
-            OutboundMessageChannel = new OutboundReliableMessageChannel(StateManager, ActorProxyFactory, outboundMessageChannelLoggerFactory);
+            OutboundMessageChannel = new OutboundReliableMessageChannel(
+                stateManager: StateManager, 
+                actorProxyFactory: ActorProxyFactory, 
+                loggerFactory: outboundMessageChannelLoggerFactory,
+                messageDrop: OnMessageDropAsync
+                );
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
             OutboundMessageChannelPeriod = outboundMessageChannelPeriod ?? 5.Seconds();
         }
+
 
         private IActorTimer _outboundMessageChannelTimer;
         protected override Task OnActivateAsync()
@@ -102,6 +108,11 @@ namespace FG.ServiceFabric.Actors.Runtime
                     $"No handler found for command {nameof(TMessage)}. Did you forget to implement {nameof(IHandleCommand<TMessage>)}?");
 
             await handleDomainEvent.Handle(message);
+        }
+
+        protected virtual Task OnMessageDropAsync(ActorReliableMessage actorReliableMessage)
+        {
+            return null; // Will result in message ending up in dead letter queue.
         }
 
         #endregion

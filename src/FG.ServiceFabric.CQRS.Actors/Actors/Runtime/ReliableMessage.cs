@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using FG.Common.Utils;
 using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Actors.Runtime
@@ -10,12 +9,11 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         public static IReliableMessageSerializer Serializer { get; set; } = new JsonReliableMessageSerializer();
 
-        [Obsolete("Serialization only.")]
-        protected ReliableMessage()
+        private ReliableMessage()
         {
         }
 
-        protected ReliableMessage(string payload, string messageType)
+        public ReliableMessage(string payload, string messageType)
         {
             Payload = payload;
             MessageType = messageType;
@@ -25,6 +23,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         public string Payload { get; private set; }
         [DataMember]
         public string MessageType { get; private set; }
+        [DataMember]
+        public MessageHeader[] MessageHeaders { get; set; }
 
         internal object Deserialize()
         {
@@ -35,6 +35,12 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             return new ReliableMessage(Serializer.Serialize(message), message.GetType().FullName);
         }
+    }
+
+    public class MessageHeader
+    {
+        public string Name { get; set; }
+        public byte[] Data { get; set; }
     }
 
     public interface IReliableMessageSerializer
@@ -57,27 +63,12 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public object Deserialize(string data)
         {
-            return JsonConvert.DeserializeObject<PayloadWrapper>(data, _settings);
+            return JsonConvert.DeserializeObject(data, _settings);
         }
 
         public string Serialize<T>(T message)
         {
-            return JsonConvert.SerializeObject(new PayloadWrapper(message), Formatting.Indented, _settings);
-        }
-
-        internal sealed class PayloadWrapper
-        {
-            [Obsolete("Serialization only", true)]
-            public PayloadWrapper()
-            {
-            }
-
-            public PayloadWrapper(object payload)
-            {
-                Payload = payload;
-            }
-
-            public object Payload { get; set; }
+            return JsonConvert.SerializeObject(message, Formatting.Indented, _settings);
         }
     }
 }
