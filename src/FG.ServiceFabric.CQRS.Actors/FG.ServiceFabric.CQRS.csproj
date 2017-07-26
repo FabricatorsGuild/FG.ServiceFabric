@@ -110,12 +110,13 @@
   <ItemGroup>
     <Compile Include="Actors\Runtime\CommandDeduplicationHelper.cs" />
     <Compile Include="Actors\Runtime\AggregateRootEventBase.cs" />
-    <Compile Include="Actors\Runtime\IInboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\IInboundReliableMessageChannel.cs" />
     <Compile Include="Actors\Runtime\InboundReliableMessageChannel.cs" />
-    <Compile Include="Actors\Runtime\IReliableMessageChannelLogger.cs" />
+    <Compile Include="Diagnostics\IOutboundMessageChannelLogger.cs" />
+    <Compile Include="Actors\Runtime\NullOpOutboundMessageChannelLogger.cs" />
     <Compile Include="Actors\Runtime\OutboundReliableMessageChannel.cs" />
-    <Compile Include="Actors\Runtime\IOutboundReliableMessageChannel.cs" />
-    <Compile Include="Actors\Runtime\IReliableMessageEndpoint.cs" />
+    <Compile Include="Actors\IOutboundReliableMessageChannel.cs" />
+    <Compile Include="Actors\IReliableMessageEndpoint.cs" />
     <Compile Include="Actors\IReliableMessageReceiverActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />

@@ -2,8 +2,10 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
+using FG.Common.Utils;
 using FG.CQRS;
 using FG.CQRS.Exceptions;
+using FG.ServiceFabric.Diagnostics;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
@@ -18,29 +20,30 @@ namespace FG.ServiceFabric.Actors.Runtime
         public const string EventStreamStateKey = @"fg__eventstream_state";
 
         public ITimeProvider TimeProvider { get; }
+        public TimeSpan OutboundMessageChannelPeriod { get; }
+        public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
+        public IInboundReliableMessageChannel InboundMessageChannel { get; set; }
 
         protected EventStoredActor(
             Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId,
             ITimeProvider timeProvider = null,
-            Func<IOutboundMessageChannelLogger> outboundMessageChannelLoggerFactory = null)
+            Func<IOutboundMessageChannelLogger> outboundMessageChannelLoggerFactory = null,
+            TimeSpan? outboundMessageChannelPeriod = null)
             : base(actorService, actorId)
         {
             TimeProvider = timeProvider;
             OutboundMessageChannel = new OutboundReliableMessageChannel(StateManager, ActorProxyFactory, outboundMessageChannelLoggerFactory);
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
+            OutboundMessageChannelPeriod = outboundMessageChannelPeriod ?? 5.Seconds();
         }
-
-        public IOutboundReliableMessageChannel OutboundMessageChannel { get; set; }
-        public IInboundReliableMessageChannel InboundMessageChannel { get; set; }
 
         private IActorTimer _outboundMessageChannelTimer;
         protected override Task OnActivateAsync()
         {
-            // TODO: Configurable due/period time?
             if (_outboundMessageChannelTimer == null)
             {
                 _outboundMessageChannelTimer = RegisterTimer(async _ => { await OutboundMessageChannel.ProcessQueueAsync(); }, null,
-                    TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+                    1.Seconds(), OutboundMessageChannelPeriod);
             }
 
             return base.OnActivateAsync();
@@ -55,6 +58,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             return base.OnDeactivateAsync();
         }
+
+        #region Command deduplication
 
         protected async Task ExecuteCommandAsync
             (Func<CancellationToken, Task> func, ICommand command, CancellationToken cancellationToken)
@@ -74,6 +79,32 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             return await CommandDeduplicationHelper.ProcessOnceAsync(func, command, StateManager, cancellationToken);
         }
+
+        #endregion
+
+        #region Reliable messaging
+
+        protected Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, string applicationName = null,
+            string serviceName = null, string listerName = null)
+            where TActorInterface : IReliableMessageReceiverActor
+        {
+            return OutboundMessageChannel.SendMessageAsync<TActorInterface>(message, actorId, applicationName, serviceName,
+                listerName);
+        }
+
+        public async Task HandleMessageAsync<TMessage>(TMessage message) where TMessage : ICommand
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            var handleDomainEvent = this as IHandleCommand<TMessage>;
+
+            if (handleDomainEvent == null)
+                throw new HandlerNotFoundException(
+                    $"No handler found for command {nameof(TMessage)}. Did you forget to implement {nameof(IHandleCommand<TMessage>)}?");
+
+            await handleDomainEvent.Handle(message);
+        }
+
+        #endregion
 
         protected TAggregateRoot DomainState = null;
 
@@ -110,18 +141,6 @@ namespace FG.ServiceFabric.Actors.Runtime
                     $"No handler found for event {nameof(TDomainEvent)}. Did you forget to implement {nameof(IHandleDomainEvent<TDomainEvent>)}?");
 
             await handleDomainEvent.Handle(domainEvent);
-        }
-
-        public async Task HandleMessageAsync<TMessage>(TMessage message) where TMessage : ICommand
-        {
-            //    // ReSharper disable once SuspiciousTypeConversion.Global
-            var handleDomainEvent = this as IHandleCommand<TMessage>;
-
-            if (handleDomainEvent == null)
-                throw new HandlerNotFoundException(
-                    $"No handler found for command {nameof(TMessage)}. Did you forget to implement {nameof(IHandleCommand<TMessage>)}?");
-
-            await handleDomainEvent.Handle(message);
         }
     }
 }

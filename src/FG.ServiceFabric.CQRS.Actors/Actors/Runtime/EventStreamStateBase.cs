@@ -3,7 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using FG.CQRS;
 
-namespace FG.ServiceFabric.CQRS
+namespace FG.ServiceFabric.Actors.Runtime
 {
     [DataContract]
     public abstract class EventStreamStateBase : IDomainEventStream

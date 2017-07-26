@@ -2,7 +2,7 @@
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FG.CQRS;
-using FG.ServiceFabric.CQRS;
+using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.PersonActor.Interfaces

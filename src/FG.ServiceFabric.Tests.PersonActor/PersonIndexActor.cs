@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.CQRS;
+using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;

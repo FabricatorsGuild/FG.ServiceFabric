@@ -4,7 +4,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using FG.CQRS;
 using FG.CQRS.Exceptions;
-using FG.ServiceFabric.CQRS;
+using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 
 namespace FG.ServiceFabric.Tests.PersonActor

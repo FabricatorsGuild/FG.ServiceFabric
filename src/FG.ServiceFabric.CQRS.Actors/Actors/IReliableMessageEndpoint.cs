@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace FG.ServiceFabric.Actors.Runtime
+namespace FG.ServiceFabric.Actors
 {
     public interface IReliableMessageEndpoint<in TMessageBase>
     {

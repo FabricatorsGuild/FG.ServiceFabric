@@ -1,16 +1,10 @@
 ﻿using System;
+using FG.ServiceFabric.Diagnostics;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public interface IOutboundMessageChannelLogger
-    {
-        void FailedToSendMessage(ActorId actorId, Uri serviceUri, Exception ex);
-        void SentMessage(ActorId actorId, Uri serviceUri, string messageType);
-        void MovedToDeadLetters(int depth);
-    }
-
-    public class NullOpOutboundMessageChannelLogger : IOutboundMessageChannelLogger
+    internal class NullOpOutboundMessageChannelLogger : IOutboundMessageChannelLogger
     {
         public void FailedToSendMessage(ActorId actorId, Uri serviceUri, Exception ex)
         {
