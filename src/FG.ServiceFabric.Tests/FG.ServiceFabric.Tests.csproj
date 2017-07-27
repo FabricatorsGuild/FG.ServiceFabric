@@ -134,9 +134,13 @@
       <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
       <Name>FG.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+      <Project>{a2a3cddf-b37e-4f35-8200-49d7259038f5}</Project>
+      <Name>FG.ServiceFabric.CQRS</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
       <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
-      <Name>FG.ServiceFabric.Persistance</Name>
+      <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2c6aefca-f4a1-47bc-8abf-8374f852ca89}</Project>
@@ -149,10 +153,6 @@
     <ProjectReference Include="..\FG.CQRS\FG.CQRS.csproj">
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
       <Name>FG.CQRS</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.csproj">
-      <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
-      <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>

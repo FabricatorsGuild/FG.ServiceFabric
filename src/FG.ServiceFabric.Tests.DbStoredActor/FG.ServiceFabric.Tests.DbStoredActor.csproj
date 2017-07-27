@@ -114,7 +114,7 @@
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
       <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
-      <Name>FG.ServiceFabric.Persistance</Name>
+      <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj">
       <Project>{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}</Project>

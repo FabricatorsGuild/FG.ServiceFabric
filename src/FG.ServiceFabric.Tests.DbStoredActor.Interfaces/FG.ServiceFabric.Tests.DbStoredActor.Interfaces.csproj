@@ -89,7 +89,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
       <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
-      <Name>FG.ServiceFabric.Persistance</Name>
+      <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

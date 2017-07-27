@@ -167,13 +167,13 @@
       <Project>{045616fb-2560-4168-b073-8d5b86fa7b52}</Project>
       <Name>FG.ServiceFabric.Actors.Remoting</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.csproj">
-      <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
-      <Name>FG.ServiceFabric.CQRS.Actors</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FG.CQRS\FG.CQRS.csproj">
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
       <Name>FG.CQRS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
+      <Project>{a2a3cddf-b37e-4f35-8200-49d7259038f5}</Project>
+      <Name>FG.ServiceFabric.CQRS</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>

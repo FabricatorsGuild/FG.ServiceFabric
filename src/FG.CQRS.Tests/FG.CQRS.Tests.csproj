@@ -66,10 +66,6 @@
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
       <Name>FG.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS.Actors\FG.ServiceFabric.CQRS.csproj">
-      <Project>{3d50a2ba-c14e-4a82-b76b-3de20c97d558}</Project>
-      <Name>FG.ServiceFabric.CQRS</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

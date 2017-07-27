@@ -2,22 +2,36 @@
 using System.Collections.Generic;
 using System.Linq;
 using Castle.Components.DictionaryAdapter;
-using FG.ServiceFabric.Actors.Runtime;
 
 // ReSharper disable InconsistentNaming
 
 namespace FG.CQRS.Tests.AggregateRoot
 {
     #region Aggregate root under test
-    public class MaliciousEvent : AggregateRootEventBase, ITestEventBase
+    
+    public class BaseEvent : IAggregateRootEvent
+    {
+        public BaseEvent()
+        {
+            EventId = Guid.NewGuid();
+            UtcTimeStamp = DateTime.UtcNow;
+        }
+
+        public Guid EventId { get; }
+        public DateTime UtcTimeStamp { get; set; }
+        public Guid AggregateRootId { get; set; }
+        public int Version { get; set; }
+    }
+
+    public class MaliciousEvent : BaseEvent, ITestEventBase
     {
     }
 
-    public class UnhandledEvent : AggregateRootEventBase, ITestEventBase
+    public class UnhandledEvent : BaseEvent, ITestEventBase
     {
     }
 
-    public class TestCreatedEventCreatingAllChilrenInOneGoEvent : AggregateRootEventBase, ITestCreatedEvent, ITestEntityL1AddedEvent, ITestEntityL2AddedEvent
+    public class TestCreatedEventCreatingAllChilrenInOneGoEvent : BaseEvent, ITestCreatedEvent, ITestEntityL1AddedEvent, ITestEntityL2AddedEvent
     {
         public int Entityl1Id { get; set; }
         public string Name { get; set; }
@@ -76,7 +90,17 @@ namespace FG.CQRS.Tests.AggregateRoot
 
     }
 
-    public class TestEventStream : EventStreamStateBase { }
+    public class TestEventStream : IDomainEventStream {
+        public TestEventStream()
+        {
+            DomainEvents = new IDomainEvent[] { };
+        }
+        public IDomainEvent[] DomainEvents { get; set; }
+        public void Append(IDomainEvent domainEvent)
+        {
+            DomainEvents = DomainEvents.Union(new[] { domainEvent }).ToArray();
+        }
+    }
 
     public interface ITestEventBase : IAggregateRootEvent { }
 
@@ -92,7 +116,7 @@ namespace FG.CQRS.Tests.AggregateRoot
 
     public interface ITestCreatedEvent : ITestEventBase, IAggregateRootCreatedEvent { }
 
-    public class TestCreatedEvent : AggregateRootEventBase, ITestCreatedEvent
+    public class TestCreatedEvent : BaseEvent, ITestCreatedEvent
     {
     }
 
@@ -101,7 +125,7 @@ namespace FG.CQRS.Tests.AggregateRoot
         string Name { get; set; }
     }
 
-    public class TestEntityL1AddedEvent : AggregateRootEventBase, ITestEntityL1AddedEvent
+    public class TestEntityL1AddedEvent : BaseEvent, ITestEntityL1AddedEvent
     {
         public TestEntityL1AddedEvent(int entityl1Id) { Entityl1Id = entityl1Id; }
         public int Entityl1Id { get; set; }
@@ -113,7 +137,7 @@ namespace FG.CQRS.Tests.AggregateRoot
         int Value { get; set; }
     }
 
-    public class TestEntityL2AddedEvent : AggregateRootEventBase, ITestEntityL2AddedEvent
+    public class TestEntityL2AddedEvent : BaseEvent, ITestEntityL2AddedEvent
     {
         public TestEntityL2AddedEvent(int entityl1Id, int entityl2Id)
         {
