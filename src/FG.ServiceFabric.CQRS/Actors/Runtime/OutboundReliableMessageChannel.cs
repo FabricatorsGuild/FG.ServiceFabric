@@ -133,8 +133,7 @@ namespace FG.ServiceFabric.Actors.Runtime
                         (k, v) => channelState, cancellationToken);
 
                     _loggerFactory()?
-                        .MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri,
-                            actorMessage.Message.MessageType);
+                        .MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.Payload, actorMessage.Message.MessageType);
                 }
                 catch (Exception e)
                 {
@@ -157,7 +156,7 @@ namespace FG.ServiceFabric.Actors.Runtime
                 var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
                 deadLetterState.Enqueue(actorMessage);
                 await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
-                _loggerFactory()?.MovedToDeadLetters(deadLetterState.Depth);
+                _loggerFactory()?.MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload, deadLetterState.Depth);
             }
             else
             {

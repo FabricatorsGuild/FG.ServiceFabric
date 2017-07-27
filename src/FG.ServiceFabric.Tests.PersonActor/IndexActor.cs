@@ -36,7 +36,6 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
 
         public async Task ReceiveMessageAsync(ReliableMessage message)
         {
-            throw new Exception("apa");
             await InboundMessageChannel.ReceiveMessageAsync(message);
         }
 
