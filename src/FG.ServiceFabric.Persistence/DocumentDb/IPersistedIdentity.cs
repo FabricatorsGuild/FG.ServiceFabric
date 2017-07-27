@@ -4,6 +4,4 @@ namespace FG.ServiceFabric.DocumentDb
     {
         string Id { get; }
     }
-
-
 }

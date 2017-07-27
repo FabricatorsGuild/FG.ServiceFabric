@@ -107,8 +107,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actors\Runtime\DocumentDbReplicatedActorStateProvider.RegistrationBuilder.cs" />
-    <Compile Include="Actors\Runtime\DocumentDbReplicatedStateProvider.cs" />
+    <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
+      <Link>Properties\AssemblyVersion.cs</Link>
+    </Compile>
+    <Compile Include="Actors\Runtime\DocumentDbActorStateProvider.RegistrationBuilder.cs" />
+    <Compile Include="Actors\Runtime\DocumentDbActorStateProvider.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
     <Compile Include="DocumentDb\CosmosDb\StateWrapper.cs" />
@@ -123,6 +126,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="FG.ServiceFabric.Persistence.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -141,4 +147,8 @@
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" />
+  <PropertyGroup>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+  </PropertyGroup>
 </Project>

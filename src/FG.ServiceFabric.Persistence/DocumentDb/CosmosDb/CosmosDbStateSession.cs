@@ -45,16 +45,8 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
         
         public async Task UpsertAsync<T>(T state, IStateMetadata metadata) where T : IPersistedIdentity
         {
-            try
-            {
-                var document = new StateWrapper<T>(state, metadata);
-                await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection), document);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
+            var document = new StateWrapper<T>(state, metadata);
+            await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection), document);
         }
         
         public async Task DelecteAsync(string id, Guid partitionKey)

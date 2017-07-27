@@ -11,6 +11,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
+    // TODO: Support restoring state.
     public partial class DocumentDbActorStateProvider : WrappedActorStateProvider, IDisposable
     {
         private readonly IDocumentDbStateWriter _documentDb;
