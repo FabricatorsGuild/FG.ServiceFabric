@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Actors.Runtime.Tests
 {
-    public class ActorStateProviderHelperTests
+	public class ActorStateProviderHelperTests
     {
         [Test]
         public void CreateDefaultStateProvider_should_create_instance_of_IActorStateProvider()

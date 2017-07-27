@@ -119,6 +119,7 @@
     <Compile Include="Actors\State\VersionedStateProvider.cs" />
     <Compile Include="Data\ReliableStateInfo.cs" />
     <Compile Include="Data\ReliableStateExtensions.cs" />
+    <Compile Include="Fabric\FabricClientQueryManagerExtensions.cs" />
     <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
     <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
     <Compile Include="Services\Runtime\ServiceContextExtensions.cs" />
@@ -130,6 +131,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
+    <Compile Include="Utils\ISettingsProvider.cs" />
+    <Compile Include="Utils\SettingsProviderBase.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FG.ServiceFabric.Extensions.nuspec" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Tests.PersonActor;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
@@ -8,27 +9,46 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.CQRS.When_registering_a_person
 {
-    public class After_registering_a_person : TestBase
+    public class After_event_is_raised : TestBase
     {
+        protected override void SetupRuntime()
+        {
+            ForTestPersonActor.Setup(FabricRuntime);
+            ForTestPersonIndexActor.Setup(FabricRuntime);
+            base.SetupRuntime();
+        }
+
         private readonly Guid _aggregateRootId = Guid.NewGuid();
         [SetUp]
-        public async Task RegisterPerson()
+        public async Task RaiseEvent()
         {
             var personProxy = ActorProxyFactory.CreateActorProxy<IPersonActor>(new ActorId(_aggregateRootId));
             await personProxy.RegisterAsync(new RegisterCommand { FirstName = "Stig"});
         }
 
         [Test]
-        public async Task Then_person_is_registeredAsync()
+        public async Task Then_event_is_applied()
         {
             var personServiceProxy = ActorProxyFactory.CreateActorServiceProxy<IPersonActorService>(
-                serviceUri: new Uri("fabric:/FG.ServiceFabric.Tests.Application/PersonActorService"),
+                serviceUri: FabricRuntime.ApplicationUriBuilder.Build("PersonActorService").ToUri(),
                 actorId: new ActorId(_aggregateRootId));
 
             var person = await personServiceProxy.GetAsync(_aggregateRootId);
 
             person.Should().NotBeNull();
-            person.Name.Should().Be("Stig");
+            person.FirstName.Should().Be("Stig");
+        }
+
+
+        [Test]
+        public async Task Then_event_is_stored()
+        {
+            var personServiceProxy = ActorProxyFactory.CreateActorServiceProxy<IPersonActorService>(
+                serviceUri: FabricRuntime.ApplicationUriBuilder.Build("PersonActorService").ToUri(),
+                actorId: new ActorId(_aggregateRootId));
+
+            var events = await personServiceProxy.GetAllEventHistoryAsync(_aggregateRootId);
+            events.Should().Contain(x => x.EventType == typeof(PersonRegisteredEvent).FullName);
         }
 
         [Test]

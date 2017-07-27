@@ -64,7 +64,7 @@ namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
     {
         public Guid Id { get; set; }
         [DataMember]
-        public string Name { get; set; }
+        public string FirstName { get; set; }
         [DataMember]
         public MaritalStatus MaritalStatus { get; set; }
     }

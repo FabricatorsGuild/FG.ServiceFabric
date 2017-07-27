@@ -44,8 +44,6 @@ namespace FG.ServiceFabric.Tests.PersonActor
     {
         [DataMember]
         public string FirstName { get; set; }
-        [DataMember]
-        public string LastName { get; set; }
     }
 
     [DataContract]
@@ -155,7 +153,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         public PersonReadModelGenerator(IEventStreamReader<PersonEventStream> eventStreamReader) : base(eventStreamReader)
         {
             RegisterEventAppliers()
-                .For<IPersonFirstNameUpdated>(e => ReadModel.Name = e.FirstName)
+                .For<IPersonFirstNameUpdated>(e => ReadModel.FirstName = e.FirstName)
                 .For<IMaritalStatusUpdated>(e => ReadModel.MaritalStatus = e.MaritalStatus)
                 ;
         }

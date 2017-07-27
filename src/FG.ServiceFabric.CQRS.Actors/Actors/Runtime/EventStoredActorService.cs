@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.CQRS;
@@ -14,7 +15,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 {
     public interface IEventStoredActorService : IActorService
     {
-        Task<IEnumerable<string>> GetAllEventHistoryAsync(Guid aggregateRootId);
+        Task<IEnumerable<EventWrapper>> GetAllEventHistoryAsync(Guid aggregateRootId);
     }
 
     public abstract class EventStoredActorService<TAggregateRoot, TEventStream> : ActorService, IEventStoredActorService
@@ -42,13 +43,41 @@ namespace FG.ServiceFabric.Actors.Runtime
                                                  EventStoredActor<TAggregateRoot, TEventStream>.EventStreamStateKey);
         }
 
-        public async Task<IEnumerable<string>> GetAllEventHistoryAsync(Guid aggregateRootId)
+        public async Task<IEnumerable<EventWrapper>> GetAllEventHistoryAsync(Guid aggregateRootId)
         {
             var events = await StateProviderEventStreamReader.GetEventStreamAsync(aggregateRootId,
                 CancellationToken.None);
 
+
             return events.DomainEvents.OfType<IAggregateRootEvent>().Select(
-                @event => JsonConvert.SerializeObject(new {Event = @event.GetType().Name, Payload = @event})).ToList();
+                @event => new EventWrapper(@event)).ToList();
         }
+    }
+
+    [DataContract]
+    public class EventWrapper : IAggregateRootEvent
+    {
+        public EventWrapper(IAggregateRootEvent @event)
+        {
+            EventId = @event.EventId;
+            UtcTimeStamp = @event.UtcTimeStamp;
+            AggregateRootId = @event.AggregateRootId;
+            Version = @event.Version;
+            EventType = @event.GetType().FullName;
+            JsonPayload = JsonConvert.SerializeObject(@event);
+        }
+
+        [DataMember]
+        public string EventType { get; set; }
+        [DataMember]
+        public string JsonPayload { get; set; }
+        [DataMember]
+        public Guid EventId { get; }
+        [DataMember]
+        public DateTime UtcTimeStamp { get; set; }
+        [DataMember]
+        public Guid AggregateRootId { get; set; }
+        [DataMember]
+        public int Version { get; set; }
     }
 }

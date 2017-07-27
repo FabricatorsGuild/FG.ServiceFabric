@@ -7,5 +7,8 @@
     <Parameter Name="PersonIndexActorService_PartitionCount" Value="1" />
     <Parameter Name="PersonIndexActorService_TargetReplicaSetSize" Value="1" />
     <Parameter Name="PersonIndexActorService_MinReplicaSetSize" Value="1" />
+    <Parameter Name="DbStoredActorService_PartitionCount" Value="1" />
+    <Parameter Name="DbStoredActorService_TargetReplicaSetSize" Value="1" />
+    <Parameter Name="DbStoredActorService_MinReplicaSetSize" Value="1" />
   </Parameters>
 </Application>

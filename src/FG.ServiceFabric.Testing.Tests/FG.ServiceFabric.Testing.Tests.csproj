@@ -101,6 +101,7 @@
       <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\System.Fabric.Strings.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml.Linq" />
@@ -113,6 +114,7 @@
   <ItemGroup>
     <Compile Include="Actors\Client\MockActorProxyFactory_tests.cs" />
     <Compile Include="Actors\Client\MockActorProxyFactory_StateProvider_tests.cs" />
+    <Compile Include="Actors\Client\MockActorStateProvider_partitions_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
   </ItemGroup>

@@ -14,16 +14,10 @@ namespace FG.ServiceFabric.Tests.CQRS
         private IndexCommand _message1;
         private IndexCommand _message2;
         private IndexCommand _message3;
-
-        protected override void SetupRuntime()
-        {
-            SetupPersonIndexActor(FabricRuntime);
-        }
-
+        
         [SetUp]
         public async Task SendMessage()
         {
-
             _message1 = new IndexCommand { PersonId = Guid.NewGuid() };
             _message2 = new IndexCommand { PersonId = Guid.NewGuid() };
             _message3 = new IndexCommand { PersonId = Guid.NewGuid() };

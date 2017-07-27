@@ -34,6 +34,12 @@ namespace FG.ServiceFabric.Tests.CQRS
                 FabricRuntime.ActorProxyFactory, null, null, new MockActorBinder(FabricRuntime));
         }
 
+        protected override void SetupRuntime()
+        {
+            ForTestPersonIndexActor.Setup(FabricRuntime);
+            base.SetupRuntime();
+        }
+
         public OutboundReliableMessageChannel OutboundChannel { get; set; }
     }
 }

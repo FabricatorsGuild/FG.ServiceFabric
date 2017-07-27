@@ -12,12 +12,7 @@ namespace FG.ServiceFabric.Tests.CQRS
     public class When_sending_a_reliable_message : ReliableMessgeTestBase
     {
         private ReliableMessage _message;
-
-        protected override void SetupRuntime()
-        {
-            SetupPersonIndexActor(FabricRuntime);
-        }
-
+        
         [SetUp]
         public async Task SendMessage()
         {

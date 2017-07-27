@@ -3,5 +3,6 @@
   <Parameters>
     <Parameter Name="PersonActorService_PartitionCount" Value="1" />
     <Parameter Name="PersonIndexActorService_PartitionCount" Value="1" />
+    <Parameter Name="DbStoredActorService_PartitionCount" Value="1" />
   </Parameters>
 </Application>

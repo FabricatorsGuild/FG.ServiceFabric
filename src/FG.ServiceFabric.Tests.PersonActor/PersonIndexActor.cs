@@ -24,6 +24,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         public PersonIndexActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
+
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
         }
 
@@ -31,6 +32,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
         {
             return base.OnActivateAsync();
         }
+        
 
         public async Task ReceiveMessageAsync(ReliableMessage message)
         {
@@ -45,6 +47,11 @@ namespace FG.ServiceFabric.Tests.PersonActor
         }
         
         public Task Handle(IndexCommand command)
+        {
+            return UpdateIndexAsync(command);
+        }
+
+        private Task UpdateIndexAsync(IndexCommand command)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
             {
@@ -64,6 +71,5 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
             await handleDomainEvent.Handle(message);
         }
-
     }
 }

@@ -14,9 +14,15 @@ namespace FG.ServiceFabric.Actors.Runtime
     {
         private readonly IActorStateProvider _innerStateProvider;
 
-        protected WrappedActorStateProvider(ActorTypeInformation actorTypeInfo, IActorStateProvider stateProvider = null)
+        protected WrappedActorStateProvider(IActorStateProvider stateProvider = null, ActorTypeInformation actorTypeInfo = null)
         {
-            _innerStateProvider = stateProvider ?? Actors.Runtime.ActorStateProviderHelper.CreateDefaultStateProvider(actorTypeInfo);
+            if (actorTypeInfo == null && stateProvider == null)
+            {
+                throw new ArgumentNullException(
+                    $"A non null instance of {nameof(actorTypeInfo)} must be provided when no {nameof(stateProvider)} is given in order to determine an backing state provider.");
+            }
+
+            _innerStateProvider = stateProvider ?? ActorStateProviderHelper.CreateDefaultStateProvider(actorTypeInfo);
         }
 
         public void Initialize(StatefulServiceInitializationParameters initializationParameters)

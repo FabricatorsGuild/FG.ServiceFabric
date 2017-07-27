@@ -25,7 +25,7 @@ namespace FG.ServiceFabric.Services.Runtime
 
         public StatefulService(StatefulServiceContext serviceContext, IReliableStateManagerReplica reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
         {
-            _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
+            _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);			
         }
 
         public ApplicationUriBuilder ApplicationUriBuilder => _applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
