@@ -59,7 +59,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
         public async Task Handle(PersonRegisteredEvent domainEvent)
         {
-            await OutboundMessageChannel.SendMessageAsync<IPersonIndexActor>(ReliableMessage.Create(new IndexCommand { PersonId = domainEvent.AggregateRootId }), new ActorId("PersonIndex"), applicationName: "FG.ServiceFabric.Tests.Application");
+            await OutboundMessageChannel.SendMessageAsync<IPersonIndexActor>(ReliableMessage.Create(new IndexCommand { PersonId = domainEvent.AggregateRootId }), new ActorId("PersonIndex"), CancellationToken.None, applicationName: "FG.ServiceFabric.Tests.Application");
             await StoreDomainEventAsync(domainEvent);
         }
 

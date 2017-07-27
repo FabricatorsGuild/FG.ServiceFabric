@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
@@ -40,8 +41,8 @@ namespace FG.ServiceFabric.Tests.CQRS
         public async Task SendMessage()
         {
             var message = ReliableMessage.Create(new IndexCommand { PersonId = Guid.NewGuid() });
-            await OutboundChannel.SendMessageAsync<IPersonIndexActor>(message, new ActorId("PersonIndex"), FabricRuntime.ApplicationName);
-            await OutboundChannel.ProcessQueueAsync();
+            await OutboundChannel.SendMessageAsync<IPersonIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None, FabricRuntime.ApplicationName);
+            await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
         }
 
         [Test]

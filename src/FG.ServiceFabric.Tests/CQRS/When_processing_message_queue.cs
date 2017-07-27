@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
@@ -26,13 +27,14 @@ namespace FG.ServiceFabric.Tests.CQRS
             await SendMessage(ReliableMessage.Create(_message2));
             await SendMessage(ReliableMessage.Create(_message3));
             
-            await OutboundChannel.ProcessQueueAsync();
+            await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
         }
 
         private async Task SendMessage(ReliableMessage message)
         {
             await OutboundChannel.SendMessageAsync<IPersonIndexActor>(
-                message, new ActorId("PersonIndex"),
+                message, new ActorId("PersonIndex"), 
+                CancellationToken.None,
                 FabricRuntime.ApplicationName);
         }
 

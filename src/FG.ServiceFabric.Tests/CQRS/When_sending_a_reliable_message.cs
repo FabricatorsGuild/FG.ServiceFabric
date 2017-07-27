@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
@@ -19,14 +20,15 @@ namespace FG.ServiceFabric.Tests.CQRS
             _message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
 
             await OutboundChannel.SendMessageAsync<IPersonIndexActor>(
-                _message, new ActorId("PersonIndex"),
+                _message, new ActorId("PersonIndex"), 
+                CancellationToken.None,
                 FabricRuntime.ApplicationName);
         }
 
         [Test]
         public async Task Then_message_gets_put_on_queue()
         {
-            var message = await OutboundChannel.PeekQueue();
+            var message = await OutboundChannel.PeekQueue(CancellationToken.None);
             message.ShouldBeEquivalentTo(_message);
         }
     }

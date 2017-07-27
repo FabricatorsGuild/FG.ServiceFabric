@@ -104,56 +104,59 @@ namespace FG.ServiceFabric.Actors.Runtime
             return () => null;
         }
         
-        public async Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId,
+        public async Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, CancellationToken cancellationToken,
             string applicationName = null, string serviceName = null, string listerName = null)
             where TActorInterface : IReliableMessageReceiverActor
         {
             var proxy = _actorProxyFactory.CreateActorProxy<TActorInterface>(actorId, applicationName, serviceName,
                 listerName);
 
-            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager, cancellationToken);
             channelState.Enqueue(new ActorReliableMessage
             {
                 ActorReference = ActorReference.Get(proxy),
                 Message = message
             });
-            await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
+            await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager, cancellationToken);
         }
         
-        public async Task ProcessQueueAsync()
+        public async Task ProcessQueueAsync(CancellationToken cancellationToken)
         {
-            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager, cancellationToken);
             while (channelState != null && !channelState.IsEmpty)
             {
                 var actorMessage = channelState.Dequeue();
                 try
                 {
                     await SendAsync(actorMessage.Message, actorMessage.ActorReference);
-                    await AddOrUpdateStateWithRetriesAsync(_reliableMessageQueueStateKey, channelState, _stateManager);
+                    await _stateManager.AddOrUpdateStateAsync(_reliableMessageQueueStateKey, channelState,
+                        (k, v) => channelState, cancellationToken);
 
-                    _loggerFactory()?.MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.MessageType);
+                    _loggerFactory()?
+                        .MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri,
+                            actorMessage.Message.MessageType);
                 }
                 catch (Exception e)
                 {
                     _loggerFactory()?.FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
-                    await DropMessageAsync(actorMessage);
+                    await DropMessageAsync(actorMessage, cancellationToken);
                 }
             }
         }
 
-        public async Task<ReliableMessage> PeekQueue()
+        public async Task<ReliableMessage> PeekQueue(CancellationToken cancellationToken)
         {
-            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager, cancellationToken);
             return channelState.Peek().Message;
         }
         
-        private async Task DropMessageAsync(ActorReliableMessage actorMessage)
+        private async Task DropMessageAsync(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
         {
             if (_messageDrop == null)
             {
-                var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager);
+                var deadLetterState = await GetOrAddStateWithRetriesAsync(_deadLetterQueue, _stateManager, cancellationToken);
                 deadLetterState.Enqueue(actorMessage);
-                await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, deadLetterState, _stateManager);
+                await AddOrUpdateStateWithRetriesAsync(_deadLetterQueue, deadLetterState, _stateManager, cancellationToken);
                 _loggerFactory()?.MovedToDeadLetters(deadLetterState.Depth);
             }
             else
@@ -169,19 +172,19 @@ namespace FG.ServiceFabric.Actors.Runtime
         }
         
         private static Task AddOrUpdateStateWithRetriesAsync(string stateName, ReliableMessageChannelState state,
-            IActorStateManager stateManager)
+            IActorStateManager stateManager, CancellationToken cancellationToken)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.AddOrUpdateStateAsync(stateName, state, (k, v) => state, ct), 3,
-                TimeSpan.FromSeconds(1), CancellationToken.None);
+                TimeSpan.FromSeconds(1), cancellationToken);
         }
 
         private static Task<ReliableMessageChannelState> GetOrAddStateWithRetriesAsync(string stateName,
-            IActorStateManager stateManager)
+            IActorStateManager stateManager, CancellationToken cancellationToken)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.GetOrAddStateAsync(stateName, new ReliableMessageChannelState(), ct),
-                3, TimeSpan.FromSeconds(1), CancellationToken.None);
+                3, TimeSpan.FromSeconds(1), cancellationToken);
         }
     }
 }

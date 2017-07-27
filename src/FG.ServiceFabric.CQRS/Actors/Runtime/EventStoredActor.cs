@@ -48,7 +48,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             if (_outboundMessageChannelTimer == null)
             {
-                _outboundMessageChannelTimer = RegisterTimer(async _ => { await OutboundMessageChannel.ProcessQueueAsync(); }, null,
+                _outboundMessageChannelTimer = RegisterTimer(async _ => { await OutboundMessageChannel.ProcessQueueAsync(CancellationToken.None); }, null,
                     1.Seconds(), OutboundMessageChannelPeriod);
             }
 
@@ -90,11 +90,11 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         #region Reliable messaging
 
-        protected Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, string applicationName = null,
+        protected Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, CancellationToken cancellationToken, string applicationName = null,
             string serviceName = null, string listerName = null)
             where TActorInterface : IReliableMessageReceiverActor
         {
-            return OutboundMessageChannel.SendMessageAsync<TActorInterface>(message, actorId, applicationName, serviceName,
+            return OutboundMessageChannel.SendMessageAsync<TActorInterface>(message, actorId, cancellationToken, applicationName, serviceName,
                 listerName);
         }
 

@@ -4,6 +4,7 @@ using FG.CQRS.Exceptions;
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+// ReSharper disable InconsistentNaming
 
 namespace FG.CQRS.Tests.AggregateRoot
 {
