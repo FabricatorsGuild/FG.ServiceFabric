@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("FG.ServiceFabric.CQRS")]
-[assembly: AssemblyDescription("Lets you model your domain with CQRS and EventSourcing on Service Fabric")]
+[assembly: AssemblyDescription("CQRS and EventSourcing on Service Fabric")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fabricators Guild")]
 [assembly: AssemblyProduct("FG.ServiceFabric.Data")]
