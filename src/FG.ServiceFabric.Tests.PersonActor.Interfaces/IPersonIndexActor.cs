@@ -12,7 +12,7 @@ namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
 
     public interface IPersonIndexActor : IReliableMessageReceiverActor, IActor
     {
-        Task<IEnumerable<Guid>> ListReceivedCommands();
+        Task<IEnumerable<Guid>> ListCommandsAsync();
     }
     
     #endregion

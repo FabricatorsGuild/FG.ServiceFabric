@@ -12,7 +12,7 @@ namespace FG.ServiceFabric.Tests.WebApi.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var index = await new ActorProxyFactory().CreateActorProxy<IPersonIndexActor>(actorId: new ActorId("PersonIndex")).ListReceivedCommands();
+            var index = await new ActorProxyFactory().CreateActorProxy<IPersonIndexActor>(actorId: new ActorId("PersonIndex")).ListCommandsAsync();
             return Ok(index);
         }
     }

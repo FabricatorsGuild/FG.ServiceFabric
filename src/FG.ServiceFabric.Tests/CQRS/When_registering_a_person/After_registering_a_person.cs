@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Tests.PersonActor.Interfaces;
 using FluentAssertions;
@@ -39,7 +36,7 @@ namespace FG.ServiceFabric.Tests.CQRS.When_registering_a_person
         public async Task Then_person_is_indexed()
         {
             var indexProxy = ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(new ActorId("PersonIndex"));
-            var index = await indexProxy.ListReceivedCommands();
+            var index = await indexProxy.ListCommandsAsync();
 
             index.Should().Contain(_aggregateRootId);
         }

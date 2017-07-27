@@ -54,6 +54,7 @@ namespace FG.ServiceFabric.Tests.CQRS
                    new PersonActor.PersonIndexActor(
                        actorService: service,
                        actorId: id));
+
         }
     }
 }

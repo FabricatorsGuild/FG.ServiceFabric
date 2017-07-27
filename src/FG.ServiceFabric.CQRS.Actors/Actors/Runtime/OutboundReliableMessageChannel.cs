@@ -12,6 +12,20 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
+    public interface IReceiverActorBinder
+    {
+        IReliableMessageReceiverActor Bind(ActorReference actorReference);
+    }
+
+    internal class DefaultActorBinder : IReceiverActorBinder
+    {
+        public IReliableMessageReceiverActor Bind(ActorReference actorReference)
+        {
+            return ((IReliableMessageReceiverActor)actorReference
+                .Bind(typeof(IReliableMessageReceiverActor)));
+        }
+    }
+    
     [DataContract]
     public sealed class ActorReliableMessage
     {
@@ -53,6 +67,11 @@ namespace FG.ServiceFabric.Actors.Runtime
             InnerQueue = new Queue<ActorReliableMessage>(InnerQueue);
             return value;
         }
+
+        public ActorReliableMessage Peek()
+        {
+            return InnerQueue.Peek();
+        }
     }
 
     public class OutboundReliableMessageChannel : IOutboundReliableMessageChannel
@@ -64,17 +83,20 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         private readonly string _reliableMessageQueueStateKey = @"fg__reliablemessagequeue_state";
         private readonly string _deadLetterQueue = @"fg__deadletterqueue_state";
+        private IReceiverActorBinder _actorBinder;
 
         public OutboundReliableMessageChannel(
             IActorStateManager stateManager, 
             IActorProxyFactory actorProxyFactory,
             Func<IOutboundMessageChannelLogger> loggerFactory = null,
-            Func<ActorReliableMessage, Task> messageDrop = null)
+            Func<ActorReliableMessage, Task> messageDrop = null,
+            IReceiverActorBinder actorBinder = null)
         {
             _stateManager = stateManager;
             _actorProxyFactory = actorProxyFactory;
             _messageDrop = messageDrop;
             _loggerFactory = loggerFactory ?? DefaultLoggerFactory();
+            _actorBinder = actorBinder ?? new DefaultActorBinder();
         }
 
         private static Func<IOutboundMessageChannelLogger> DefaultLoggerFactory()
@@ -119,6 +141,12 @@ namespace FG.ServiceFabric.Actors.Runtime
             }
         }
 
+        public async Task<ReliableMessage> PeekQueue()
+        {
+            var channelState = await GetOrAddStateWithRetriesAsync(_reliableMessageQueueStateKey, _stateManager);
+            return channelState.Peek().Message;
+        }
+        
         private async Task DropMessageAsync(ActorReliableMessage actorMessage)
         {
             if (_messageDrop == null)
@@ -135,13 +163,11 @@ namespace FG.ServiceFabric.Actors.Runtime
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
-        private static Task SendAsync(ReliableMessage message, ActorReference actorReference)
+        internal Task SendAsync(ReliableMessage message, ActorReference actorReference)
         {
-            return ((IReliableMessageReceiverActor) actorReference
-                    .Bind(typeof(IReliableMessageReceiverActor)))
-                .ReceiveMessageAsync(message);
+            return _actorBinder.Bind(actorReference).ReceiveMessageAsync(message);
         }
-
+        
         private static Task AddOrUpdateStateWithRetriesAsync(string stateName, ReliableMessageChannelState state,
             IActorStateManager stateManager)
         {

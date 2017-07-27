@@ -37,7 +37,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
             await InboundMessageChannel.ReceiveMessageAsync(message);
         }
 
-        public Task<IEnumerable<Guid>> ListReceivedCommands()
+        public Task<IEnumerable<Guid>> ListCommandsAsync()
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                ct => this.StateManager.GetStateAsync<IEnumerable<Guid>>(IndexStateKey, ct), 3,
@@ -49,7 +49,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
             return ExecutionHelper.ExecuteWithRetriesAsync(async ct =>
             {
                 var index = await this.StateManager.GetOrAddStateAsync(IndexStateKey, new List<Guid>(), ct);
-                index.Add(command.PersonId);
+                index.Add(command.CommandId);
                 await this.StateManager.SetStateAsync(IndexStateKey, index, ct);
             }, 3, TimeSpan.FromSeconds(1), CancellationToken.None);
         }

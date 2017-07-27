@@ -110,8 +110,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CQRS\ReliableMessgeTestBase.cs" />
     <Compile Include="CQRS\TestBase.cs" />
+    <Compile Include="CQRS\When_message_is_dropped.cs" />
+    <Compile Include="CQRS\When_processing_message_queue.cs" />
     <Compile Include="CQRS\When_registering_a_person\After_registering_a_person.cs" />
+    <Compile Include="CQRS\When_sending_a_reliable_message.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

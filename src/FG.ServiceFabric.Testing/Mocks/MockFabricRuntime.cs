@@ -259,6 +259,7 @@ namespace FG.ServiceFabric.Testing.Mocks
             var actorInterface = typeof(TActorImplementation).IsInterface
                 ? typeof(TActorImplementation)
                 : typeof(TActorImplementation).GetInterfaces().FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
+            
             var actorRegistration = new MockableActorRegistration(actorInterface, typeof(TActorImplementation), activator, createStateManager, createStateProvider);
             ((MockActorProxyFactory)ActorProxyFactory).AddActorRegistration(actorRegistration);
         }
