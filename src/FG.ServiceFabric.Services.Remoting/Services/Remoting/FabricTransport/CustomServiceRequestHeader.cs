@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using FG.ServiceFabric.Utils;
+using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Remoting;
 
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport

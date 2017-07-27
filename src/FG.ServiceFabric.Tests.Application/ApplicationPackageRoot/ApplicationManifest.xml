@@ -1,26 +1,45 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ApplicationManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ApplicationTypeName="FG.ServiceFabric.Tests.ApplicationType" ApplicationTypeVersion="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <Parameters>
+    <Parameter Name="Database_EndpointUri" DefaultValue="https://localhost:8081/" />
+    <Parameter Name="Database_PrimaryKey" DefaultValue="C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==" />
+    <Parameter Name="Database_DatabaseName" DefaultValue="fabricators" />
     <Parameter Name="WebApi_InstanceCount" DefaultValue="-1" />
-    <Parameter Name="ActorDemoActorService_PartitionCount" DefaultValue="10" />
-    <Parameter Name="ActorDemoActorService_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="ActorDemoActorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DbStoredActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="DbStoredActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DbStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="DbStoredActorService_DatabaseCollection" DefaultValue="dbstoredactor" />
+    <Parameter Name="IndexActorService_PartitionCount" DefaultValue="10" />
+    <Parameter Name="IndexActorService_MinReplicaSetSize" DefaultValue="3" />
+    <Parameter Name="IndexActorService_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="EventStoredActorService_PartitionCount" DefaultValue="10" />
     <Parameter Name="EventStoredActorService_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="EventStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="TempEventStoredActorService_PartitionCount" DefaultValue="10" />
-    <Parameter Name="TempEventStoredActorService_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="TempEventStoredActorService_TargetReplicaSetSize" DefaultValue="3" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
        should match the Name and Version attributes of the ServiceManifest element defined in the 
        ServiceManifest.xml file. -->
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="FG.ServiceFabricTests.WebApiPkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.DbStoredActorPkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides>
+      <ConfigOverride Name="Config">
+        <Settings>
+          <Section Name="Database">
+            <Parameter Name="EndpointUri" Value="[Database_EndpointUri]" />
+            <Parameter Name="PrimaryKey" Value="[Database_PrimaryKey]" />
+            <Parameter Name="DatabaseName" Value="[Database_DatabaseName]" />
+            <Parameter Name="Collection" Value="[DbStoredActorService_DatabaseCollection]" />
+          </Section>
+        </Settings>
+      </ConfigOverride>
+    </ConfigOverrides>
+  </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.WebApiPkg" ServiceManifestVersion="1.0.0" />
     <ConfigOverrides />
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.ActorPkg" ServiceManifestVersion="1.0.0" />
+    <ServiceManifestRef ServiceManifestName="FG.ServiceFabric.Tests.EventStoredActorPkg" ServiceManifestVersion="1.0.0" />
   </ServiceManifestImport>
   <DefaultServices>
     <!-- The section below creates instances of service types, when an instance of this 
@@ -33,19 +52,19 @@
         <SingletonPartition />
       </StatelessService>
     </Service>
-    <Service Name="ActorDemoActorService" GeneratedIdRef="09f6aca8-8a55-47a2-a155-cdb7f7e5db79|Persisted">
-      <StatefulService ServiceTypeName="ActorDemoActorServiceType" TargetReplicaSetSize="[ActorDemoActorService_TargetReplicaSetSize]" MinReplicaSetSize="[ActorDemoActorService_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[ActorDemoActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+    <Service Name="DbStoredActorService" GeneratedIdRef="3f0523e0-3fcd-446f-869d-4e2144ea4ee6|Persisted">
+      <StatefulService ServiceTypeName="DbStoredActorServiceType" TargetReplicaSetSize="[DbStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[DbStoredActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[DbStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
-    <Service Name="EventStoredActorService" GeneratedIdRef="95a94c9b-4a1b-4f28-b1df-d347aeaee448|Volatile">
-      <StatefulService ServiceTypeName="PersonEventStoredActorServiceType" TargetReplicaSetSize="[EventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EventStoredActorService_MinReplicaSetSize]">
+    <Service Name="IndexActorService" GeneratedIdRef="6472adba-aa23-4c21-abc6-48bf78efdfe3|Persisted">
+      <StatefulService ServiceTypeName="IndexActorServiceType" TargetReplicaSetSize="[IndexActorService_TargetReplicaSetSize]" MinReplicaSetSize="[IndexActorService_MinReplicaSetSize]">
+        <UniformInt64Partition PartitionCount="[IndexActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
+      </StatefulService>
+    </Service>
+    <Service Name="EventStoredActorService" GeneratedIdRef="5061a75d-16e0-495b-9f44-c42c4257f80f|Persisted">
+      <StatefulService ServiceTypeName="EventStoredActorServiceType" TargetReplicaSetSize="[EventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[EventStoredActorService_MinReplicaSetSize]">
         <UniformInt64Partition PartitionCount="[EventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
-      </StatefulService>
-    </Service>
-    <Service Name="TempEventStoredActorService" GeneratedIdRef="f76437f2-5280-4ffc-83f2-a949ebfe8f6c|Volatile">
-      <StatefulService ServiceTypeName="TempEventStoredActorServiceType" TargetReplicaSetSize="[TempEventStoredActorService_TargetReplicaSetSize]" MinReplicaSetSize="[TempEventStoredActorService_MinReplicaSetSize]">
-        <UniformInt64Partition PartitionCount="[TempEventStoredActorService_PartitionCount]" LowKey="-9223372036854775808" HighKey="9223372036854775807" />
       </StatefulService>
     </Service>
   </DefaultServices>

@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Runtime.Serialization;
 
@@ -19,6 +20,13 @@ namespace FG.Common.Utils
             var stream = new MemoryStream(value) { Position = 0 };
             var serializer = new DataContractSerializer(typeof(T));
             return (T)serializer.ReadObject(stream);
+        }
+
+        public static object Deserialize(this byte[] value, Type type)
+        {
+            var stream = new MemoryStream(value) { Position = 0 };
+            var serializer = new DataContractSerializer(type);
+            return serializer.ReadObject(stream);
         }
 
         private static byte[] ReadToEnd(this Stream input)

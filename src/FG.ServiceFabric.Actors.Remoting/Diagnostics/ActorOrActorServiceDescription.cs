@@ -1,5 +1,4 @@
 using System;
-using System.Fabric;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Diagnostics
