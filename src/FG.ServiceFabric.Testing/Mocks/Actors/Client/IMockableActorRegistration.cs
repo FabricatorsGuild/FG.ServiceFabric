@@ -1,23 +1,28 @@
 using System;
 using System.Fabric;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Data;
+using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
-    public interface IMockableActorRegistration
+    internal interface IMockableActorRegistration
     {
         Type InterfaceType { get; }
         Type ImplementationType { get; }
         CreateActorService CreateActorService { get; }
         Func<ActorService, ActorId, object> Activator { get; }
-        CreateStateManager CreateStateManager { get; }
-        CreateStateProvider CreateStateProvider { get; }        
+        CreateActorStateManager CreateActorStateManager { get; }
+        CreateActorStateProvider CreateActorStateProvider { get; }
+		IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
-    public delegate IActorStateProvider CreateStateProvider();
+    public delegate IActorStateProvider CreateActorStateProvider();
 
-    public delegate IActorStateManager CreateStateManager(ActorBase actor, IActorStateProvider stateProvider);
+    public delegate IActorStateManager CreateActorStateManager(ActorBase actor, IActorStateProvider stateProvider);
 
     public delegate ActorService CreateActorService(
         StatefulServiceContext context,

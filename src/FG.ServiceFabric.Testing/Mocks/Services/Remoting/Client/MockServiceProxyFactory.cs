@@ -5,71 +5,73 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Fabric;
+using System.Linq;
+using System.Reflection;
+using Castle.DynamicProxy;
 using FG.Common.Utils;
+using FG.ServiceFabric.Testing.Mocks.Actors.Client;
+using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
+using FG.ServiceFabric.Testing.Mocks.Data;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
     /// <summary>
     /// Wrapper class for the static ServiceProxy.
     /// </summary>
-    public class MockServiceProxyFactory : IServiceProxyFactory
+    public class MockServiceProxyFactory : IServiceProxyFactory, IMockServiceProxyManager
     {
         private readonly MockFabricRuntime _fabricRuntime;
 
-        public MockServiceProxyFactory(MockFabricRuntime fabricRuntime)
+		public MockServiceProxyFactory(MockFabricRuntime fabricRuntime)
         {
             _fabricRuntime = fabricRuntime;
         }
 
-        private readonly ConcurrentDictionary<Uri, object> _mockServiceLookupTable = new ConcurrentDictionary<Uri, object>();
+	    public TServiceInterface CreateServiceProxy<TServiceInterface>(Uri serviceUri, ServicePartitionKey partitionKey = null,
+		    TargetReplicaSelector targetReplicaSelector = TargetReplicaSelector.Default, string listenerName = null) where TServiceInterface : IService
+	    {
+		    var serviceInterfaceType = typeof(TServiceInterface);
+		    var instance = _fabricRuntime.Instances.SingleOrDefault(i => i.Equals(serviceUri, serviceInterfaceType, partitionKey));
 
-        public TServiceInterface CreateServiceProxy<TServiceInterface>(
-            Uri serviceUri, ServicePartitionKey partitionKey = null, TargetReplicaSelector targetReplicaSelector = TargetReplicaSelector.Default, string listenerName = null)
-            where TServiceInterface : IService
-        {
-            var serviceProxy = new MockServiceProxy();
+		    if (instance == null)
+		    {
+			    throw new ArgumentException($"A service with interface {serviceInterfaceType.Name} could not be found for address {serviceUri}");
+		    }
 
-	        Func<Uri, object> createServiceInstance = null;
-	        if (_mockServiceLookupTable.ContainsKey(serviceUri))
-	        {
-				createServiceInstance = (uri) => _mockServiceLookupTable[uri];
-	        }
-	        else
-	        {
-				createServiceInstance = (uri) => _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<TServiceInterface>(uri, (partitionKey?.Value as Int64RangePartitionInformation)?.LowKey ?? 0, listenerName);
-	        }
-			serviceProxy.Supports<TServiceInterface>(createServiceInstance);
+			var mockServiceProxy = new MockServiceProxy(instance.ServiceInstance, serviceUri, serviceInterfaceType, partitionKey, TargetReplicaSelector.Default, "", null, this);
+			return (TServiceInterface)mockServiceProxy.Proxy;			
+		}		
 
-			var service = serviceProxy.Create<TServiceInterface>(serviceUri, partitionKey, targetReplicaSelector, listenerName);
-            // ReSharper disable once SuspiciousTypeConversion.Global
+		void IMockServiceProxyManager.BeforeMethod(IService service, MethodInfo method)
+	    {
+			Console.WriteLine();
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Green;
+			var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
+			Console.WriteLine($"{message.PadRight(80, '=')}");
+			Console.ForegroundColor = color;
+		}
 
-            var target = (object) (service as FG.ServiceFabric.Services.Runtime.StatelessService) ??
-                         service as FG.ServiceFabric.Services.Runtime.StatefulService;
-            if (target != null)
-            {
-                target.SetPrivateField("_serviceProxyFactory", _fabricRuntime.ServiceProxyFactory);
-                target.SetPrivateField("_actorProxyFactory", _fabricRuntime.ActorProxyFactory);
-                target.SetPrivateField("_applicationUriBuilder", _fabricRuntime.ApplicationUriBuilder);
-            }
-            return service;
-        }
-
-        public void AssociateMockServiceAndName(Uri mockServiceUri, object mockService)
-        {
-            _mockServiceLookupTable.AddOrUpdate(mockServiceUri, mockService, (uri, service) => mockService);
-        }
-
-        public TService GetService<TService>(Uri serviceUri)
-        {
-            if( _mockServiceLookupTable.ContainsKey(serviceUri))
-                return (TService)_mockServiceLookupTable[serviceUri];
-            return default(TService);
-        }
+	    void IMockServiceProxyManager.AfterMethod(IService service, MethodInfo method)
+	    {
+			var color = Console.ForegroundColor;
+			Console.ForegroundColor = ConsoleColor.Red;
+			var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
+			Console.WriteLine($"{message.PadRight(80, '=')}");
+			Console.ForegroundColor = color;
+			Console.WriteLine();			
+		}
     }
 
     

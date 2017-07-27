@@ -13,7 +13,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Data
 {
     public class MockReliableStateManager : IReliableStateManagerReplica
     {
-        private readonly ConcurrentDictionary<Uri, IReliableState> _store = new ConcurrentDictionary<Uri, IReliableState>();
+	    private readonly MockFabricRuntime _fabricRuntime;
+	    private readonly ConcurrentDictionary<Uri, IReliableState> _store = new ConcurrentDictionary<Uri, IReliableState>();
         private Func<CancellationToken, Task<bool>> _datalossFunction;
 
         private readonly Dictionary<Type, Type> _dependencyMap = new Dictionary<Type, Type>()
@@ -21,6 +22,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Data
             {typeof(IReliableDictionary<,>), typeof(MockReliableDictionary<,>)},
             {typeof(IReliableQueue<>), typeof(MockReliableQueue<>)}
         };
+
+	    public MockReliableStateManager(MockFabricRuntime fabricRuntime)
+	    {
+		    _fabricRuntime = fabricRuntime;
+	    }
 
         public Func<CancellationToken, Task<bool>> OnDataLossAsync
         {
