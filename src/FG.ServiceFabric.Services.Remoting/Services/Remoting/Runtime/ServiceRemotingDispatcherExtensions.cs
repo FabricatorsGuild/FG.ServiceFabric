@@ -18,8 +18,6 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
                         new object[] {interfaceId});
                 var getMethodNameMethodInfo =
                     methodDispatcher?.GetType().GetInterface("Microsoft.ServiceFabric.Services.Remoting.IMethodDispatcher").GetMethod("GetMethodName");
-                //var getMethodNameMethodInfo = methodDispatcher?.GetType()
-                //    .GetMethod("Microsoft.ServiceFabric.Services.Remoting.IMethodDispatcher.GetMethodName", BindingFlags.NonPublic | BindingFlags.Instance);
                 var methodName = getMethodNameMethodInfo?.Invoke(methodDispatcher, new object[] {methodId}) as string;
                 return methodName;
             }

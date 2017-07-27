@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.Diagnostics;
 using Microsoft.ServiceFabric.Actors;
-using Microsoft.ServiceFabric.Actors.Remoting.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Actors.Runtime;
-using Microsoft.ServiceFabric.Services.Communication.Runtime;
-using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
-using Microsoft.ServiceFabric.Services.Remoting.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {

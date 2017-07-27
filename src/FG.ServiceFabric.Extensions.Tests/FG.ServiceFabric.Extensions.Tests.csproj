@@ -121,11 +121,11 @@
       <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
       <Name>FG.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Common.ActorDemo.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}</Project>
       <Name>FG.ServiceFabric.Tests.Actor.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Common.ActorDemo\FG.ServiceFabric.Tests.Actor.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor\FG.ServiceFabric.Tests.Actor.csproj">
       <Project>{9ab85068-ef28-4659-9c8f-d6afc45d097a}</Project>
       <Name>FG.ServiceFabric.Tests.Actor</Name>
     </ProjectReference>

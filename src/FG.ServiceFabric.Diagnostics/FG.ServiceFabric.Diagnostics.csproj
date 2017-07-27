@@ -114,6 +114,7 @@
     <Compile Include="AutoLogger\ActorMessageHeadersTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorOrActorServiceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorReferenceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />

@@ -130,15 +130,16 @@
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingDispatcherExtensions.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceRemotingMessageHeadersExtensions.cs" />
     <Compile Include="Services\Runtime\ServiceExtensions.cs" />
-    <Compile Include="Services\Runtime\ServiceReference.cs" />
-    <Compile Include="Services\Runtime\StatefulService.cs" />
-    <Compile Include="Services\Runtime\StatelessService.cs" />
-    <Compile Include="Utils\HashUtil.cs" />
-    <Compile Include="Utils\SerializationUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FG.ServiceFabric.Services.Remoting.nuspec" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
