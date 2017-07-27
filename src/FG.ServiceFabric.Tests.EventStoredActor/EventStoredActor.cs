@@ -11,7 +11,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
 {
     [ActorService(Name = nameof(EventStoredActorService))]
     [StatePersistence(StatePersistence.Persisted)]
-    public class EventStoredActor : EventStoredActor<Domain, PersonEventStream>, IEventStoredActor,
+    public class EventStoredActor : EventStoredActor<Domain, TheEventStream>, IEventStoredActor,
         IHandleDomainEvent<CreatedEvent>,
         IHandleDomainEvent<ChildAddedEvent>
     {

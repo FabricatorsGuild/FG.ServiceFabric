@@ -14,7 +14,7 @@ using IEventStoredActorService = FG.ServiceFabric.Tests.EventStoredActor.Interfa
 namespace FG.ServiceFabric.Tests.EventStoredActor
 {
     internal class EventStoredActorService 
-        : EventStoredActorService<Domain,PersonEventStream>, Interfaces.IEventStoredActorService
+        : EventStoredActorService<Domain, TheEventStream>, Interfaces.IEventStoredActorService
     {
         public EventStoredActorService(
             StatefulServiceContext context,
@@ -37,7 +37,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
 
         public Task<ReadModel> GetAsync(Guid aggregateRootId)
         {
-            using (var generator = new PersonReadModelGenerator(StateProviderEventStreamReader))
+            using (var generator = new ReadModelGenerator(StateProviderEventStreamReader))
             {
                 return generator.GenerateAsync(aggregateRootId, CancellationToken.None);
             }

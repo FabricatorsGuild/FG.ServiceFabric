@@ -58,7 +58,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
     [DataContract]
     [KnownType(typeof(CreatedEvent))]
     [KnownType(typeof(ChildAddedEvent))]
-    public class PersonEventStream : EventStreamStateBase
+    public class TheEventStream : EventStreamStateBase
     {
     }
 
@@ -126,9 +126,9 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
 
     #region Read Models
 
-    public class PersonReadModelGenerator : AggregateRootReadModelGenerator<PersonEventStream, IRootEvent, ReadModel>
+    public class ReadModelGenerator : AggregateRootReadModelGenerator<TheEventStream, IRootEvent, ReadModel>
     {
-        public PersonReadModelGenerator(IEventStreamReader<PersonEventStream> eventStreamReader) : base(eventStreamReader)
+        public ReadModelGenerator(IEventStreamReader<TheEventStream> eventStreamReader) : base(eventStreamReader)
         {
             RegisterEventAppliers()
                 .For<ISomePropertyUpdated>(e => ReadModel.SomeProperty = e.SomeProperty)
