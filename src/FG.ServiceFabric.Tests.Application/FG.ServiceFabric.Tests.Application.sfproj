@@ -32,7 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor\FG.ServiceFabric.Tests.DbStoredActor.csproj" />
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor\FG.ServiceFabric.Tests.EventStoredActor.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.EventStoredActor\FG.ServiceFabric.Tests.EventStoredActor.csproj" />
     <ProjectReference Include="..\FG.ServiceFabric.Tests.WebApi\FG.ServiceFabric.Tests.WebApi.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
