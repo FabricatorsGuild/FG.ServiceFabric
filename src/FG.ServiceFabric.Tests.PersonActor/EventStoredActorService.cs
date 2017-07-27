@@ -4,18 +4,19 @@ using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
+using IEventStoredActorService = FG.ServiceFabric.Tests.EventStoredActor.Interfaces.IEventStoredActorService;
 
-namespace FG.ServiceFabric.Tests.PersonActor
+namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-    internal class PersonActorService 
-        : EventStoredActorService<Person,PersonEventStream>, IPersonActorService
+    internal class EventStoredActorService 
+        : EventStoredActorService<Domain,PersonEventStream>, Interfaces.IEventStoredActorService
     {
-        public PersonActorService(
+        public EventStoredActorService(
             StatefulServiceContext context,
             ActorTypeInformation actorTypeInfo,
             Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null,
@@ -34,7 +35,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
             }
         }
 
-        public Task<PersonReadModel> GetAsync(Guid aggregateRootId)
+        public Task<ReadModel> GetAsync(Guid aggregateRootId)
         {
             using (var generator = new PersonReadModelGenerator(StateProviderEventStreamReader))
             {

@@ -1,8 +1,5 @@
-﻿using System;
-using System.Runtime.Serialization;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.DocumentDb;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.DbStoredActor.Interfaces;

@@ -7,8 +7,8 @@
     <ProjectGuid>{7BBAA4B3-B05B-4132-B363-20B279CA4F14}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FG.ServiceFabric.Tests.PersonActor.Interfaces</RootNamespace>
-    <AssemblyName>FG.ServiceFabric.Tests.PersonActor.Interfaces</AssemblyName>
+    <RootNamespace>FG.ServiceFabric.Tests.EventStoredActor.Interfaces</RootNamespace>
+    <AssemblyName>FG.ServiceFabric.Tests.EventStoredActor.Interfaces</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>

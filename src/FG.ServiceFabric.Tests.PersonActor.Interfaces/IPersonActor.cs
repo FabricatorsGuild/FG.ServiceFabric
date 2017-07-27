@@ -5,68 +5,47 @@ using FG.CQRS;
 using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;
 
-namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
+namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
 {
     #region Contracts
 
-    public interface IPersonActor : IActor
+    public interface IEventStoredActor : IActor
     {
-        Task RegisterAsync(RegisterCommand command);
-        Task MarryAsync(MarryCommand command);
+        Task CreateAsync(CreateCommand command);
     }
 
-    public interface IPersonActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
+    public interface IEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
     {
-        Task<PersonReadModel> GetAsync(Guid aggregateRootId);
+        Task<ReadModel> GetAsync(Guid aggregateRootId);
     }
 
     #endregion
 
     #region Commands
     [DataContract]
-    public class RegisterCommand : DomainCommandBase
+    public class CreateCommand : DomainCommandBase
     {
         [DataMember]
-        public string FirstName { get; set; }
+        public string SomeProperty { get; set; }
     }
 
-    public class MarryCommand : DomainCommandBase
-    {
-        [DataMember]
-        public Guid AggretateRootId { get; set; }
-    }
-
-    public class RegisterChildCommand : DomainCommandBase
+    public class AddChildCommand : DomainCommandBase
     {
         [DataMember]
         public Guid AggretateRootId { get; set; }
         [DataMember]
-        public string Name { get; set; }
+        public string ChildProperty { get; set; }
     }
     #endregion
 
     #region Models
+   
     [DataContract]
-    public enum MaritalStatus
-    {
-        [EnumMember]
-        Unknown = 0,
-        [EnumMember]
-        Single = 1,
-        [EnumMember]
-        Married = 2,
-        [EnumMember]
-        Divorsed = 3
-    }
-
-    [DataContract]
-    public class PersonReadModel : IAggregateReadModel
+    public class ReadModel : IAggregateReadModel
     {
         public Guid Id { get; set; }
         [DataMember]
-        public string FirstName { get; set; }
-        [DataMember]
-        public MaritalStatus MaritalStatus { get; set; }
+        public string SomeProperty { get; set; }
     }
     #endregion
 }

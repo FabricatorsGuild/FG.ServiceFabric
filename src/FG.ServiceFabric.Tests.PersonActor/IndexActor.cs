@@ -6,22 +6,22 @@ using FG.Common.Async;
 using FG.CQRS;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 
-namespace FG.ServiceFabric.Tests.PersonActor
+namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-    [ActorService(Name = nameof(PersonIndexActor) + "Service")] // Default.
+    [ActorService(Name = nameof(IndexActor) + "Service")] // Default.
     [StatePersistence(StatePersistence.Persisted)]
-    internal class PersonIndexActor : FG.ServiceFabric.Actors.Runtime.ActorBase, IPersonIndexActor, IReliableMessageEndpoint<ICommand>, IHandleCommand<IndexCommand>
+    internal class IndexActor : FG.ServiceFabric.Actors.Runtime.ActorBase, IIndexActor, IReliableMessageEndpoint<ICommand>, IHandleCommand<IndexCommand>
     {
         private const string IndexStateKey = "_index_state";
 
         public IInboundReliableMessageChannel InboundMessageChannel { get; }
 
-        public PersonIndexActor(ActorService actorService, ActorId actorId)
+        public IndexActor(ActorService actorService, ActorId actorId)
             : base(actorService, actorId)
         {
 
@@ -36,6 +36,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 
         public async Task ReceiveMessageAsync(ReliableMessage message)
         {
+            throw new Exception("apa");
             await InboundMessageChannel.ReceiveMessageAsync(message);
         }
 

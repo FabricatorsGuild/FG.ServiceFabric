@@ -1,18 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using FG.CQRS;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
-namespace FG.ServiceFabric.Tests.CQRS
+namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
     public class TestMessageEndpoint : IReliableMessageEndpoint<ICommand>
     {

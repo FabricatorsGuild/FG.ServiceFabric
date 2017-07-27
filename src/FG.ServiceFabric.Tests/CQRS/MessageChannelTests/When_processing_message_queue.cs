@@ -2,13 +2,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
-namespace FG.ServiceFabric.Tests.CQRS
+namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
     public class When_processing_message_queue : ReliableMessgeTestBase
     {
@@ -32,7 +32,7 @@ namespace FG.ServiceFabric.Tests.CQRS
 
         private async Task SendMessage(ReliableMessage message)
         {
-            await OutboundChannel.SendMessageAsync<IPersonIndexActor>(
+            await OutboundChannel.SendMessageAsync<IIndexActor>(
                 message, new ActorId("PersonIndex"), 
                 CancellationToken.None,
                 FabricRuntime.ApplicationName);
@@ -41,7 +41,7 @@ namespace FG.ServiceFabric.Tests.CQRS
         [Test]
         public async Task Then_receiver_gets_message()
         {
-            var proxy = ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(new ActorId("PersonIndex"),
+            var proxy = ActorProxyFactory.CreateActorProxy<IIndexActor>(new ActorId("PersonIndex"),
                 FabricRuntime.ApplicationName);
 
             var list = await proxy.ListCommandsAsync();
@@ -51,7 +51,7 @@ namespace FG.ServiceFabric.Tests.CQRS
         [Test]
         public async Task Then_all_messages_are_delivered_in_order()
         {
-            var proxy = ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(new ActorId("PersonIndex"),
+            var proxy = ActorProxyFactory.CreateActorProxy<IIndexActor>(new ActorId("PersonIndex"),
                 FabricRuntime.ApplicationName);
 
             var list = await proxy.ListCommandsAsync();

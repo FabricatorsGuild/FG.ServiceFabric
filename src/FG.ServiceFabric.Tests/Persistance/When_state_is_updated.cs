@@ -18,7 +18,6 @@ namespace FG.ServiceFabric.Tests.Persistance
         [SetUp]
         public async Task SetCountTo3()
         {
-
             var proxy = ActorProxyFactory.CreateActorProxy<IDbStoredActor>(ActorId.CreateRandom());
             await proxy.SetCountAsync(3, CancellationToken.None);
         }

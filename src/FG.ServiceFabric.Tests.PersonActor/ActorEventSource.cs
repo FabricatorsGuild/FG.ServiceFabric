@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Tracing;
-using System.Fabric;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
-namespace FG.ServiceFabric.Tests.PersonActor
+namespace FG.ServiceFabric.Tests.EventStoredActor
 {
     [EventSource(Name = "MyCompany-FG.ServiceFabric.Tests.Application-FG.ServiceFabric.Tests.PersonActor")]
     internal sealed class ActorEventSource : EventSource

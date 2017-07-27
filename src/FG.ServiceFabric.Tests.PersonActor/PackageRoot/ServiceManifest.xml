@@ -1,30 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="FG.ServiceFabric.Tests.PersonActorPkg" Version="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+<ServiceManifest xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="FG.ServiceFabric.Tests.EventStoredActorPkg" Version="1.0.0" xmlns="http://schemas.microsoft.com/2011/01/fabric">
   <ServiceTypes>
-    <StatefulServiceType ServiceTypeName="PersonActorServiceType" HasPersistedState="true">
+    <StatefulServiceType ServiceTypeName="IndexActorServiceType" HasPersistedState="true">
       <Extensions>
-        <Extension Name="__GeneratedServiceType__" GeneratedId="2dff4866-5e6d-48a9-bb93-a9f71be00f8a|Persisted">
+        <Extension Name="__GeneratedServiceType__" GeneratedId="6472adba-aa23-4c21-abc6-48bf78efdfe3|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
-            <DefaultService Name="PersonActorService" />
-            <ServiceEndpoint Name="PersonActorServiceEndpoint" />
-            <ReplicatorEndpoint Name="PersonActorServiceReplicatorEndpoint" />
-            <ReplicatorConfigSection Name="PersonActorServiceReplicatorConfig" />
-            <ReplicatorSecurityConfigSection Name="PersonActorServiceReplicatorSecurityConfig" />
-            <StoreConfigSection Name="PersonActorServiceLocalStoreConfig" />
+            <DefaultService Name="IndexActorService" />
+            <ServiceEndpoint Name="IndexActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="IndexActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="IndexActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="IndexActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="IndexActorServiceLocalStoreConfig" />
           </GeneratedNames>
         </Extension>
       </Extensions>
     </StatefulServiceType>
-    <StatefulServiceType ServiceTypeName="PersonIndexActorServiceType" HasPersistedState="true">
+    <StatefulServiceType ServiceTypeName="EventStoredActorServiceType" HasPersistedState="true">
       <Extensions>
-        <Extension Name="__GeneratedServiceType__" GeneratedId="99c04647-5c63-4498-8d40-714898ece351|Persisted">
+        <Extension Name="__GeneratedServiceType__" GeneratedId="5061a75d-16e0-495b-9f44-c42c4257f80f|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
-            <DefaultService Name="PersonIndexActorService" />
-            <ServiceEndpoint Name="PersonIndexActorServiceEndpoint" />
-            <ReplicatorEndpoint Name="PersonIndexActorServiceReplicatorEndpoint" />
-            <ReplicatorConfigSection Name="PersonIndexActorServiceReplicatorConfig" />
-            <ReplicatorSecurityConfigSection Name="PersonIndexActorServiceReplicatorSecurityConfig" />
-            <StoreConfigSection Name="PersonIndexActorServiceLocalStoreConfig" />
+            <DefaultService Name="EventStoredActorService" />
+            <ServiceEndpoint Name="EventStoredActorServiceEndpoint" />
+            <ReplicatorEndpoint Name="EventStoredActorServiceReplicatorEndpoint" />
+            <ReplicatorConfigSection Name="EventStoredActorServiceReplicatorConfig" />
+            <ReplicatorSecurityConfigSection Name="EventStoredActorServiceReplicatorSecurityConfig" />
+            <StoreConfigSection Name="EventStoredActorServiceLocalStoreConfig" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -33,17 +33,17 @@
   <CodePackage Name="Code" Version="1.0.0">
     <EntryPoint>
       <ExeHost>
-        <Program>FG.ServiceFabric.Tests.PersonActor.exe</Program>
+        <Program>FG.ServiceFabric.Tests.EventStoredActor.exe</Program>
       </ExeHost>
     </EntryPoint>
   </CodePackage>
   <ConfigPackage Name="Config" Version="1.0.0" />
   <Resources>
     <Endpoints>
-      <Endpoint Name="PersonActorServiceEndpoint" />
-      <Endpoint Name="PersonActorServiceReplicatorEndpoint" />
-      <Endpoint Name="PersonIndexActorServiceEndpoint" />
-      <Endpoint Name="PersonIndexActorServiceReplicatorEndpoint" />
+      <Endpoint Name="IndexActorServiceEndpoint" />
+      <Endpoint Name="IndexActorServiceReplicatorEndpoint" />
+      <Endpoint Name="EventStoredActorServiceEndpoint" />
+      <Endpoint Name="EventStoredActorServiceReplicatorEndpoint" />
     </Endpoints>
   </Resources>
   <!-- The content will be generated during build -->

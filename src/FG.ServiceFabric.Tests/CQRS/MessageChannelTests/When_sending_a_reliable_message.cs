@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
-namespace FG.ServiceFabric.Tests.CQRS
+namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
     public class When_sending_a_reliable_message : ReliableMessgeTestBase
     {
@@ -19,7 +19,7 @@ namespace FG.ServiceFabric.Tests.CQRS
         {
             _message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
 
-            await OutboundChannel.SendMessageAsync<IPersonIndexActor>(
+            await OutboundChannel.SendMessageAsync<IIndexActor>(
                 _message, new ActorId("PersonIndex"), 
                 CancellationToken.None,
                 FabricRuntime.ApplicationName);

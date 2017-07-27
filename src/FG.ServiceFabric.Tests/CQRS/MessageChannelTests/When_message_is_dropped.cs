@@ -5,13 +5,14 @@ using System.Threading.Tasks;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
+
 // ReSharper disable InconsistentNaming
 
-namespace FG.ServiceFabric.Tests.CQRS
+namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
     public class MockFailingActorBinder : IReceiverActorBinder
     {
@@ -30,8 +31,8 @@ namespace FG.ServiceFabric.Tests.CQRS
                 FabricRuntime.ActorProxyFactory, null, HandleDroppedMessage , new MockFailingActorBinder());
         }
 
-        private readonly List<ActorReliableMessage> _droppedMessages = new List<ActorReliableMessage>();
-        private Task HandleDroppedMessage(ActorReliableMessage message)
+        private readonly List<ReliableMessage> _droppedMessages = new List<ReliableMessage>();
+        private Task HandleDroppedMessage(ReliableMessage message, ActorReference actorReference)
         {
             _droppedMessages.Add(message);
             return Task.FromResult(true);
@@ -41,7 +42,7 @@ namespace FG.ServiceFabric.Tests.CQRS
         public async Task SendMessage()
         {
             var message = ReliableMessage.Create(new IndexCommand { PersonId = Guid.NewGuid() });
-            await OutboundChannel.SendMessageAsync<IPersonIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None, FabricRuntime.ApplicationName);
+            await OutboundChannel.SendMessageAsync<IIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None, FabricRuntime.ApplicationName);
             await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
         }
 

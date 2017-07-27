@@ -36,13 +36,12 @@ namespace FG.ServiceFabric.Actors.Runtime
                 stateManager: StateManager, 
                 actorProxyFactory: ActorProxyFactory, 
                 loggerFactory: outboundMessageChannelLoggerFactory,
-                messageDrop: OnMessageDropAsync
+                messageDrop: OnMessageDrop()
                 );
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
             OutboundMessageChannelPeriod = outboundMessageChannelPeriod ?? 5.Seconds();
         }
-
-
+        
         private IActorTimer _outboundMessageChannelTimer;
         protected override Task OnActivateAsync()
         {
@@ -109,12 +108,12 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             await handleDomainEvent.Handle(message);
         }
-
-        protected virtual Task OnMessageDropAsync(ActorReliableMessage actorReliableMessage)
+        
+        protected virtual Func<ReliableMessage, ActorReference, Task> OnMessageDrop()
         {
             return null; // Will result in message ending up in dead letter queue.
         }
-
+       
         #endregion
 
         protected TAggregateRoot DomainState = null;

@@ -116,15 +116,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CQRS\ReliableMessgeTestBase.cs" />
+    <Compile Include="CQRS\MessageChannelTests\ReliableMessgeTestBase.cs" />
+    <Compile Include="CQRS\IntegrationTests\When_sending_a_reliable_message_as_result_of_an_event.cs" />
     <Compile Include="ForTestPersonActor.cs" />
     <Compile Include="ForTestPersonIndexActor.cs" />
-    <Compile Include="CQRS\When_message_is_dropped.cs" />
+    <Compile Include="CQRS\MessageChannelTests\When_message_is_dropped.cs" />
     <Compile Include="TestBase.cs" />
-    <Compile Include="CQRS\When_processing_message_queue.cs" />
-    <Compile Include="CQRS\When_receiving_a_reliable_message.cs" />
-    <Compile Include="CQRS\When_registering_a_person\After_registering_a_person.cs" />
-    <Compile Include="CQRS\When_sending_a_reliable_message.cs" />
+    <Compile Include="CQRS\MessageChannelTests\When_processing_message_queue.cs" />
+    <Compile Include="CQRS\MessageChannelTests\When_receiving_a_reliable_message.cs" />
+    <Compile Include="CQRS\IntegrationTests\After_registering_a_person.cs" />
+    <Compile Include="CQRS\MessageChannelTests\When_sending_a_reliable_message.cs" />
     <Compile Include="ForTestDbStoredActor.cs" />
     <Compile Include="Persistance\When_state_is_updated.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -170,13 +171,13 @@
       <Project>{b78feb5d-a6d3-47cd-9614-4b8815ac78df}</Project>
       <Name>FG.ServiceFabric.Tests.DbStoredActor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.EventStoredActor.Interfaces.csproj">
       <Project>{7bbaa4b3-b05b-4132-b363-20b279ca4f14}</Project>
-      <Name>FG.ServiceFabric.Tests.PersonActor.Interfaces</Name>
+      <Name>FG.ServiceFabric.Tests.EventStoredActor.Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor\FG.ServiceFabric.Tests.PersonActor.csproj">
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor\FG.ServiceFabric.Tests.EventStoredActor.csproj">
       <Project>{de7e952c-9ddd-492f-a29b-e3bae42a8fbe}</Project>
-      <Name>FG.ServiceFabric.Tests.PersonActor</Name>
+      <Name>FG.ServiceFabric.Tests.EventStoredActor</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

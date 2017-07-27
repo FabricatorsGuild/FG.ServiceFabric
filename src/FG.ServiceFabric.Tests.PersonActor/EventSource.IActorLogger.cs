@@ -6,9 +6,9 @@ using System;
 using System.Diagnostics.Tracing;
 using System.Threading.Tasks;
 
-namespace FG.ServiceFabric.Tests.PersonActor
+namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-	internal sealed partial class FGServiceFabricTestsPersonActorEventSource
+	internal sealed partial class EventSource
 	{
 
 		private const int FailedToSendMessageEventId = 1001;
@@ -51,16 +51,16 @@ namespace FG.ServiceFabric.Tests.PersonActor
 		}
 
 
-		private const int SentMessageEventId = 2002;
+		private const int MessageSentEventId = 2002;
 
-		[Event(SentMessageEventId, Level = EventLevel.LogAlways, Message = "Sent Message {0} {1} {2}", Keywords = Keywords.Actor)]
+		[Event(MessageSentEventId, Level = EventLevel.LogAlways, Message = "Message Sent {0} {1} {2}", Keywords = Keywords.Actor)]
 		private void MessageSent(
 			string actorId, 
 			string serviceUri, 
 			string messageType)
 		{
 			WriteEvent(
-				SentMessageEventId, 
+				MessageSentEventId, 
 				actorId, 
 				serviceUri, 
 				messageType);

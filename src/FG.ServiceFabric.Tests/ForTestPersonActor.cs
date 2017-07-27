@@ -1,19 +1,19 @@
 ﻿using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Tests.PersonActor;
+using FG.ServiceFabric.Tests.EventStoredActor;
 
 namespace FG.ServiceFabric.Tests
 {
-    public class ForTestPersonActor
+    public class ForTestEventStoredActor
     {
         public static void Setup(MockFabricRuntime mockFabricRuntime)
         {
             mockFabricRuntime.SetupActor(
                 (service, id) =>
-                    new PersonActor.PersonActor(
+                    new EventStoredActor.EventStoredActor(
                         actorService: service,
                         actorId: id),
                 (context, actorTypeInformation, stateProvider, stateManagerFactory) =>
-                    new PersonActorService(
+                    new EventStoredActorService(
                         context: context,
                         actorTypeInfo: actorTypeInformation,
                         stateProvider: stateProvider,

@@ -4,14 +4,14 @@
 *******************************************************************************************/
 using System;
 using System.Collections.Generic;
-using FG.ServiceFabric.Tests.PersonActor.Diagnostics;
+using FG.ServiceFabric.Tests.EventStoredActor.Diagnostics;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using System.Runtime.Remoting.Messaging;
 
 
-namespace FG.ServiceFabric.Tests.PersonActor
+namespace FG.ServiceFabric.Tests.EventStoredActor
 {
 	internal sealed class ActorLogger : IActorLogger
 	{
@@ -126,7 +126,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 			System.Uri serviceUri,
 			System.Exception ex)
 		{
-			FGServiceFabricTestsPersonActorEventSource.Current.FailedToSendMessage(
+			EventSource.Current.FailedToSendMessage(
 				actorId, 
 				serviceUri, 
 				ex
@@ -153,7 +153,7 @@ namespace FG.ServiceFabric.Tests.PersonActor
 			System.Uri serviceUri,
 			string messageType)
 		{
-			FGServiceFabricTestsPersonActorEventSource.Current.MessageSent(
+			EventSource.Current.MessageSent(
 				actorId, 
 				serviceUri, 
 				messageType
@@ -168,11 +168,13 @@ namespace FG.ServiceFabric.Tests.PersonActor
 	            });
     
 		}
-        
+
+
+
 		public void MovedToDeadLetters(
 			int depth)
 		{
-			FGServiceFabricTestsPersonActorEventSource.Current.MovedToDeadLetters(
+			EventSource.Current.MovedToDeadLetters(
 				depth
 			);
 			_telemetryClient.TrackEvent(

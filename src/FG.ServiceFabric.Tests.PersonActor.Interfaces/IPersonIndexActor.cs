@@ -6,11 +6,11 @@ using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;
 
-namespace FG.ServiceFabric.Tests.PersonActor.Interfaces
+namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
 {
     #region Contracts
 
-    public interface IPersonIndexActor : IReliableMessageReceiverActor, IActor
+    public interface IIndexActor : IReliableMessageReceiverActor, IActor
     {
         Task<IEnumerable<Guid>> ListCommandsAsync();
     }

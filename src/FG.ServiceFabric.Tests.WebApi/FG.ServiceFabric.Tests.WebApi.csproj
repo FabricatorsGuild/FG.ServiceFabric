@@ -25,7 +25,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj" />
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.PersonActor.Interfaces.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.PersonActor.Interfaces\FG.ServiceFabric.Tests.EventStoredActor.Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

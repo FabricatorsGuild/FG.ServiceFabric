@@ -1,13 +1,12 @@
-using System;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
-using FG.ServiceFabric.Tests.PersonActor.Interfaces;
+using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Tests.CQRS
+namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
     public class MockActorBinder : IReceiverActorBinder
     {
@@ -20,7 +19,7 @@ namespace FG.ServiceFabric.Tests.CQRS
 
         public IReliableMessageReceiverActor Bind(ActorReference actorReference)
         {
-            return _fabricRuntime.ActorProxyFactory.CreateActorProxy<IPersonIndexActor>(actorReference.ServiceUri,
+            return _fabricRuntime.ActorProxyFactory.CreateActorProxy<IIndexActor>(actorReference.ServiceUri,
                 actorReference.ActorId, actorReference.ListenerName);
         }
     }
@@ -36,7 +35,7 @@ namespace FG.ServiceFabric.Tests.CQRS
 
         protected override void SetupRuntime()
         {
-            ForTestPersonIndexActor.Setup(FabricRuntime);
+            ForTestIndexActor.Setup(FabricRuntime);
             base.SetupRuntime();
         }
 
