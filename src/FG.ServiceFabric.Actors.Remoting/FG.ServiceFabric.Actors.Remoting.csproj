@@ -137,7 +137,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FG.ServiceFabric.Actors.Remoting.nuspec" />
+    <None Include="FG.ServiceFabric.Actors.Remoting.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

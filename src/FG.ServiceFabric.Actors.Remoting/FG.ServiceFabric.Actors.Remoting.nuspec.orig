@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta2</version>
+    <version>$version$-beta1</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -12,7 +12,12 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric fabric transport remoting</tags>
     <dependencies>
-      <dependency id="FG.Diagnostics.AutoLogger.Model" version="1.4.1.0" />
+<<<<<<< HEAD
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta1" />
+=======
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$" />
+      <dependency id="FG.Common" version="$version$" />
+>>>>>>> develop
     </dependencies>
   </metadata>
 </package>
