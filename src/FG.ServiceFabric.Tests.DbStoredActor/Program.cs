@@ -5,6 +5,7 @@ using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.DocumentDb;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using ActorService = FG.ServiceFabric.Actors.Runtime.ActorService;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor
 {
@@ -18,14 +19,14 @@ namespace FG.ServiceFabric.Tests.DbStoredActor
             try
             {
                 ActorRuntime.RegisterActorAsync<DbStoredActor>(
-                   (context, actorType) => new DbStoredActorService(
+                   (context, actorType) => new ActorService(
                        context, 
                        actorType,
-                       stateProvider: new DocumentDbActorStateProvider(new CosmosDbStateSession(new DatabaseSettingsProvider(context)), context, actorType),
                        actorFactory: (actorService, actorId) =>
                                               new DbStoredActor(
                                                   actorService,
-                                                  actorId))).GetAwaiter().GetResult();
+                                                  actorId,
+                                                  () => new CosmosDbStateSession(new DatabaseSettingsProvider(context))))).GetAwaiter().GetResult();
                 Thread.Sleep(Timeout.Infinite);
             }
             catch (Exception e)

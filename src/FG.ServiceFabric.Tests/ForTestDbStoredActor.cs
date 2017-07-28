@@ -1,7 +1,5 @@
-using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.DocumentDb.Testing;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Tests.DbStoredActor;
 
 namespace FG.ServiceFabric.Tests
 {
@@ -13,14 +11,8 @@ namespace FG.ServiceFabric.Tests
                 (service, id) =>
                     new DbStoredActor.DbStoredActor(
                         actorService: service,
-                        actorId: id),
-                (context, actorTypeInformation, stateProvider, stateManagerFactory) =>
-                    new DbStoredActorService(
-                        context: context,
-                        actorTypeInfo: actorTypeInformation,
-                        stateProvider: new DocumentDbActorStateProvider(inMemoryStateSession, context, actorTypeInformation, stateProvider),
-                        stateManagerFactory: stateManagerFactory)
-                ,
+                        actorId: id,
+                        stateWriterFactory: () => inMemoryStateSession),
                 serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(1));
         }
     }
