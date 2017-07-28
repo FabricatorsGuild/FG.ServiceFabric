@@ -58,7 +58,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
     [DataContract]
     [KnownType(typeof(CreatedEvent))]
     [KnownType(typeof(ChildAddedEvent))]
-    public class TheEventStream : EventStreamStateBase
+    public class TheEventStream : DomainEventStreamBase
     {
     }
 

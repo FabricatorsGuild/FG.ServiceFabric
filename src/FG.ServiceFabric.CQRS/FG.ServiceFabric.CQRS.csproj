@@ -111,13 +111,10 @@
     <Compile Include="Actors\IOutboundReliableMessageChannel.cs" />
     <Compile Include="Actors\IReliableMessageEndpoint.cs" />
     <Compile Include="Actors\IReliableMessageReceiverActor.cs" />
-    <Compile Include="Actors\Runtime\AggregateRootEventBase.cs" />
-    <Compile Include="Actors\Runtime\CommandBase.cs" />
     <Compile Include="Actors\Runtime\CommandDeduplicationHelper.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
     <Compile Include="Actors\Runtime\EventStreamReader.cs" />
-    <Compile Include="Actors\Runtime\EventStreamStateBase.cs" />
     <Compile Include="Actors\Runtime\InboundReliableMessageChannel.cs" />
     <Compile Include="Actors\Runtime\OutboundReliableMessageChannel.cs" />
     <Compile Include="Actors\Runtime\ReliableMessage.cs" />

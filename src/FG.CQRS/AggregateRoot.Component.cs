@@ -6,8 +6,8 @@ namespace FG.CQRS
             where TComponentEventInterface : class, TAggregateRootEventInterface
             where TAggregateRoot : AggregateRoot<TAggregateRootEventInterface>
         {
-            private readonly DomainEventDispatcher<TComponentEventInterface> _eventDispatcher =
-                new DomainEventDispatcher<TComponentEventInterface>();
+            private readonly EventDispatcher<TComponentEventInterface> _eventDispatcher =
+                new EventDispatcher<TComponentEventInterface>();
             private readonly TAggregateRoot _aggregateRoot;
 
             protected Component(TAggregateRoot aggregateRoot) { _aggregateRoot = aggregateRoot; }
@@ -23,7 +23,7 @@ namespace FG.CQRS
                 _eventDispatcher.Dispatch(@event);
             }
 
-            protected DomainEventDispatcher<TComponentEventInterface>.RegistrationBuilder RegisterEventAppliers()
+            protected EventDispatcher<TComponentEventInterface>.RegistrationBuilder RegisterEventAppliers()
             {
                 return _eventDispatcher.RegisterHandlers();
             }

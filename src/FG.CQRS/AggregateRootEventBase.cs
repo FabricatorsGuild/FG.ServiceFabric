@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization;
-using FG.CQRS;
 
-namespace FG.ServiceFabric.Actors.Runtime
+namespace FG.CQRS
 {
     [DataContract]
     public abstract class AggregateRootEventBase : IAggregateRootEvent

@@ -10,9 +10,9 @@ namespace FG.CQRS
         where TAggregateRootEventInterface : class, IAggregateRootEvent
         where TReadModel : class, new()
     {
-        protected readonly DomainEventDispatcher<TAggregateRootEventInterface> EventDispatcher = new DomainEventDispatcher<TAggregateRootEventInterface>();
+        protected readonly EventDispatcher<TAggregateRootEventInterface> EventDispatcher = new EventDispatcher<TAggregateRootEventInterface>();
         
-        protected DomainEventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
+        protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
         {
             return EventDispatcher.RegisterHandlers();
         }
