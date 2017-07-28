@@ -59,7 +59,7 @@ namespace FG.CQRS
 
             ApplyEvent(aggregateRootEvent);
             AssertInvariantsAreMet();
-            _eventController.RaiseDomainEventAsync(aggregateRootEvent);
+            _eventController.RaiseDomainEventAsync(aggregateRootEvent).GetAwaiter().GetResult();
         }
 
         public virtual void AssertInvariantsAreMet()

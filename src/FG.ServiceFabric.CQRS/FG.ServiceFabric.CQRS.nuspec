@@ -15,8 +15,6 @@
       <dependency id="FG.Common" version="$version$-beta3" />
       <dependency id="FG.CQRS" version="$version$-beta3" />
       <dependency id="FG.ServiceFabric.Extensions" version="$version$-beta3" />
-      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta3" />
-      <dependency id="FG.ServiceFabric.Actors.Remoting" version="$version$-beta3" />
     </dependencies>
   </metadata>
 </package>

@@ -116,15 +116,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CQRS\CommandDeduplicationTests.cs" />
+    <Compile Include="CQRS\IntegrationTests\When_creating_an_aggregate_root_throwing_exception_when_handling_event.cs" />
+    <Compile Include="CQRS\IntegrationTests\When_creating_an_aggregate_root_throwing_exception.cs" />
     <Compile Include="CQRS\MessageChannelTests\ReliableMessgeTestBase.cs" />
     <Compile Include="CQRS\IntegrationTests\When_sending_a_reliable_message_as_result_of_an_event.cs" />
-    <Compile Include="ForTestPersonActor.cs" />
-    <Compile Include="ForTestPersonIndexActor.cs" />
+    <Compile Include="ForTestEventStoredActor.cs" />
+    <Compile Include="ForTestIndexActor.cs" />
     <Compile Include="CQRS\MessageChannelTests\When_message_is_dropped.cs" />
     <Compile Include="TestBase.cs" />
     <Compile Include="CQRS\MessageChannelTests\When_processing_message_queue.cs" />
     <Compile Include="CQRS\MessageChannelTests\When_receiving_a_reliable_message.cs" />
-    <Compile Include="CQRS\IntegrationTests\After_registering_a_person.cs" />
+    <Compile Include="CQRS\IntegrationTests\When_creating_an_aggregate_root.cs" />
     <Compile Include="CQRS\MessageChannelTests\When_sending_a_reliable_message.cs" />
     <Compile Include="ForTestDbStoredActor.cs" />
     <Compile Include="Persistance\When_state_is_updated.cs" />

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using FG.CQRS;
 using FG.ServiceFabric.Actors.Runtime;
@@ -13,6 +14,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
     [StatePersistence(StatePersistence.Persisted)]
     public class EventStoredActor : EventStoredActor<Domain, TheEventStream>, IEventStoredActor,
         IHandleDomainEvent<CreatedEvent>,
+        IHandleDomainEvent<InvalidCreatedEvent>,
         IHandleDomainEvent<ChildAddedEvent>
     {
         public EventStoredActor(ActorService actorService, ActorId actorId)
@@ -33,13 +35,21 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
                 command,
                 CancellationToken.None);
         }
-        
-        public Task<int> RegisterChild(AddChildCommand command)
+
+        public Task CreateInvalidAsync(CreateInvalidCommand command)
         {
             return ExecuteCommandAsync(
-                ct => Task.FromResult(DomainState.AddChild(command.CommandId)),
+                () => DomainState.CreateInvalid(this.GetActorId().GetGuidId(), command.SomeProperty),
                 command,
                 CancellationToken.None);
+        }
+
+        public Task AddChildAsync(AddChildCommand command)
+        {
+            return ExecuteCommandAsync(
+               () => DomainState.AddChild(),
+               command,
+               CancellationToken.None);
         }
         
         public async Task Handle(CreatedEvent domainEvent)
@@ -51,6 +61,11 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
         public async Task Handle(ChildAddedEvent domainEvent)
         {
             await StoreDomainEventAsync(domainEvent);
+        }
+
+        public Task Handle(InvalidCreatedEvent domainEvent)
+        {
+            throw new Exception("Invalid created!");
         }
     }
 }

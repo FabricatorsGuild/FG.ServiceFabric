@@ -40,7 +40,13 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
         [DataMember]
         public string SomeProperty { get; set; }
     }
-    
+    [DataContract]
+    public class InvalidCreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
+    {
+        [DataMember]
+        public string SomeProperty { get; set; }
+    }
+
     [DataContract]
     public class ChildAddedEvent : AggregateRootEventBase, IChildAdded, IChildPropertyUpdated
     {
@@ -96,12 +102,20 @@ namespace FG.ServiceFabric.Tests.EventStoredActor
         public void Create(Guid aggregateRootId, string someProperty)
         {
             if (string.IsNullOrWhiteSpace(someProperty))
-                throw new Exception("Invalid first name");
+                throw new Exception("Can not be empty.");
 
             RaiseEvent(new CreatedEvent { AggregateRootId = aggregateRootId, SomeProperty = someProperty });
         }
-        
-        public int AddChild(Guid commandId)
+
+        public void CreateInvalid(Guid aggregateRootId, string someProperty)
+        {
+            if (string.IsNullOrWhiteSpace(someProperty))
+                throw new Exception("Can not be empty.");
+
+            RaiseEvent(new InvalidCreatedEvent { AggregateRootId = aggregateRootId, SomeProperty = someProperty });
+        }
+
+        public int AddChild()
         {
             var childId = _maxChildId + 1;
             RaiseEvent(new ChildAddedEvent { ChildId = childId });

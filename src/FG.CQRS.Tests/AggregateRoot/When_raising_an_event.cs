@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using FG.CQRS.Exceptions;
 using FluentAssertions;
@@ -12,14 +13,16 @@ namespace FG.CQRS.Tests.AggregateRoot
     public class When_raising_an_event
     {
         private TestAggregateRoot _aggregateRoot;
+        private TestEventStream _eventStream;
+
         [SetUp]
         public void SetupDomain()
         {
-            var eventStream = new TestEventStream();
+            _eventStream = new TestEventStream();
 
             var domainEventControllerMock = new Mock<IDomainEventController>();
             domainEventControllerMock.Setup(_ => _.RaiseDomainEventAsync(It.IsAny<IDomainEvent>()))
-                .Callback<IDomainEvent>(_ => eventStream.Append(_))
+                .Callback<IDomainEvent>(_ => _eventStream.Append(_))
                 .Returns(Task.CompletedTask);
 
             _aggregateRoot = new TestAggregateRoot();
@@ -56,6 +59,30 @@ namespace FG.CQRS.Tests.AggregateRoot
             _aggregateRoot.Create(aggregateRootId);
             _aggregateRoot.Invoking(d => d.ForTestForceRaiseAnyEvent(new UnhandledEvent()))
                 .ShouldThrow<HandlerNotFoundException>();
+        }
+
+        [Test]
+        public void Then_create_event_has_version_1()
+        {
+            var aggregateRootId = Guid.NewGuid();
+
+            _aggregateRoot.Create(aggregateRootId);
+
+            _eventStream.DomainEvents.OfType<IAggregateRootCreatedEvent>().Single().Version.Should().Be(1);
+        }
+
+        [Test]
+        public void Then_events_are_versioned_in_sequential_order()
+        {
+            var aggregateRootId = Guid.NewGuid();
+
+            _aggregateRoot.Create(aggregateRootId);
+            _aggregateRoot.ForTestForceRaiseAnyEvent(new TestEntityL1AddedEvent(1));
+            _aggregateRoot.ForTestForceRaiseAnyEvent(new TestEntityL1AddedEvent(2));
+            _aggregateRoot.ForTestForceRaiseAnyEvent(new TestEntityL1AddedEvent(3));
+            
+            _eventStream.DomainEvents.OfType<IAggregateRootEvent>().Select(e => e.Version)
+                .ShouldAllBeEquivalentTo(new []{1,2,3,4});
         }
     }
 }
