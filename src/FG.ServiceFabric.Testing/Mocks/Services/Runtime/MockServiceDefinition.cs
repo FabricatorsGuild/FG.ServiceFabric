@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Fabric.Health;
-using System.Fabric.Management.ServiceModel;
 using System.Fabric.Query;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
-using System.ServiceModel;
 using FG.Common.Utils;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using Microsoft.ServiceFabric.Services.Client;
 
-namespace FG.ServiceFabric.Testing.Mocks
+namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
 	public class MockServiceDefinition
 	{

@@ -1,5 +1,6 @@
 using System;
 using System.Fabric;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using FG.ServiceFabric.Fabric;
 using FG.ServiceFabric.Services.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Actors.Client;
@@ -10,6 +11,7 @@ using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Data;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -27,6 +29,8 @@ namespace FG.ServiceFabric.Testing.Mocks
         private readonly MockServiceProxyFactory _serviceProxyFactory;
         private readonly MockActorProxyFactory _actorProxyFactory;
 		private readonly MockPartitionEnumerationManager _partitionEnumerationManager;
+
+		public CancellationToken CancellationToken { get; private set; }
 
 		public string ApplicationName { get; private set; }
 
@@ -107,6 +111,8 @@ namespace FG.ServiceFabric.Testing.Mocks
 			_partitionEnumerationManager = new MockPartitionEnumerationManager(this);
 
 	        _activeInstances = new List<MockServiceInstance>();
+
+			CancellationToken = new CancellationToken();
         }
 		
 	    public void SetupService<TServiceImplementation>(
@@ -172,7 +178,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		public void SetupActor<TActorImplementation, TActorService>(
             Func<TActorService, ActorId, TActorImplementation> activator,
-            CreateActorService<TActorService> createActorService,
+            CreateActorService<TActorService> createActorService = null,
             CreateActorStateManager createActorStateManager = null,
             CreateActorStateProvider createActorStateProvider = null,
 			MockServiceDefinition serviceDefinition = null)
@@ -203,7 +209,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 				isStateful: true,
 				serviceUri: serviceUri,
 				serviceName: serviceName);
-
+			
 			var actorRegistration = new MockableActorRegistration<TActorService>(
 				serviceRegistration,
                 interfaceType: actorInterface, 
