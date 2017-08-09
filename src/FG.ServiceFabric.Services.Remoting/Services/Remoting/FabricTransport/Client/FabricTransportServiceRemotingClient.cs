@@ -137,7 +137,10 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 	        var customHeader = ServiceRequestContext.Current?.GetCustomHeader();
 	        if (customHeader != null)
             {
-                messageHeaders.AddHeader(customHeader);
+	            if (!messageHeaders.HasHeader(customHeader.HeaderName))
+	            {
+					messageHeaders.AddHeader(customHeader);
+				}
             }
 	        return customHeader;
         }
