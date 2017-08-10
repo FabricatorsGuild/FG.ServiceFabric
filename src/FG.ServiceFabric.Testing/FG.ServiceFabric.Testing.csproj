@@ -123,6 +123,7 @@
     </Compile>
     <Compile Include="Assertion\AsyncAssertions.cs" />
     <Compile Include="Mocks\Actors\Client\IMockActorProxyManager.cs" />
+    <Compile Include="Mocks\Services\Runtime\IMockServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockActorServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockStatefulServiceInstance.cs" />

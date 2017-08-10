@@ -55,7 +55,12 @@ namespace FG.ServiceFabric.Testing.Mocks
             ServiceManifestVersion: "1.0.0.0"
         );
 
-        public NodeContext BuildNodeContext()
+		public IEnumerable<IMockServiceInstance> GetInstances()
+		{
+			return _activeInstances.Select(i => i as IMockServiceInstance).ToArray();
+		}
+
+		public NodeContext BuildNodeContext()
         {
             return new NodeContext("NODE_1", new NodeId(1L, 5L), 1L, "NODE_TYPE_1", "10.0.0.1");
         }
@@ -260,6 +265,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 			var instances = MockServiceInstance.Build(this, actorRegistration);
 			_activeInstances.AddRange(instances);
-		}		
+		}
+
     }
 }

@@ -136,6 +136,14 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 
 			var serviceUri = new Uri("fabric:/overlord/testactorservice");
 
+			var mockServiceInstances = fabricRuntime.GetInstances();
+			foreach (var mockServiceInstance in mockServiceInstances)
+			{
+				mockServiceInstance.RunAsyncStarted.Should().NotBeNull();
+				mockServiceInstance.RunAsyncStarted.Value.Should().BeBefore(DateTime.Now);
+				mockServiceInstance.RunAsyncEnded.Should().BeAfter(mockServiceInstance.RunAsyncStarted.Value);
+			}
+
 			foreach (var partition in await fabricRuntime.PartitionEnumerationManager.GetPartitionListAsync(serviceUri))
 			{
 				var actorServiceProxy = fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IRunningService>(serviceUri,

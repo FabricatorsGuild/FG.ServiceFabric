@@ -141,11 +141,20 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 				{
 					target = instance.Actors[actorId];
 				}
+				else if (actorRegistration.Activator != null)
+				{
+					target= actorRegistration.Activator(actorService, actorId);
+					instance.Actors[actorId] = (Actor)target;
+				}
 				else
 				{
 					target = ActivateActorWithReflection(actorRegistration.ImplementationType, actorService, actorId);
-					//target= actorRegistration.Activator(actorService, actorId);
 					instance.Actors[actorId] = (Actor)target;
+				}
+
+				if (target == null)
+				{
+					throw new NotSupportedException($"Failed to activate an instance of Actor {actorRegistration.ImplementationType.Name} for ActorId {actorId}");
 				}
 
 				var mockableTarget = (FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);

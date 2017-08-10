@@ -4,19 +4,24 @@ using System.Fabric.Query;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
+using FG.Common.Async;
 using FG.ServiceFabric.Testing.Mocks.Actors.Client;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
-	internal class MockServiceInstance
+	internal class MockServiceInstance : IMockServiceInstance
 	{
 		public MockFabricRuntime FabricRuntime { get; private set; }
 
 		public Uri ServiceUri { get; private set; }
 		public Partition Partition { get; private set; }
 		public Replica Replica { get; private set; }
+
+		public DateTime? RunAsyncStarted { get; set; }
+		public DateTime? RunAsyncEnded { get; set; }
 
 		public IMockableServiceRegistration ServiceRegistration { get; private set; }
 		public IMockableActorRegistration ActorRegistration { get; private set; }
@@ -25,7 +30,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		internal virtual bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
 		{
-			if (ServiceRegistration == null) return false;
+			if (ServiceRegistration?.ServiceDefinition.PartitionKind != partitionKey.Kind) return false;
 
 			var partitionId = ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
 
@@ -64,7 +69,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 			runAsyncMethod = serviceType.GetMethod("RunAsync", BindingFlags.Instance | BindingFlags.NonPublic);
 
-			runAsyncMethod.Invoke(this.ServiceInstance, new object[] {FabricRuntime.CancellationToken});
+			RunAsyncStarted = DateTime.Now;
+
+			Task.Run(() => runAsyncMethod.Invoke(this.ServiceInstance, new object[] {FabricRuntime.CancellationToken}))
+				.ContinueWith((t) => RunAsyncEnded = DateTime.Now)
+				.FireAndForget();		
 		}
 
 		public static IEnumerable<MockServiceInstance> Build(

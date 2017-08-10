@@ -136,7 +136,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		internal override bool Equals(Type actorInterfaceType, ServicePartitionKey partitionKey)
 		{
-			if (ActorRegistration == null) return false;
+			if (ActorRegistration?.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind) return false;
 
 			var partitionId = ActorRegistration?.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
 
@@ -146,6 +146,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		internal override bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
 		{
+			if(ActorRegistration.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind) return false;
+
 			var partitionId = ActorRegistration.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
 
 			return serviceUri.ToString().Equals(this.ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase) &&
