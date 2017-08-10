@@ -12,6 +12,8 @@ namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
     public interface IEventStoredActor : IActor
     {
         Task CreateAsync(CreateCommand command);
+        Task CreateInvalidAsync(CreateInvalidCommand command);
+        Task AddChildAsync(AddChildCommand command);
     }
 
     public interface IEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
@@ -24,6 +26,13 @@ namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
     #region Commands
     [DataContract]
     public class CreateCommand : DomainCommandBase
+    {
+        [DataMember]
+        public string SomeProperty { get; set; }
+    }
+
+    [DataContract]
+    public class CreateInvalidCommand : DomainCommandBase
     {
         [DataMember]
         public string SomeProperty { get; set; }

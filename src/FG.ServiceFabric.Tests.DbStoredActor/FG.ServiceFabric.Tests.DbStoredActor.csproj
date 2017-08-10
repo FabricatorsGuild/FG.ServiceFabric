@@ -95,7 +95,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatabaseSettingsProvider.cs" />
-    <Compile Include="DbStoredActorService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DbStoredActor.cs" />
     <Compile Include="Program.cs" />

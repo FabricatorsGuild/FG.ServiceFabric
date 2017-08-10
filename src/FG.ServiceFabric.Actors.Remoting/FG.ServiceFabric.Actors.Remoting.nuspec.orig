@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<package >
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta4</version>
+    <version>$version$-beta1</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -10,9 +10,14 @@
     <description>$description$</description>
     <projectUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric</projectUrl>
     <copyright>Copyright 2017</copyright>
-    <tags>service fabric actors services</tags>
+    <tags>service fabric fabric transport remoting</tags>
     <dependencies>
-      <dependency id="FG.ServiceFabric.Extensions" version="$version$-beta4" />
+<<<<<<< HEAD
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta1" />
+=======
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$" />
+      <dependency id="FG.Common" version="$version$" />
+>>>>>>> develop
     </dependencies>
   </metadata>
 </package>

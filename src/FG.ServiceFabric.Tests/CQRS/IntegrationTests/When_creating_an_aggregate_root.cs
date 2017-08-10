@@ -23,8 +23,8 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         [SetUp]
         public async Task RaiseEvent()
         {
-            var personProxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
-            await personProxy.CreateAsync(new CreateCommand { SomeProperty = "Stig"});
+            var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
+            await proxy.CreateAsync(new CreateCommand { SomeProperty = "Stig"});
         }
 
         [Test]

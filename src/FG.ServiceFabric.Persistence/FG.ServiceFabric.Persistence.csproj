@@ -110,8 +110,6 @@
     <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Actors\Runtime\DocumentDbActorStateProvider.RegistrationBuilder.cs" />
-    <Compile Include="Actors\Runtime\DocumentDbActorStateProvider.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
     <Compile Include="DocumentDb\CosmosDb\StateWrapper.cs" />
@@ -136,6 +134,9 @@
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Actors\Runtime\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.15.0\build\Microsoft.Azure.DocumentDB.targets')" />

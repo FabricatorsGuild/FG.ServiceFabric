@@ -14,14 +14,14 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
         
         public CosmosDbStateSession(ISettingsProvider settingsProvider, ICosmosDbClientFactory factory = null, ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps)
         {
-            var factory1 = factory ?? new CosmosDbClientFactory();
+            factory = factory ?? new CosmosDbClientFactory();
 
             _collection = settingsProvider["Collection"];
             _databaseName = settingsProvider["DatabaseName"];
             var endpointiUri = settingsProvider["EndpointUri"];
             var primaryKey = settingsProvider["PrimaryKey"];
             
-            _documentClient = factory1.OpenAsync( // TODO: Do proper init.
+            _documentClient = factory.OpenAsync( // TODO: Do proper init.
                 databaseName: _databaseName,
                 collection: _collection,
                 endpointUri: new Uri(endpointiUri),

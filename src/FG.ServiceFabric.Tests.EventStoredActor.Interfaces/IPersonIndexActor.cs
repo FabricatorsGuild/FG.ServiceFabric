@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using FG.CQRS;
 using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;

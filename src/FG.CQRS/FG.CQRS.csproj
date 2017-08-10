@@ -68,8 +68,11 @@
     <Compile Include="AggregateRoot.Component.cs" />
     <Compile Include="AggregateRoot.cs" />
     <Compile Include="AggregateRoot.Entity.cs" />
+    <Compile Include="AggregateRootEventBase.cs" />
     <Compile Include="AggregateRootReadModelGenerator.cs" />
-    <Compile Include="DomainEventDispatcher.cs" />
+    <Compile Include="CommandBase.cs" />
+    <Compile Include="DomainEventStreamBase.cs" />
+    <Compile Include="EventDispatcher.cs" />
     <Compile Include="Exceptions\AggregateRootException.cs" />
     <Compile Include="Exceptions\AggregateRootNotFoundException.cs" />
     <Compile Include="Exceptions\HandlerNotFoundException.cs" />

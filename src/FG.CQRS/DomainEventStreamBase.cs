@@ -1,14 +1,13 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.Serialization;
-using FG.CQRS;
 
-namespace FG.ServiceFabric.Actors.Runtime
+namespace FG.CQRS
 {
     [DataContract]
-    public abstract class EventStreamStateBase : IDomainEventStream
+    public abstract class DomainEventStreamBase : IDomainEventStream
     {
-        protected EventStreamStateBase()
+        protected DomainEventStreamBase()
         {
             DomainEvents = new IDomainEvent[] { };
         }
@@ -18,7 +17,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public void Append(IDomainEvent domainEvent)
         {
-            DomainEvents = DomainEvents.Union(new[] { domainEvent }).ToArray();
+            DomainEvents = DomainEvents.Union(new IDomainEvent[] { domainEvent }).ToArray();
 
             // Raise the event
             EventAppended?.Invoke(this, domainEvent);

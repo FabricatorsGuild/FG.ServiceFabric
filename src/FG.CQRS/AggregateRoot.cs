@@ -59,7 +59,7 @@ namespace FG.CQRS
 
             ApplyEvent(aggregateRootEvent);
             AssertInvariantsAreMet();
-            _eventController.RaiseDomainEventAsync(aggregateRootEvent);
+            _eventController.RaiseDomainEventAsync(aggregateRootEvent).GetAwaiter().GetResult();
         }
 
         public virtual void AssertInvariantsAreMet()
@@ -80,9 +80,9 @@ namespace FG.CQRS
             _eventDispatcher.Dispatch(aggregateRootEvent);
         }
 
-        private readonly DomainEventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new DomainEventDispatcher<TAggregateRootEventInterface>();
+        private readonly EventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new EventDispatcher<TAggregateRootEventInterface>();
         
-        protected DomainEventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
+        protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
         {
             return _eventDispatcher.RegisterHandlers();
         }

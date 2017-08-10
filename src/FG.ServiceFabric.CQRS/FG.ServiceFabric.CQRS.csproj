@@ -111,13 +111,10 @@
     <Compile Include="Actors\IOutboundReliableMessageChannel.cs" />
     <Compile Include="Actors\IReliableMessageEndpoint.cs" />
     <Compile Include="Actors\IReliableMessageReceiverActor.cs" />
-    <Compile Include="Actors\Runtime\AggregateRootEventBase.cs" />
-    <Compile Include="Actors\Runtime\CommandBase.cs" />
     <Compile Include="Actors\Runtime\CommandDeduplicationHelper.cs" />
     <Compile Include="Actors\Runtime\EventStoredActor.cs" />
     <Compile Include="Actors\Runtime\EventStoredActorService.cs" />
     <Compile Include="Actors\Runtime\EventStreamReader.cs" />
-    <Compile Include="Actors\Runtime\EventStreamStateBase.cs" />
     <Compile Include="Actors\Runtime\InboundReliableMessageChannel.cs" />
     <Compile Include="Actors\Runtime\OutboundReliableMessageChannel.cs" />
     <Compile Include="Actors\Runtime\ReliableMessage.cs" />
@@ -139,17 +136,9 @@
       <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
       <Name>FG.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj">
-      <Project>{045616fb-2560-4168-b073-8d5b86fa7b52}</Project>
-      <Name>FG.ServiceFabric.Actors.Remoting</Name>
-    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
-      <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
-      <Name>FG.ServiceFabric.Services.Remoting</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

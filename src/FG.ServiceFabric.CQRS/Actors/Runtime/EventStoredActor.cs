@@ -75,7 +75,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         protected async Task ExecuteCommandAsync
             (Action action, ICommand command, CancellationToken cancellationToken)
         {
-            await CommandDeduplicationHelper.ProcessOnceAsync(action, command, StateManager, CancellationToken.None);
+            await CommandDeduplicationHelper.ProcessOnceAsync(action, command, StateManager, cancellationToken);
         }
 
         protected async Task<T> ExecuteCommandAsync<T>

@@ -4,7 +4,7 @@ using FG.CQRS.Exceptions;
 
 namespace FG.CQRS
 {
-    public class DomainEventDispatcher<TEvent>
+    public class EventDispatcher<TEvent>
         where TEvent : class, IDomainEvent
     {
         private readonly List<KeyValuePair<Type, Action<object>>> _handlers = new List<KeyValuePair<Type, Action<object>>>();
@@ -14,11 +14,11 @@ namespace FG.CQRS
             return new RegistrationBuilder(this);
         }
         
-        public class RegistrationBuilder : IEventHandlerRegistrar<TEvent>
+        public class RegistrationBuilder
         {
-            private readonly DomainEventDispatcher<TEvent> _dispather;
+            private readonly EventDispatcher<TEvent> _dispather;
 
-            public RegistrationBuilder(DomainEventDispatcher<TEvent> dispather)
+            public RegistrationBuilder(EventDispatcher<TEvent> dispather)
             {
                 _dispather = dispather;
             }
@@ -34,11 +34,6 @@ namespace FG.CQRS
 
                 _dispather._handlers.Add(new KeyValuePair<Type, Action<object>>(eventType, e => handler((THandledEvent)e)));
                 return this;
-            }
-            
-            IEventHandlerRegistrar<TEvent> IEventHandlerRegistrar<TEvent>.For<THandledEvent>(Action<THandledEvent> handler)
-            {
-                return For(handler);
             }
         }
         
@@ -69,11 +64,5 @@ namespace FG.CQRS
                 handlers[i](evt);
             }
         }
-    }
-    
-    public interface IEventHandlerRegistrar<in TBaseEvent>
-        where TBaseEvent : class
-    {
-        IEventHandlerRegistrar<TBaseEvent> For<THandledEvent>(Action<THandledEvent> handler) where THandledEvent : TBaseEvent;
     }
 }
