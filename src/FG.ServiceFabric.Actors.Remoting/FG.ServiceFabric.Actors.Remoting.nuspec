@@ -12,7 +12,7 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric fabric transport remoting</tags>
     <dependencies>
-      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta3" />
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta4" />
       <dependency id="FG.Common" version="$version$-beta4" />
     </dependencies>
   </metadata>
