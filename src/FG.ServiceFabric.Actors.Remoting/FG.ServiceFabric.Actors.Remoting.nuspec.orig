@@ -1,0 +1,23 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$-beta1</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <projectUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric</projectUrl>
+    <copyright>Copyright 2017</copyright>
+    <tags>service fabric fabric transport remoting</tags>
+    <dependencies>
+<<<<<<< HEAD
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-beta1" />
+=======
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$" />
+      <dependency id="FG.Common" version="$version$" />
+>>>>>>> develop
+    </dependencies>
+  </metadata>
+</package>

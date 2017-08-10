@@ -41,8 +41,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
             if (!this._store.TryGetValue(stateName, out result))
             {
                 this._store.TryAdd(stateName, value);
-            }            
-            return Task.FromResult((T)value);
+                return Task.FromResult((T)value);
+            }
+            return Task.FromResult((T)result);
         }
 
         public Task<T> GetStateAsync<T>(string stateName, CancellationToken cancellationToken = default(CancellationToken))

@@ -127,13 +127,19 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
       <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
       <Name>FG.ServiceFabric.Services.Remoting</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="FG.ServiceFabric.Actors.Remoting.nuspec" />
+    <None Include="FG.ServiceFabric.Actors.Remoting.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
