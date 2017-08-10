@@ -103,6 +103,7 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 			{
 				while (true)
 				{
+					Console.WriteLine($"RunAsync loop {_count} for {this.GetHashCode()}");
 					_count++;
 
 					await Task.Delay(100, cancellationToken);
@@ -141,7 +142,7 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 			{
 				mockServiceInstance.RunAsyncStarted.Should().NotBeNull();
 				mockServiceInstance.RunAsyncStarted.Value.Should().BeBefore(DateTime.Now);
-				mockServiceInstance.RunAsyncEnded.Should().BeAfter(mockServiceInstance.RunAsyncStarted.Value);
+				mockServiceInstance.RunAsyncEnded.Should().BeNull();
 			}
 
 			foreach (var partition in await fabricRuntime.PartitionEnumerationManager.GetPartitionListAsync(serviceUri))
@@ -167,6 +168,14 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 
 			var serviceUri = new Uri("fabric:/overlord/TestStatelessService");
 
+			var mockServiceInstances = fabricRuntime.GetInstances();
+			foreach (var mockServiceInstance in mockServiceInstances)
+			{
+				mockServiceInstance.RunAsyncStarted.Should().NotBeNull();
+				mockServiceInstance.RunAsyncStarted.Value.Should().BeBefore(DateTime.Now);
+				mockServiceInstance.RunAsyncEnded.Should().BeNull();
+			}
+
 			foreach (var partition in await fabricRuntime.PartitionEnumerationManager.GetPartitionListAsync(serviceUri))
 			{
 				var actorServiceProxy = fabricRuntime.ServiceProxyFactory.CreateServiceProxy<IRunningService>(serviceUri,
@@ -189,6 +198,14 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 			await Task.Delay(500);
 
 			var serviceUri = new Uri("fabric:/overlord/TestStatefulService");
+
+			var mockServiceInstances = fabricRuntime.GetInstances();
+			foreach (var mockServiceInstance in mockServiceInstances)
+			{
+				mockServiceInstance.RunAsyncStarted.Should().NotBeNull();
+				mockServiceInstance.RunAsyncStarted.Value.Should().BeBefore(DateTime.Now);
+				mockServiceInstance.RunAsyncEnded.Should().BeNull();
+			}
 
 			foreach (var partition in await fabricRuntime.PartitionEnumerationManager.GetPartitionListAsync(serviceUri))
 			{

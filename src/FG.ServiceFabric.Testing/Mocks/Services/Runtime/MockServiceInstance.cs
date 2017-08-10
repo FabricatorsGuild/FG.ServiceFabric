@@ -69,11 +69,19 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 			runAsyncMethod = serviceType.GetMethod("RunAsync", BindingFlags.Instance | BindingFlags.NonPublic);
 
-			RunAsyncStarted = DateTime.Now;
 
-			Task.Run(() => runAsyncMethod.Invoke(this.ServiceInstance, new object[] {FabricRuntime.CancellationToken}))
-				.ContinueWith((t) => RunAsyncEnded = DateTime.Now)
-				.FireAndForget();		
+			Task.Run(() =>
+				{
+					RunAsyncStarted = DateTime.Now;
+					Console.WriteLine($"Started RunAsync for {this.ServiceInstance.GetHashCode()}");
+					var runAsyncTask = runAsyncMethod.Invoke(this.ServiceInstance, new object[] {FabricRuntime.CancellationToken}) as Task;
+
+					runAsyncTask?.ContinueWith(t =>
+					{
+						RunAsyncEnded = DateTime.Now;
+						Console.WriteLine($"Finished RunAsync for {this.ServiceInstance.GetHashCode()}");
+					});
+				}).FireAndForget();		
 		}
 
 		public static IEnumerable<MockServiceInstance> Build(
