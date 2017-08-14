@@ -12,6 +12,8 @@ namespace FG.ServiceFabric.Tests.Actor
 {
     public class ActorDemoActorService : FG.ServiceFabric.Actors.Runtime.ActorService, IActorDemoActorService
     {
+	    private int _count = 0;
+
         public ActorDemoActorService(
             StatefulServiceContext context, 
             ActorTypeInformation actorTypeInfo, 
@@ -66,10 +68,26 @@ namespace FG.ServiceFabric.Tests.Actor
         {
             await StateProvider.RemoveActorAsync(actorId, cancellationToken);
         }
+
+	    public Task<int> GetInternalCount(CancellationToken cancellationToken)
+	    {
+		    return Task.FromResult(_count);
+	    }
+
+		protected override async Task RunAsync(CancellationToken cancellationToken)
+	    {
+		    while (true)
+		    {
+			    _count++;
+
+			   await Task.Delay(100, cancellationToken);
+		    }
+	    }
     }
 
     public interface IActorDemoActorService : IActorService
     {
+	    Task<int> GetInternalCount(CancellationToken cancellationToken);
         Task<int> GetCountAsync(ActorId id, CancellationToken cancellationToken);
         Task<IEnumerable<int>> GetCountsAsync(CancellationToken cancellationToken);
         Task RemoveAsync(ActorId actorId, CancellationToken cancellationToken);

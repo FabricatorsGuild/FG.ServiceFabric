@@ -28,6 +28,19 @@ namespace FG.Common.Utils
 			return (T) instance;
 		}
 
+		public static object ActivateCtor(this Type type, params object[] args)
+		{
+			var constructorInfos = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+
+			var matchingCtor = constructorInfos.FirstOrDefault(c =>
+				c.GetParameters().Length == args.Length &&
+				c.GetParameters().Select((a, i) => new { Type = a?.ParameterType ?? typeof(object), Index = i }).All(a => a.Type.IsAssignableFrom(args[a.Index]?.GetType() ?? typeof(object))));
+
+			if (matchingCtor == null) return null;
+
+			var instance = matchingCtor.Invoke(BindingFlags.CreateInstance, null, args, CultureInfo.CurrentCulture);
+			return instance;
+		}
 
 		public static object ActivateInternalCtor(this Type type, params object [] args)
 	    {

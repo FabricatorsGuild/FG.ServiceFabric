@@ -17,14 +17,14 @@ namespace FG.ServiceFabric.Testing.Mocks.Fabric
 		    _fabricRuntime = fabricRuntime;
 	    }
 		
-		public Task<ServicePartitionList> GetPartitionListAsync(Uri serviceName)
+		public Task<ServicePartitionList> GetPartitionListAsync(Uri serviceUri)
 		{
-			var instances = _fabricRuntime.Instances.Where(i => i.ServiceUri == serviceName);
+			var instances = _fabricRuntime.Instances.Where(i => i.ServiceUri.ToString().Equals(serviceUri.ToString(), StringComparison.InvariantCultureIgnoreCase));
 			if (!instances.Any())
 			{
-				throw new NotSupportedException($"Cannot enumerate partitions for {serviceName}, call SetupService on MockFabricRuntime first");
+				throw new NotSupportedException($"Cannot enumerate partitions for {serviceUri}, call SetupService on MockFabricRuntime first");
 			}
-			var partitions = _fabricRuntime.Instances.Where(i => i.ServiceUri == serviceName).Select(i => i.Partition);
+			var partitions = _fabricRuntime.Instances.Where(i => i.ServiceUri.ToString().Equals(serviceUri.ToString(), StringComparison.InvariantCultureIgnoreCase)).Select(i => i.Partition);
 
 			var servicePartitionListType = typeof(ServicePartitionList);
 			var servicePartitionList = ReflectionUtils.CreateInstanceOfInternal(servicePartitionListType, new List<Partition>(partitions)) as ServicePartitionList;

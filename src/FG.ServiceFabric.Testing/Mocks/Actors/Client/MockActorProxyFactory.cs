@@ -11,6 +11,7 @@ using FG.ServiceFabric.Actors.State;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -134,27 +135,27 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 			if (actorRegistration.ImplementationType != null && actorRegistration.ImplementationType.IsSubclassOf(typeof(Actor)))
 			{
-				//var actorServiceName = $"{actorRegistration.ImplementationType.Name}Service";
-
-				//var createStateProvider = actorRegistration.CreateActorStateProvider ?? (() => (IActorStateProvider)new MockActorStateProvider(_fabricRuntime));
-				//var actorStateProvider = GetOrCreateActorStateProvider(actorRegistration, () => createStateProvider(), partitionKey);
-
-				//var actorTypeInformation = ActorTypeInformation.Get(actorRegistration.ImplementationType);
-				////var statefulServiceContext = _fabricRuntime.BuildStatefulServiceContext(actorServiceName);
-				//var stateManagerFactory = actorRegistration.CreateActorStateManager != null ? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
-				//    (actor, stateProvider) => actorRegistration.CreateActorStateManager(actor, stateProvider)) : null;
-				//var actorServiceFactory = actorRegistration.CreateActorService ?? GetMockActorService;
-
-				//var actorService = actorServiceFactory(statefulServiceContext, actorTypeInformation, actorStateProvider, stateManagerFactory);
-				//if (actorService is FG.ServiceFabric.Actors.Runtime.ActorService)
-				//{
-				//    actorService.SetPrivateField("_serviceProxyFactory", _fabricRuntime.ServiceProxyFactory);
-				//    actorService.SetPrivateField("_actorProxyFactory", _fabricRuntime.ActorProxyFactory);
-				//    actorService.SetPrivateField("_applicationUriBuilder", _fabricRuntime.ApplicationUriBuilder);
-				//}
-
 				var actorService = instance.ServiceInstance as ActorService;
-				var target = actorRegistration.Activator(actorService, actorId);
+				object target = null;
+				if (instance.Actors.ContainsKey(actorId))
+				{
+					target = instance.Actors[actorId];
+				}
+				else if (actorRegistration.Activator != null)
+				{
+					target= actorRegistration.Activator(actorService, actorId);
+					instance.Actors[actorId] = (Actor)target;
+				}
+				else
+				{
+					target = ActivateActorWithReflection(actorRegistration.ImplementationType, actorService, actorId);
+					instance.Actors[actorId] = (Actor)target;
+				}
+
+				if (target == null)
+				{
+					throw new NotSupportedException($"Failed to activate an instance of Actor {actorRegistration.ImplementationType.Name} for ActorId {actorId}");
+				}
 
 				var mockableTarget = (FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);
 				if (mockableTarget != null)
@@ -237,6 +238,17 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			string listenerName = null) where TServiceInterface : IService
 		{
 			return CreateActorService<TServiceInterface>(serviceUri, new ServicePartitionKey(partitionKey));
+		}
+
+		internal Actor ActivateActorWithReflection(Type actorType, ActorService actorService, ActorId actorId)
+		{
+			if (!typeof(Actor).IsAssignableFrom(actorType))
+			{
+				throw new ArgumentException($"Cannot activate instance of {actorType?.FullName} as it should inherit from {typeof(Actor).FullName}");
+			}
+
+			var instance = (Actor) actorType.ActivateCtor(new object[] {actorService, actorId});
+			return instance;
 		}
 
 		void IMockActorProxyManager.BeforeMethod(IActor proxy, MethodInfo method)

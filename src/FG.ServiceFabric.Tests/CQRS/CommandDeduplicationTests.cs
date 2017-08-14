@@ -5,6 +5,7 @@ using FG.Common.Async;
 using FG.CQRS;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;

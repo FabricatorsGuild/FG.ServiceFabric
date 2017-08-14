@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+using FG.ServiceFabric.Testing.Tests.Mocks.Fabric;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Runtime;
 using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Actors.Client
@@ -114,5 +118,49 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             count.Should().Be(5);
         }
 
-    }
+
+
+		[Test]
+		public async Task MockActorProxy_should_activate_actor_with_custom_constructor()
+		{
+			var fabricRuntime = new MockFabricRuntime("Overlord");
+
+			fabricRuntime.SetupActor<TestActor, TestActorService>(
+				(service, actorId) => new TestActor(service, actorId, "Heimlich"),
+				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context, actorTypeInformation,
+				stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(1));
+
+			var proxy = fabricRuntime.ActorProxyFactory.CreateActorProxy<ITestActor>(new ActorId("Testivus"));
+
+			proxy.Should().NotBeNull();
+		}
+
+
+
+		public interface ITestActor : IActor
+		{
+
+		}
+
+		public class TestActorService : ActorService
+		{
+			public TestActorService(
+				StatefulServiceContext context,
+				ActorTypeInformation actorTypeInfo,
+				Func<ActorService, ActorId, ActorBase> actorFactory = null,
+				Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null,
+				IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) :
+				base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
+			{
+			}
+		}
+
+		public class TestActor : Actor, ITestActor
+		{
+			public TestActor(ActorService actorService, ActorId actorId, string secretKey) : base(actorService, actorId)
+			{
+			}
+		}
+
+	}
 }

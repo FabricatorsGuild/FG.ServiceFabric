@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Testing.Mocks;
+using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;

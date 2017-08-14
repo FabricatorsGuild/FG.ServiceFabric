@@ -19,5 +19,11 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         {
             messageHeaders.AddHeader(header.HeaderName, header.GetValue());
         }
+
+	    public static bool HasHeader(this ServiceRemotingMessageHeaders messageHeaders, string headerName)
+	    {
+			
+			return messageHeaders.TryGetHeaderValue(headerName, out byte[] value);
+		}
     }
 }
