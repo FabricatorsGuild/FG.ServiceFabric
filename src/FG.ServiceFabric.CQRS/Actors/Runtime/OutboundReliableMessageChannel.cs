@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -37,7 +38,7 @@ namespace FG.ServiceFabric.Actors.Runtime
     }
 
     [DataContract]
-    internal sealed class ReliableMessageChannelState
+    internal sealed class ReliableMessageChannelState : IEnumerable<ActorReliableMessage>
     {
         public ReliableMessageChannelState()
         {
@@ -71,6 +72,16 @@ namespace FG.ServiceFabric.Actors.Runtime
         public ActorReliableMessage Peek()
         {
             return InnerQueue.Peek();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public IEnumerator<ActorReliableMessage> GetEnumerator()
+        {
+            return InnerQueue.GetEnumerator();
         }
     }
 
@@ -148,20 +159,33 @@ namespace FG.ServiceFabric.Actors.Runtime
             var channelState = await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, _stateManager, cancellationToken);
             return channelState.Peek().Message;
         }
+
+        public async Task<IEnumerable<DeadLetter>> GetDeadLetters(CancellationToken cancellationToken)
+        {
+            var channelState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
+            return channelState.Select(message => new DeadLetter(message)).ToList();
+        } 
         
         private async Task DropMessageAsync(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
         {
             if (_messageDrop == null)
             {
-                var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
-                deadLetterState.Enqueue(actorMessage);
-                await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
-                _loggerFactory()?.MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload, deadLetterState.Depth);
+                await MoveToDeadLetters(actorMessage, cancellationToken);
             }
             else
             {
                 await _messageDrop(actorMessage.Message, actorMessage.ActorReference);
             }
+        }
+
+        private async Task MoveToDeadLetters(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
+        {
+            var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
+            deadLetterState.Enqueue(actorMessage);
+            await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
+            _loggerFactory()?
+                .MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload,
+                    deadLetterState.Depth);
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter

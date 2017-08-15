@@ -119,8 +119,10 @@
     <Compile Include="CQRS\CommandDeduplicationTests.cs" />
     <Compile Include="CQRS\IntegrationTests\When_creating_an_aggregate_root_throwing_exception_when_handling_event.cs" />
     <Compile Include="CQRS\IntegrationTests\When_creating_an_aggregate_root_throwing_exception.cs" />
+    <Compile Include="CQRS\MessageChannelTests\MockFailingActorBinder.cs" />
     <Compile Include="CQRS\MessageChannelTests\ReliableMessgeTestBase.cs" />
     <Compile Include="CQRS\IntegrationTests\When_sending_a_reliable_message_as_result_of_an_event.cs" />
+    <Compile Include="CQRS\MessageChannelTests\When_message_is_dropped_when_no_message_drop_handler_is_set.cs" />
     <Compile Include="ForTestEventStoredActor.cs" />
     <Compile Include="ForTestIndexActor.cs" />
     <Compile Include="CQRS\MessageChannelTests\When_message_is_dropped.cs" />

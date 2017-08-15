@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Actors.Runtime;
@@ -13,22 +14,15 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
-    public class When_message_is_dropped : ReliableMessgeTestBase
+    public class When_message_is_dropped_when_no_message_drop_handler_is_set : ReliableMessgeTestBase
     {
         [SetUp]
         public void SetupChanelWithFailingActorBinder()
         {
             OutboundChannel = new OutboundReliableMessageChannel(new MockActorStateManager(),
-                FabricRuntime.ActorProxyFactory, null, HandleDroppedMessage , new MockFailingActorBinder());
+                FabricRuntime.ActorProxyFactory, null, null , new MockFailingActorBinder());
         }
-
-        private readonly List<ReliableMessage> _droppedMessages = new List<ReliableMessage>();
-        private Task HandleDroppedMessage(ReliableMessage message, ActorReference actorReference)
-        {
-            _droppedMessages.Add(message);
-            return Task.FromResult(true);
-        }
-
+        
         [SetUp]
         public async Task SendMessage()
         {
@@ -38,9 +32,10 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
         }
 
         [Test]
-        public void Then_messsage_is_delivered_to_message_drop_handler()
+        public async Task Then_messsage_is_delivered_to_dead_letter_queue()
         {
-            _droppedMessages.Count.Should().Be(1);
+            var deadLetters = await OutboundChannel.GetDeadLetters(CancellationToken.None);
+            deadLetters.Should().HaveCount(1);
         }
     }
 }
