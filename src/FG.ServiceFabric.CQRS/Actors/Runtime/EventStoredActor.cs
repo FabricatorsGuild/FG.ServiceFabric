@@ -29,6 +29,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             ITimeProvider timeProvider = null,
             Func<IOutboundMessageChannelLogger> outboundMessageChannelLoggerFactory = null,
             Func<ReliableMessage, ActorReference, Task> messageDrop = null,
+            IReceiverActorBinder actorBinder = null,
             TimeSpan? outboundMessageChannelPeriod = null)
             : base(actorService, actorId)
         {
@@ -37,7 +38,8 @@ namespace FG.ServiceFabric.Actors.Runtime
                 stateManager: StateManager, 
                 actorProxyFactory: ActorProxyFactory, 
                 loggerFactory: outboundMessageChannelLoggerFactory,
-                messageDrop: messageDrop
+                messageDrop: messageDrop,
+                actorBinder: actorBinder
                 );
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
             OutboundMessageChannelPeriod = outboundMessageChannelPeriod ?? 5.Seconds();
