@@ -28,6 +28,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService, ActorId actorId,
             ITimeProvider timeProvider = null,
             Func<IOutboundMessageChannelLogger> outboundMessageChannelLoggerFactory = null,
+            Func<ReliableMessage, ActorReference, Task> messageDrop = null,
             TimeSpan? outboundMessageChannelPeriod = null)
             : base(actorService, actorId)
         {
@@ -36,7 +37,7 @@ namespace FG.ServiceFabric.Actors.Runtime
                 stateManager: StateManager, 
                 actorProxyFactory: ActorProxyFactory, 
                 loggerFactory: outboundMessageChannelLoggerFactory,
-                messageDrop: OnMessageDrop()
+                messageDrop: messageDrop
                 );
             InboundMessageChannel = new InboundReliableMessageChannel<ICommand>(this);
             OutboundMessageChannelPeriod = outboundMessageChannelPeriod ?? 5.Seconds();
@@ -107,11 +108,6 @@ namespace FG.ServiceFabric.Actors.Runtime
                     $"No handler found for command {nameof(TMessage)}. Did you forget to implement {nameof(IHandleCommand<TMessage>)}?");
 
             await handleDomainEvent.Handle(message);
-        }
-        
-        protected virtual Func<ReliableMessage, ActorReference, Task> OnMessageDrop()
-        {
-            return null; // Will result in message ending up in dead letter queue.
         }
        
         #endregion

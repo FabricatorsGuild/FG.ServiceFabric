@@ -153,15 +153,22 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             if (_messageDrop == null)
             {
-                var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
-                deadLetterState.Enqueue(actorMessage);
-                await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
-                _loggerFactory()?.MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload, deadLetterState.Depth);
+                await MoveToDeadLetters(actorMessage, cancellationToken);
             }
             else
             {
                 await _messageDrop(actorMessage.Message, actorMessage.ActorReference);
             }
+        }
+
+        private async Task MoveToDeadLetters(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
+        {
+            var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
+            deadLetterState.Enqueue(actorMessage);
+            await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
+            _loggerFactory()?
+                .MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload,
+                    deadLetterState.Depth);
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
