@@ -10,7 +10,7 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public abstract class WrappedActorStateProvider : IActorStateProvider
+	public abstract class WrappedActorStateProvider : IActorStateProvider
     {
         private readonly IActorStateProvider _innerStateProvider;
 
@@ -139,5 +139,10 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             return _innerStateProvider.LoadRemindersAsync(cancellationToken);
         }
+
+	    public Task DeleteRemindersAsync(IReadOnlyDictionary<ActorId, IReadOnlyCollection<string>> reminderNames, CancellationToken cancellationToken = new CancellationToken())
+	    {
+			return _innerStateProvider.DeleteRemindersAsync(reminderNames, cancellationToken);
+		}
     }
 }

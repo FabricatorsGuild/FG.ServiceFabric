@@ -194,5 +194,10 @@ namespace FG.ServiceFabric.Actors.State
         {
             return _innerStateProvider.LoadRemindersAsync(cancellationToken);
         }
-    }
+
+		public Task DeleteRemindersAsync(IReadOnlyDictionary<ActorId, IReadOnlyCollection<string>> reminderNames, CancellationToken cancellationToken = new CancellationToken())
+		{
+			return _innerStateProvider.DeleteRemindersAsync(reminderNames, cancellationToken);
+		}
+	}
 }

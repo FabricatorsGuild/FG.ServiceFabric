@@ -166,6 +166,22 @@ namespace FG.ServiceFabric.Testing.Mocks
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
         }
-        #endregion
+
+	    public void ReportApplicationHealth(HealthInformation healthInfo, HealthReportSendOptions sendOptions)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public void ReportDeployedApplicationHealth(HealthInformation healthInfo, HealthReportSendOptions sendOptions)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    public void ReportDeployedServicePackageHealth(HealthInformation healthInfo, HealthReportSendOptions sendOptions)
+	    {
+		    throw new NotImplementedException();
+	    }
+
+	    #endregion
     }
 }

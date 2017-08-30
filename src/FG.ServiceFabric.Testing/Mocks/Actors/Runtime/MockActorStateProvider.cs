@@ -254,6 +254,10 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
         public Task<IActorReminderCollection> LoadRemindersAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             throw new NotImplementedException();
-        }
-    }
+		}
+		public Task DeleteRemindersAsync(IReadOnlyDictionary<ActorId, IReadOnlyCollection<string>> reminderNames, CancellationToken cancellationToken = new CancellationToken())
+		{
+			throw new NotImplementedException();
+		}
+	}
 }
