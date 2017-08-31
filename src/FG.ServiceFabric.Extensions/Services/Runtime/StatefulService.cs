@@ -15,15 +15,14 @@ namespace FG.ServiceFabric.Services.Runtime
     {
         private IServiceProxyFactory _serviceProxyFactory;
         private ApplicationUriBuilder _applicationUriBuilder;
-        private CancellationTokenSource _tokenSource = null;
         private IActorProxyFactory _actorProxyFactory;
 
-        public StatefulService(StatefulServiceContext serviceContext) : base(serviceContext)
+	    protected StatefulService(StatefulServiceContext serviceContext) : base(serviceContext)
         {
             _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
         }
 
-        public StatefulService(StatefulServiceContext serviceContext, IReliableStateManagerReplica reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
+	    protected StatefulService(StatefulServiceContext serviceContext, IReliableStateManagerReplica reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
         {
             _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);			
         }

@@ -121,7 +121,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockActorProxy_should_activate_actor_with_custom_constructor()
+#pragma warning restore 1998
 		{
 			var fabricRuntime = new MockFabricRuntime("Overlord");
 
@@ -137,11 +139,13 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 
 
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public interface ITestActor : IActor
 		{
 
 		}
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public class TestActorService : ActorService
 		{
 			public TestActorService(
@@ -155,6 +159,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			}
 		}
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public class TestActor : Actor, ITestActor
 		{
 			public TestActor(ActorService actorService, ActorId actorId, string secretKey) : base(actorService, actorId)

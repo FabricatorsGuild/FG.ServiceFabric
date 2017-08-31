@@ -34,7 +34,7 @@ namespace FG.ServiceFabric.DocumentDb.Testing
 
         public Task UpsertAsync<T>(T state, IStateMetadata metadata) where T : IPersistedIdentity
         {
-            _db[state.Id] = new StateWrapper<T>(state, metadata);
+            _db[state.Id] = new StateWrapper<T>(state.Id, state, metadata);
             return DummyTask;
         }
 

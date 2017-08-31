@@ -118,8 +118,10 @@
     <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="AutoLogger\ActorServiceDescriptionTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorMessageHeadersTypeTemplateExtension.cs" />
-    <Compile Include="AutoLogger\ActorOrActorServiceTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorOrActorServiceDescriptionTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ActorDescriptionTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorReferenceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />

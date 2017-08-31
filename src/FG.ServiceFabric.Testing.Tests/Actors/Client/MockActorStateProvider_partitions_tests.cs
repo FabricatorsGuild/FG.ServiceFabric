@@ -18,13 +18,16 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 {
+	// ReSharper disable InconsistentNaming
 	public class MockActorStateProvider_partitions_tests
 	{
 		private MockFabricRuntime _fabricRuntime;
 		private MockServiceDefinition _actorDemoServiceDefinition;
 
 		[SetUp]
+#pragma warning disable 1998
 		public async Task CreateActorsWithActorService()
+#pragma warning restore 1998
 		{
 			_fabricRuntime = new MockFabricRuntime("Overlord");
 
@@ -37,7 +40,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		}
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockServiceDefinition_should_create_in64_ranges()
+#pragma warning restore 1998
 		{
 			var instanceCount = 10;
 			var lowKey = new BigInteger(long.MinValue);
@@ -59,7 +64,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		}
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockServiceDefinition_should_split_actors_into_separate_partitions()
+#pragma warning restore 1998
 		{
 			var uniformInt64Partitions = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
 		
@@ -135,4 +142,5 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			counts.Should().BeEquivalentTo(new[] {200, 300});
 		}
 	}
+	// ReSharper restore InconsistentNaming
 }
