@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.16
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests", "FG.ServiceFabric.Tests\FG.ServiceFabric.Tests.csproj", "{343070B9-EA99-472D-92BE-A17119C57BCA}"
 EndProject
@@ -48,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Persistence", "FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj", "{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.CQRS", "FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj", "{A2A3CDDF-B37E-4F35-8200-49D7259038F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.Common.Tests", "FG.Common.Tests\FG.Common.Tests.csproj", "{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -221,6 +223,14 @@ Global
 		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|x64.ActiveCfg = Release|Any CPU
 		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|x64.Build.0 = Release|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|x64.Build.0 = Debug|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Release|x64.ActiveCfg = Release|Any CPU
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -236,5 +246,9 @@ Global
 		{4213B96F-9EB1-4340-9B10-D6C485051C80} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{6E846EB1-8AB5-49D0-AB13-2D83C53587F4} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7A87FB6F-8593-4692-94BF-D245981DD263}
 	EndGlobalSection
 EndGlobal

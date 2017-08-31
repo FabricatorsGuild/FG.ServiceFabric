@@ -105,17 +105,18 @@ namespace FG.Common.Utils
             return null;
         }
 
-        private static MethodInfo GetPrivateMethod(Type type, string methodName, Type[] argTypes)
+        private static MethodInfo GetPrivateOrPublicMethod(Type type, string methodName, Type[] argTypes)
         {
             var methodInfos = type
                 .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic );
+
             var methodInfo = methodInfos.SingleOrDefault(method => method.Name == methodName && AreParameterTypesValid(method.GetParameters(), argTypes));
 
             if (methodInfo != null) return methodInfo;
 
             if (type.BaseType != null)
             {
-                return GetPrivateMethod(type.BaseType, methodName, argTypes);
+                return GetPrivateOrPublicMethod(type.BaseType, methodName, argTypes);
             }
 
             return null;
@@ -143,7 +144,25 @@ namespace FG.Common.Utils
             return true;
         }
 
-        public static void SetPrivateField<TImplementingType, TPropertyValue>(this TImplementingType that, 
+		private static bool AreGenericTypesValid(Type[] genericTypes, Type[] argumentTypes)
+		{
+			if (argumentTypes.Length > genericTypes.Length) return false;
+
+			for (var i = 0; i < genericTypes.Length; i++)
+			{
+				var genericType = genericTypes[i];
+
+				if (argumentTypes.Length >= i)
+				{
+					var argumentType = argumentTypes[i];
+					if (!genericType.IsAssignableFrom(argumentType)) return false;
+				}
+			}
+
+			return true;
+		}
+
+		public static void SetPrivateField<TImplementingType, TPropertyValue>(this TImplementingType that, 
             string fieldName, TPropertyValue value)
         {
             var fieldInfo = GetPrivateField(that.GetType(), fieldName);
@@ -181,11 +200,36 @@ namespace FG.Common.Utils
 
         public static void CallPrivateMethod(this object that, string methodName, params object[] args)
         {
-            var methodInfo = GetPrivateMethod(that.GetType(), methodName, args.Select(a => a.GetType()).ToArray());
+            var methodInfo = GetPrivateOrPublicMethod(that.GetType(), methodName, args.Select(a => a.GetType()).ToArray());
             if( methodInfo == null) throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");
 
             methodInfo.Invoke(that, args);
         }
+
+	    public static object CallGenericMethod(this object that, string methodName, Type[] genericTypes, params object[] args)
+	    {
+		    var type = that.GetType();
+		    var argTypes = args.Select(a => a.GetType()).ToArray();
+			var methodInfos = type
+			    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+			var methodInfo = methodInfos.SingleOrDefault(method => 
+				method.Name == methodName && 
+				AreParameterTypesValid(method.GetParameters(), argTypes) && 
+				AreGenericTypesValid(method.GetGenericArguments(), genericTypes));
+
+		    if (methodInfo != null)
+		    {
+				return methodInfo.Invoke(that, args);
+			}
+
+			if (type.BaseType != null)
+			{
+				return GetPrivateOrPublicMethod(type.BaseType, methodName, argTypes);
+			}
+
+			throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");			
+		}
 
         public static bool ImplementsInterface(this Type type, Type interfaceType)
         {
