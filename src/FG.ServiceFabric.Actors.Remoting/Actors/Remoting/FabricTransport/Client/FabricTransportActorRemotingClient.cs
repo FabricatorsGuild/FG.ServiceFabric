@@ -42,7 +42,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
                 ActorMethodMap[lookup] = methodName;
                 return methodName;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 
                 // ignored

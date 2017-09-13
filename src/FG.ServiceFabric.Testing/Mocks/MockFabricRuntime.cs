@@ -36,6 +36,8 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		private readonly List<MockServiceInstance> _activeInstances;
 
+	    public bool DisableMethodCallOutput { get; set; }
+
 	    internal IEnumerable<MockServiceInstance> Instances => _activeInstances;
 
 		public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory;
@@ -55,6 +57,11 @@ namespace FG.ServiceFabric.Testing.Mocks
             ServiceManifestVersion: "1.0.0.0"
         );
 
+	    internal void RegisterInstances(IEnumerable<MockServiceInstance> instances)
+	    {
+		    _activeInstances.AddRange(instances);
+	    }
+
 		public IEnumerable<IMockServiceInstance> GetInstances()
 		{
 			return _activeInstances.Select(i => i as IMockServiceInstance).ToArray();
@@ -65,7 +72,7 @@ namespace FG.ServiceFabric.Testing.Mocks
             return new NodeContext("NODE_1", new NodeId(1L, 5L), 1L, "NODE_TYPE_1", "10.0.0.1");
         }
 
-        public StatefulServiceContext BuildStatefulServiceContext(string serviceName)
+        public StatefulServiceContext BuildStatefulServiceContext(string serviceName, ServicePartitionInformation partitionInformation, long replicaId)
         {
             return new StatefulServiceContext(
                 new NodeContext("Node0", 
@@ -74,12 +81,12 @@ namespace FG.ServiceFabric.Testing.Mocks
                     nodeType: "NodeType1",
                     ipAddressOrFQDN: "TEST.MACHINE"),
                 codePackageActivationContext: CodePackageContext,
-                serviceTypeName: serviceName,
+                serviceTypeName: $"{serviceName}Type",
                 serviceName: new Uri($"{CodePackageContext.ApplicationName}/{serviceName}"),
                 initializationData: null,
-                partitionId: Guid.NewGuid(),
-                replicaId: long.MaxValue
-            );
+                partitionId: partitionInformation.Id,
+                replicaId: replicaId
+			);
         }
         public StatelessServiceContext BuildStatelessServiceContext(string serviceName)
         {
@@ -147,8 +154,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 				serviceUri: serviceUri,
 				serviceName: serviceName);
 
-			var instances = MockServiceInstance.Build(this, serviceRegistration);
-			_activeInstances.AddRange(instances);
+			var instances = MockServiceInstance.Register(this, serviceRegistration);
 		}
 
 		public void SetupService<TServiceImplementation>(
@@ -176,9 +182,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 				serviceUri: serviceUri,
 				serviceName: serviceName);
 
-			var instances = MockServiceInstance.Build(this, serviceRegistration);
-			_activeInstances.AddRange(instances);
-
+			var instances = MockServiceInstance.Register(this, serviceRegistration);
 		}
 
 		public void SetupActor<TActorImplementation, TActorService>(
@@ -224,8 +228,7 @@ namespace FG.ServiceFabric.Testing.Mocks
                 createActorStateManager: createActorStateManager, 
                 createActorStateProvider: createActorStateProvider);
 
-			var instances = MockServiceInstance.Build(this, actorRegistration);
-			_activeInstances.AddRange(instances);
+			var instances = MockServiceInstance.Register(this, actorRegistration);
 		}
 
         public void SetupActor<TActorImplementation>(
@@ -263,9 +266,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 				createActorStateManager: createActorStateManager,
 				createActorStateProvider: createActorStateProvider);
 
-			var instances = MockServiceInstance.Build(this, actorRegistration);
-			_activeInstances.AddRange(instances);
-		}
-
+			var instances = MockServiceInstance.Register(this, actorRegistration);
+		}		
     }
 }

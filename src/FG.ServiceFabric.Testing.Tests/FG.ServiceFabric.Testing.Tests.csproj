@@ -88,10 +88,14 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\..\..\FG.Samples\src\FG.Samples.ServiceFabricPeople\packages\Microsoft.ServiceFabric.Services.Remoting.2.7.198\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\..\..\FG.Samples\src\FG.Samples.ServiceFabricPeople\packages\Microsoft.ServiceFabric.5.7.198\lib\net45\System.Fabric.dll</HintPath>
@@ -120,8 +124,13 @@
   <ItemGroup>
     <Compile Include="Actors\Client\MockActorProxyFactory_tests.cs" />
     <Compile Include="Actors\Client\MockActorProxyFactory_StateProvider_tests.cs" />
-    <Compile Include="Actors\Client\MockActorStateProvider_partitions_tests.cs" />
+    <Compile Include="Actors\Runtime\MockActorStateProvider_partitions_tests.cs" />
+    <Compile Include="Actors\Runtime\MockActorStateProvider_reminders_tests.cs" />
+    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession2.cs" />
+    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession.cs" />
     <Compile Include="Mocks\Fabric\MockServivceInstance_should_activate_RunAsync_for_Stateless_service.cs" />
+    <Compile Include="Services\Runtime\With_InMemoryStateSession2.cs" />
+    <Compile Include="Services\Runtime\With_InMemoryStateSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
   </ItemGroup>
@@ -133,6 +142,10 @@
     <ProjectReference Include="..\FG.Common\FG.Common.csproj">
       <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
       <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
+      <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
+      <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}</Project>
@@ -149,6 +162,10 @@
     <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
       <Project>{2F2B5701-77B5-4467-9504-8BE73A3725A7}</Project>
       <Name>FG.ServiceFabric.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj">
+      <Project>{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}</Project>
+      <Name>FG.ServiceFabric.Tests.StatefulService</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

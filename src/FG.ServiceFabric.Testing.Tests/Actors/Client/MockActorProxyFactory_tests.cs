@@ -10,6 +10,7 @@ using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Testing.Tests.Mocks.Fabric;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -29,7 +30,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId), 
-				createActorStateProvider: () => mockActorStateProvider, 
+				createActorStateProvider: (context, actorInfo) => mockActorStateProvider, 
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
             // Only to get around the kinda stupid introduced 1/20 msec 'bug'
@@ -98,7 +99,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
                 (service, actorId) => new ActorDemo(service, actorId),                
-                createActorStateProvider: () => mockActorStateProvider,
+                createActorStateProvider: (context, actorInfo) => mockActorStateProvider,
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue)
 			);
 
@@ -121,7 +122,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockActorProxy_should_activate_actor_with_custom_constructor()
+#pragma warning restore 1998
 		{
 			var fabricRuntime = new MockFabricRuntime("Overlord");
 
@@ -137,11 +140,13 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 
 
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public interface ITestActor : IActor
 		{
 
 		}
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public class TestActorService : ActorService
 		{
 			public TestActorService(
@@ -155,6 +160,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			}
 		}
 
+	    // ReSharper disable once MemberCanBePrivate.Global
 		public class TestActor : Actor, ITestActor
 		{
 			public TestActor(ActorService actorService, ActorId actorId, string secretKey) : base(actorService, actorId)

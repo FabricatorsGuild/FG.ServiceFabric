@@ -58,12 +58,16 @@ namespace FG.ServiceFabric.Tests.DbStoredActor
     {
         public StateMetadata(ServiceContext context, string stateName)
         {
-            PartitionKey = context.PartitionId;
+			ServiceTypeName = context.ServiceTypeName;
+            PartitionId = context.PartitionId;
+			PartitionKey = context.PartitionId.ToString();
             StateName = stateName;
         }
 
         public string StateName { get; set; }
-        public Guid PartitionKey { get; set; }
+        public string PartitionKey { get; set; }
+	    public Guid PartitionId { get; set; }
+	    public string ServiceTypeName { get; set; }
     }
 
 }

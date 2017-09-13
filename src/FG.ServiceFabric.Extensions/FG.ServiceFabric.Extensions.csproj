@@ -82,6 +82,9 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\..\..\FG.Samples\src\FG.Samples.ServiceFabricPeople\packages\Microsoft.ServiceFabric.Services.Remoting.2.7.198\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
@@ -115,8 +118,21 @@
     <Compile Include="Actors\Runtime\ActorService.cs" />
     <Compile Include="Actors\Runtime\ActorServiceExtensions.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderHelper.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ReminderDataBase.cs" />
     <Compile Include="Actors\Runtime\WrappedActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\WrappedStateManager.cs" />
+    <Compile Include="Services\Runtime\State\ReliableStateChange.cs" />
+    <Compile Include="Services\Runtime\State\ReliableStateChangeKind.cs" />
+    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManager.cs" />
+    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManagerSession.cs" />
+    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManagerSessionException.cs" />
+    <Compile Include="Services\Runtime\State\IStatefulServiceStateManagerSession.cs" />
+    <Compile Include="Services\Runtime\State\IStatefulServiceStateManager.cs" />
+    <Compile Include="Services\Runtime\WrappedReliableDictionary.cs" />
+    <Compile Include="Services\Runtime\WrappedStatefulServiceStateManager.cs" />
+    <Compile Include="Services\Runtime\WrappedStatefulServiceStateManagerSession.cs" />
+    <Compile Include="Services\Runtime\WrappedStateManagerReplica.cs" />
+    <Compile Include="Services\Runtime\WrappedStateProviderReplica.cs" />
     <Compile Include="Actors\State\ActorStateVersionExtension.cs" />
     <Compile Include="Actors\State\IMigrationContainer.cs" />
     <Compile Include="Actors\State\IVersionedState.cs" />

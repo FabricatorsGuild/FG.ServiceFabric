@@ -4,9 +4,9 @@ namespace FG.ServiceFabric.Fabric
 {
 	public static class FabricClientQueryManagerExtensions
 	{
-		public static IPartitionEnumerationManager GetPartitionEnumerationManager(this FabricClient.QueryClient queryManager)
+		public static IPartitionEnumerationManager GetPartitionEnumerationManager(this FabricClient fabricClient)
 		{
-			return new FabricClientQueryManagerPartitionEnumerationManager(queryManager);
+			return new FabricClientQueryManagerPartitionEnumerationManager(fabricClient);
 		}
 	}
 }

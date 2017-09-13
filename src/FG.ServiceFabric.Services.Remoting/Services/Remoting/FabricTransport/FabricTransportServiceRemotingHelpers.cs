@@ -33,7 +33,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
                             instance = Activator.CreateInstance(exceptionHandlerType) as IExceptionHandler;
 
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             // TODO: Log this?
                         }

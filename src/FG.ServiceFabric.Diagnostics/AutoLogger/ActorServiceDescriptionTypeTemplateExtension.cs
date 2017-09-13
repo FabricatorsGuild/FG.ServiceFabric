@@ -2,7 +2,7 @@ using FG.Diagnostics.AutoLogger.Model;
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ActorOrActorServiceTypeTemplateExtension : BaseTemplateExtension
+    public class ActorServiceDescriptionTypeTemplateExtension : BaseTemplateExtension
     {        
         private string Definition = @"{
               ""Name"": ""ActorOrActorServiceDescription"",

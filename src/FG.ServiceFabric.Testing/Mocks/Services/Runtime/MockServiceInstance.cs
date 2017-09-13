@@ -16,6 +16,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 	{
 		public MockFabricRuntime FabricRuntime { get; private set; }
 
+		public MockActorServiceInstanceStatus Status { get; private set; }
+
 		public Uri ServiceUri { get; private set; }
 		public Partition Partition { get; private set; }
 		public Replica Replica { get; private set; }
@@ -84,7 +86,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				}).FireAndForget();		
 		}
 
-		public static IEnumerable<MockServiceInstance> Build(
+		public static IEnumerable<MockServiceInstance> Register(
 			MockFabricRuntime fabricRuntime,
 			IMockableActorRegistration actorRegistration
 		)
@@ -103,15 +105,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 						Replica = replica,
 						ServiceUri = actorRegistration.ServiceRegistration.ServiceUri
 					};
-					instance.Build();
 					instances.Add(instance);
 				}
+			}
+
+			fabricRuntime.RegisterInstances(instances);
+
+			foreach (var instance in instances)
+			{
+				instance.Build();
 			}
 
 			return instances;
 		}
 
-		public static IEnumerable<MockServiceInstance> Build(
+		public static IEnumerable<MockServiceInstance> Register(
 			MockFabricRuntime fabricRuntime,
 			IMockableServiceRegistration serviceRegistration
 		)
@@ -144,13 +152,19 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 							ServiceUri = serviceRegistration.ServiceUri
 						};
 					}
-					
-					instance.Build();
 					instances.Add(instance);
 				}
 			}
+			fabricRuntime.RegisterInstances(instances);
+
+			foreach (var instance in instances)
+			{
+				instance.Build();
+			}
+
 
 			return instances;
 		}
+
 	}
 }

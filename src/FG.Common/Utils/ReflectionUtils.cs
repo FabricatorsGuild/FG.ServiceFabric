@@ -89,7 +89,24 @@ namespace FG.Common.Utils
 
             return null;
         }
-        private static FieldInfo GetPrivateStaticField(Type type, string fieldName)
+
+		private static PropertyInfo GetPrivateProperty(Type type, string propertyName)
+		{
+			var propertyInfo = type
+				.GetProperty(propertyName,
+					BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.GetField);
+
+			if (propertyInfo != null) return propertyInfo;
+
+			if (type.BaseType != null)
+			{
+				return GetPrivateProperty(type.BaseType, propertyName);
+			}
+
+			return null;
+		}
+
+		private static FieldInfo GetPrivateStaticField(Type type, string fieldName)
         {
             var fieldInfo = type
                 .GetField(fieldName,
@@ -129,11 +146,19 @@ namespace FG.Common.Utils
             for (var i = 0; i < parameterInfos.Length; i++)
             {
                 var parameterInfo = parameterInfos[i];
-
+				
                 if (argumentTypes.Length >= i)
                 {
                     var argumentType = argumentTypes[i];
-                    if (!parameterInfo.ParameterType.IsAssignableFrom(argumentType)) return false;
+
+	                if (parameterInfo.ParameterType.IsGenericParameter)
+	                {
+						foreach (var genericParameterConstraint in parameterInfo.ParameterType.GetGenericParameterConstraints())
+						{
+							if (!genericParameterConstraint.IsAssignableFrom(argumentType)) return false;
+						}
+					}
+					else if (!parameterInfo.ParameterType.IsAssignableFrom(argumentType)) return false;
                 }
                 else
                 {
@@ -155,7 +180,10 @@ namespace FG.Common.Utils
 				if (argumentTypes.Length >= i)
 				{
 					var argumentType = argumentTypes[i];
-					if (!genericType.IsAssignableFrom(argumentType)) return false;
+					foreach (var genericParameterConstraint in genericType.GetGenericParameterConstraints())
+					{
+						if (!genericParameterConstraint.IsAssignableFrom(argumentType)) return false;
+					}
 				}
 			}
 
@@ -171,17 +199,27 @@ namespace FG.Common.Utils
 
             fieldInfo.SetValue(that, value);
         }
-        public static TPropertyValue GetPrivateField<TImplementingType, TPropertyValue>(this TImplementingType that,
-            string fieldName)
-        {
-            var fieldInfo = GetPrivateField(that.GetType(), fieldName);
-            if (fieldInfo == null)
-                throw new ArgumentException($"Cannot set value on field {fieldName} on {that.GetType().Name}");
+		public static TPropertyValue GetPrivateField<TImplementingType, TPropertyValue>(this TImplementingType that,
+			string fieldName)
+		{
+			var fieldInfo = GetPrivateField(that.GetType(), fieldName);
+			if (fieldInfo == null)
+				throw new ArgumentException($"Cannot get value on field {fieldName} on {that.GetType().Name}");
 
-            return (TPropertyValue)fieldInfo.GetValue(that);
-        }
+			return (TPropertyValue)fieldInfo.GetValue(that);
+		}
 
-        public static TResult GetPrivateStaticField<TResult>(this Type type, string fieldName)
+		public static TPropertyValue GetPrivateProperty<TImplementingType, TPropertyValue>(this TImplementingType that,
+			string propertyName)
+		{
+			var property = GetPrivateProperty(that.GetType(), propertyName);
+			if (property == null)
+				throw new ArgumentException($"Cannot get value on property {propertyName} on {that.GetType().Name}");
+
+			return (TPropertyValue)property.GetValue(that);
+		}
+
+		public static TResult GetPrivateStaticField<TResult>(this Type type, string fieldName)
         {
             var fieldInfo = GetPrivateStaticField(type, fieldName);
             if (fieldInfo == null)
@@ -209,29 +247,35 @@ namespace FG.Common.Utils
 	    public static object CallGenericMethod(this object that, string methodName, Type[] genericTypes, params object[] args)
 	    {
 		    var type = that.GetType();
-		    var argTypes = args.Select(a => a.GetType()).ToArray();
-			var methodInfos = type
-			    .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+		    return CallGenericMethod(that, type, methodName, genericTypes, args);
+	    }
 
-			var methodInfo = methodInfos.SingleOrDefault(method => 
-				method.Name == methodName && 
-				AreParameterTypesValid(method.GetParameters(), argTypes) && 
+		private static object CallGenericMethod(this object that, Type type, string methodName, Type[] genericTypes, params object[] args)
+		{
+			var argTypes = args.Select(a => a.GetType()).ToArray();
+			var methodInfos = type
+				.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+			var methodInfo = methodInfos.SingleOrDefault(method =>
+				method.Name == methodName &&
+				AreParameterTypesValid(method.GetParameters(), argTypes) &&
 				AreGenericTypesValid(method.GetGenericArguments(), genericTypes));
 
-		    if (methodInfo != null)
-		    {
-				return methodInfo.Invoke(that, args);
+			if (methodInfo != null)
+			{
+				return methodInfo.MakeGenericMethod(genericTypes).Invoke(that, args);
 			}
 
 			if (type.BaseType != null)
 			{
-				return GetPrivateOrPublicMethod(type.BaseType, methodName, argTypes);
+				return CallGenericMethod(that, type.BaseType, methodName, genericTypes, args);
 			}
 
-			throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");			
+			var genericArgumentsList = genericTypes.Any() ? $"<{genericTypes.Aggregate("", (a, b) => $"{a},{b.Name}").TrimStart(',')}>" : "";
+			throw new ArgumentException($"Method {methodName}{genericArgumentsList} does not exist on {that.GetType().Name}");
 		}
 
-        public static bool ImplementsInterface(this Type type, Type interfaceType)
+		public static bool ImplementsInterface(this Type type, Type interfaceType)
         {
             return interfaceType.IsAssignableFrom(type);
         }

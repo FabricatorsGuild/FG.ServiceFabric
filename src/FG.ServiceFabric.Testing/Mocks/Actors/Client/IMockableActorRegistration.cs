@@ -20,7 +20,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 		IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
-    public delegate IActorStateProvider CreateActorStateProvider();
+	public delegate IActorStateProvider CreateActorStateProvider(StatefulServiceContext context, ActorTypeInformation actorTypeInformation);
 
     public delegate IActorStateManager CreateActorStateManager(ActorBase actor, IActorStateProvider stateProvider);
 

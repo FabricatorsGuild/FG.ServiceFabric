@@ -12,7 +12,10 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
         private readonly string _databaseName;
         private readonly DocumentClient _documentClient;
         
-        public CosmosDbStateSession(ISettingsProvider settingsProvider, ICosmosDbClientFactory factory = null, ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps)
+        public CosmosDbStateSession(
+			ISettingsProvider settingsProvider, 
+			ICosmosDbClientFactory factory = null, 
+			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps)
         {
             factory = factory ?? new CosmosDbClientFactory();
 
@@ -23,7 +26,7 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
             
             _documentClient = factory.OpenAsync( // TODO: Do proper init.
                 databaseName: _databaseName,
-                collection: _collection,
+                collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
                 endpointUri: new Uri(endpointiUri),
                 primaryKey: primaryKey,
                 connectionPolicySetting: connectionPolicySetting).GetAwaiter().GetResult();
@@ -45,7 +48,7 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
         
         public async Task UpsertAsync<T>(T state, IStateMetadata metadata) where T : IPersistedIdentity
         {
-            var document = new StateWrapper<T>(state, metadata);
+            var document = new StateWrapper<T>(state.Id, state, metadata);
             await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection), document);
         }
         
