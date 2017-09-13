@@ -81,7 +81,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
         private Task<byte[]> RequestActorResponseAsync(ServiceRemotingMessageHeaders messageHeaders, ActorMessageHeaders actorMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetActorMethodName(actorMessageHeaders);
-            using (_logger.CallActor(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader))
+            using (_logger?.CallActor(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -90,7 +90,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.CallActorFailed(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader, ex);
+                    _logger?.CallActorFailed(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }
@@ -109,7 +109,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
         private Task<byte[]> SendActorOneWay(ServiceRemotingMessageHeaders messageHeaders, ActorMessageHeaders actorMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetActorMethodName(actorMessageHeaders);
-            using (_logger.CallActor(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader))
+            using (_logger?.CallActor(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -118,7 +118,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.CallActorFailed(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader, ex);
+                    _logger?.CallActorFailed(ServiceUri, methodName, actorMessageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }

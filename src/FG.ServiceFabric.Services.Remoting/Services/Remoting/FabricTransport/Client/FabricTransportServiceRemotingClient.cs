@@ -74,7 +74,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         protected virtual Task<byte[]> RequestServiceResponseAsync(ServiceRemotingMessageHeaders messageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetServiceMethodName(messageHeaders);
-            using (_logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
+            using (_logger?.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -83,7 +83,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
+                    _logger?.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }
@@ -99,7 +99,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         protected virtual Task<byte[]> SendServiceOneWay(ServiceRemotingMessageHeaders messageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = GetServiceMethodName(messageHeaders);
-            using (_logger.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader))
+            using (_logger?.CallService(ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -108,7 +108,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
+                    _logger?.CallServiceFailed(ServiceUri, methodName, messageHeaders, customServiceRequestHeader, ex);
                     throw;
                 }
             }

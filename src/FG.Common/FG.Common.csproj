@@ -64,6 +64,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\MiniId.cs" />
     <Compile Include="Utils\ReflectionUtils.cs" />
+    <Compile Include="Utils\SafeDisposable.cs" />
     <Compile Include="Utils\SerializationUtil.cs" />
     <Compile Include="Utils\StateObjectSerializer.cs" />
     <Compile Include="Utils\TextUtil.cs" />

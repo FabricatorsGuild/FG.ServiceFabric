@@ -59,7 +59,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
             CancellationToken cancellationToken)
         {	
 			var fabricTransportServiceRemotingClient = client as FabricTransportServiceRemotingClient;			
-			_logger.ServiceClientFailed(
+			_logger?.ServiceClientFailed(
 				fabricTransportServiceRemotingClient?.ResolvedServicePartition.ServiceName, 
 				ServiceRequestContext.Current?.GetCustomHeader(),
 				exceptionInformation.Exception);
