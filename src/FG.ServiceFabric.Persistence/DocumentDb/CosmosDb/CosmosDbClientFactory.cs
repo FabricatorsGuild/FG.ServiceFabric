@@ -15,12 +15,31 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 
     public interface ICosmosDbClientFactory
     {
-        Task<DocumentClient> OpenAsync(string databaseName, string collection, Uri endpointUri, string primaryKey, ConnectionPolicySetting connectionPolicySetting);
+        Task<DocumentClient> OpenAsync(string databaseName, CosmosDbCollectionDefinition collection, Uri endpointUri, string primaryKey, ConnectionPolicySetting connectionPolicySetting);
     }
-    
+
+	public class CosmosDbCollectionDefinition
+	{
+		public CosmosDbCollectionDefinition(string collectionName, params string[] partitionKeyPaths)
+		{
+			CollectionName = collectionName;
+			PartitionKeyPaths = partitionKeyPaths;
+		}
+
+		public string CollectionName { get; set; }
+		public string[] PartitionKeyPaths { get; set; }
+	}
+
     public class CosmosDbClientFactory : ICosmosDbClientFactory
     {
-        public async Task<DocumentClient> OpenAsync(string databaseName, string collection, Uri endpointUri, string primaryKey, ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps)
+		
+
+        public async Task<DocumentClient> OpenAsync(
+			string databaseName,
+			CosmosDbCollectionDefinition collection, 
+			Uri endpointUri, 
+			string primaryKey, 
+			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps)
         {
             ConnectionPolicy connectionPolicy;
             switch (connectionPolicySetting)
@@ -55,7 +74,7 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 
     internal static class DocumentClientExtensions
     {
-        public static async Task EnsureStoreIsConfigured(this IDocumentClient @this, string databaseName, string collection)
+        public static async Task EnsureStoreIsConfigured(this IDocumentClient @this, string databaseName, CosmosDbCollectionDefinition collection)
         {
             var currentDatabases = @this.CreateDatabaseQuery().AsEnumerable().ToList();
 
@@ -76,16 +95,23 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
             }   
         }
 
-        public static async Task CreateCollection(this IDocumentClient @this, Resource store, string collection)
+        public static async Task CreateCollection(this IDocumentClient @this, Resource store, CosmosDbCollectionDefinition collection)
         {
             var readDocumentCollectionFeedAsync = await @this.ReadDocumentCollectionFeedAsync(store.SelfLink);
-            var documentCollection = readDocumentCollectionFeedAsync.FirstOrDefault(x => x.Id == collection);
+            var documentCollection = readDocumentCollectionFeedAsync.FirstOrDefault(x => x.Id == collection.CollectionName);
 
             if (documentCollection == null)
             {
-                var collectionSpec = new DocumentCollection
+	            var partitionKeyDefinition = new PartitionKeyDefinition();
+	            foreach (var partitionKeyPath in collection.PartitionKeyPaths)
+	            {
+		            partitionKeyDefinition.Paths.Add(partitionKeyPath);
+	            }
+
+				var collectionSpec = new DocumentCollection
                 {
-                    Id = collection
+                    Id = collection.CollectionName,
+					PartitionKey = partitionKeyDefinition,
                 };
 
                 await @this.CreateDocumentCollectionAsync(store.SelfLink, collectionSpec);

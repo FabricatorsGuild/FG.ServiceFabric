@@ -256,12 +256,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			var actor = GetActor<Actor>(proxy);
 			if (actor == null) return;
 
-			Console.WriteLine();
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Green;
-			var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} activating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
+			var actorMethodContext = ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
+			actor.CallPrivateMethod("OnPreActorMethodAsync", actorMethodContext);
+
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				Console.WriteLine();
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Green;
+				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} activating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+			}
 		}
 
 		void IMockActorProxyManager.AfterMethod(IActor proxy, MethodInfo method)
@@ -269,12 +275,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			var actor = GetActor<Actor>(proxy);
 			if (actor == null) return;
 
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Red;
-			var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} terminating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
-			Console.WriteLine();
+			var actorMethodContext = ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
+			actor.CallPrivateMethod("OnPostActorMethodAsync", actorMethodContext);
+
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
+				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} terminating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+				Console.WriteLine();
+			}
 
 			var saveStateTask = actor.StateManager.SaveStateAsync(CancellationToken.None);
 			saveStateTask.Wait(CancellationToken.None);
@@ -282,22 +294,28 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 		void IMockServiceProxyManager.BeforeMethod(IService service, MethodInfo method)
 		{
-			Console.WriteLine();
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Green;
-			var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				Console.WriteLine();
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Green;
+				var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+			}
 		}
 
 		void IMockServiceProxyManager.AfterMethod(IService service, MethodInfo method)
 		{
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Red;
-			var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
-			Console.WriteLine();
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
+				var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+				Console.WriteLine();
+			}
 		}
 	}
 

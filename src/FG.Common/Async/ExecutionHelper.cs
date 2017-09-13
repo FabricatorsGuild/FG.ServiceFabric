@@ -57,6 +57,6 @@ namespace FG.Common.Async
                 retries++;
             }
             return;
-        }        
-    }
+        }		
+	}
 }

@@ -64,7 +64,25 @@ namespace FG.ServiceFabric.Tests.Actor
             return result;
         }
 
-        public async Task RemoveAsync(ActorId actorId, CancellationToken cancellationToken)
+	    public async Task<IEnumerable<string>> GetActorsAsync(CancellationToken cancellationToken)
+	    {
+		    var results = new List<string>();
+		    var pagedResult = await StateProvider.GetActorsAsync(100000, null, cancellationToken);
+		    foreach (var item in pagedResult.Items)
+		    {
+				results.Add(item.GetStringId());
+
+			}
+		    return results;
+	    }
+
+	    public Task<IEnumerable<string>> GetStoredStates(ActorId actorId, CancellationToken cancellationToken)
+	    {
+		    return this.StateProvider.EnumerateStateNamesAsync(actorId, cancellationToken);
+	    }
+
+
+		public async Task RemoveAsync(ActorId actorId, CancellationToken cancellationToken)
         {
             await StateProvider.RemoveActorAsync(actorId, cancellationToken);
         }
@@ -82,7 +100,7 @@ namespace FG.ServiceFabric.Tests.Actor
 
 			   await Task.Delay(100, cancellationToken);
 		    }
-	    }
+	    }		
     }
 
     public interface IActorDemoActorService : IActorService
@@ -91,5 +109,11 @@ namespace FG.ServiceFabric.Tests.Actor
         Task<int> GetCountAsync(ActorId id, CancellationToken cancellationToken);
         Task<IEnumerable<int>> GetCountsAsync(CancellationToken cancellationToken);
         Task RemoveAsync(ActorId actorId, CancellationToken cancellationToken);
+
+	    Task<IEnumerable<string>> GetActorsAsync(CancellationToken cancellationToken);
+
+	    Task<IEnumerable<string>> GetStoredStates(ActorId actorId, CancellationToken cancellationToken);
+
+
     }
 }

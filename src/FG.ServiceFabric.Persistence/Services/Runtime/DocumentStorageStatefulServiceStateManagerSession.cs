@@ -22,7 +22,7 @@ namespace FG.ServiceFabric.Services.Runtime
 
 		private string GetSchemaStateKeyPrefix(string schema)
 		{
-			var stateKeyPrefix = $"@@{_serviceName}_{_partitionId}_{schema}_";
+			var stateKeyPrefix = $"{_serviceName}_{_partitionId}_{schema}_";
 			return stateKeyPrefix;
 		}
 

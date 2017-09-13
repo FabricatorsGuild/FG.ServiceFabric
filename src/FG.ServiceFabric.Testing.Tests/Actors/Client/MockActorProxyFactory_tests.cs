@@ -10,6 +10,7 @@ using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Testing.Tests.Mocks.Fabric;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -29,7 +30,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId), 
-				createActorStateProvider: () => mockActorStateProvider, 
+				createActorStateProvider: (context, actorInfo) => mockActorStateProvider, 
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
             // Only to get around the kinda stupid introduced 1/20 msec 'bug'
@@ -98,7 +99,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
                 (service, actorId) => new ActorDemo(service, actorId),                
-                createActorStateProvider: () => mockActorStateProvider,
+                createActorStateProvider: (context, actorInfo) => mockActorStateProvider,
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue)
 			);
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.DocumentDb.Testing;
 using FG.ServiceFabric.Tests.DbStoredActor.Interfaces;
 using FluentAssertions;
@@ -41,6 +40,16 @@ namespace FG.ServiceFabric.Tests.Persistance
             state.Single().Count.Should().Be(3);
         }
     }
+	public class When_statename_is_an_urn
+	{
+		[Test]
+		public void name_should_be_uri_path_segment()
+		{
+			Uri stateName = new Uri("urn:myDictionary");
+
+			stateName.AbsolutePath.Should().Be("myDictionary");
+		}
+	}	
 
 	public class When_serializing_inner_object
 	{

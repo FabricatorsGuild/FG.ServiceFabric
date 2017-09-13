@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Fabric;
-using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Services.Client;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Client
+namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 {
 	// ReSharper disable InconsistentNaming
 	public class MockActorStateProvider_partitions_tests
@@ -32,7 +31,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			_fabricRuntime = new MockFabricRuntime("Overlord");
 
 			 _actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
-			_fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+			_fabricRuntime.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),

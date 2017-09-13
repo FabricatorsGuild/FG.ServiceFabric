@@ -20,9 +20,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 		public FileSystemDocumentStorageSession(ServiceContext context, string commonPath = null)
 		{
 			_commonPath = commonPath ?? CommonPathDefault;
-			var stateSession = new FileSystemStateSession(context, commonPath);
-			
-
 		}
 
 		public Task UpsertAsync(string key, ExternalState value)

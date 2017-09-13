@@ -6,6 +6,7 @@ using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
@@ -23,7 +24,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		{
 			_fabricRuntime = new MockFabricRuntime("Overlord");
 
-			_fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+			_fabricRuntime.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),

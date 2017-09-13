@@ -46,22 +46,12 @@ namespace FG.ServiceFabric.Actors.Runtime
 	    private readonly IStateSession _stateSession;
 		private readonly IDocumentStorageSession _documentStorageSession;
 
-		private readonly Guid _partitionId;
-		private readonly string _partitionKey;
-		private readonly string _serviceName;
-		
 		public DocumentStorageActorStateProvider(
-			StatefulServiceContext serviceContext, 
 			IActorStateProvider stateProvider = null, 
 			ActorTypeInformation actorTypeInfo = null, 
 			IDocumentStorageSession documentStorageSession = null) : base(stateProvider, actorTypeInfo)
 		{
 			_documentStorageSession = documentStorageSession ?? new InMemoryDocumentStorageSession();
-
-			_partitionId = serviceContext.PartitionId;
-			_partitionKey = StateSessionHelper.GetPartitionInfo(serviceContext).GetAwaiter().GetResult();
-			_serviceName = actorTypeInfo?.ServiceName ?? serviceContext.ServiceTypeName;
-
 		}
 
 	    private string GetActorStateKey(ActorId actorId, string stateName)

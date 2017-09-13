@@ -11,8 +11,18 @@ using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
+	public enum MockActorServiceInstanceStatus
+	{
+		Registered = 0,
+		Built = 1,
+		Running = 2,
+		Stopped,
+	}
+
 	internal class MockActorServiceInstance : MockServiceInstance
 	{
+		public MockActorServiceInstanceStatus Status { get; set; }
+
 		public IActorStateProvider ActorStateProvider { get; private set; }
 
 		public IDictionary<ActorId, Actor> Actors { get; private set; }
@@ -107,11 +117,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				return;
 			}
 
-			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ActorRegistration.ServiceRegistration.Name);
-			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
-			                      (() => (IActorStateProvider) new MockActorStateProvider(FabricRuntime))).Invoke();
-
 			var actorTypeInformation = ActorTypeInformation.Get(ActorRegistration.ImplementationType);
+			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ActorRegistration.ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
+			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
+			                      ((context, actorInfo) => (IActorStateProvider) new MockActorStateProvider(FabricRuntime))).Invoke(statefulServiceContext, actorTypeInformation);
+
 			var stateManagerFactory = ActorRegistration.CreateActorStateManager != null
 				? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
 					(actor, stateProvider) => ActorRegistration.CreateActorStateManager(actor, stateProvider))

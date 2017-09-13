@@ -7,5 +7,12 @@
   <Section Name="ActorDemoActorServiceReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
+  <Section Name="ActorWithReminderDemoActorServiceReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ActorWithReminderDemoActorServiceReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="ActorWithReminderDemoActorServiceReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
   <!-- The content will be generated during build -->
 </Settings>

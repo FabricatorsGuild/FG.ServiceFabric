@@ -26,7 +26,7 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
             
             _documentClient = factory.OpenAsync( // TODO: Do proper init.
                 databaseName: _databaseName,
-                collection: _collection,
+                collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
                 endpointUri: new Uri(endpointiUri),
                 primaryKey: primaryKey,
                 connectionPolicySetting: connectionPolicySetting).GetAwaiter().GetResult();

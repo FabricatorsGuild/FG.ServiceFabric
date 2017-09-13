@@ -116,18 +116,17 @@
     <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Actors\Runtime\StateSession\ActorStateWrapper.cs" />
+    <Compile Include="Actors\Runtime\IActorValueMetadata.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ActorReminderCollection.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
     <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
-    <Compile Include="Actors\Runtime\DocumentStorageActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ActorReminderState.cs" />
+    <Compile Include="Actors\Runtime\SessionStateActorStateProviderException.cs" />
+    <Compile Include="Actors\Runtime\StateSessionActorStateProvider.IStateProvider.cs" />
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
-    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
-    <Compile Include="Services\Runtime\DocumentStorageStatefulServiceStateManager.cs" />
-    <Compile Include="Services\Runtime\DocumentStorageStatefulServiceStateManagerSession.cs" />
-    <Compile Include="Services\Runtime\DocumentStorageStateManagerReplica.cs" />
-    <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
-    <Compile Include="Actors\Runtime\ExternalState.cs" />
-    <Compile Include="Actors\Runtime\FileSystemDocumentStorageSession.cs" />
-    <Compile Include="Actors\Runtime\IDocumentStorageSession.cs" />
-    <Compile Include="Actors\Runtime\InMemoryDocumentStorageSession.cs" />
+    <Compile Include="Actors\Runtime\StateSession\Metadata\ActorStateMetadata.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
     <Compile Include="DocumentDb\CosmosDb\StateWrapper.cs" />
@@ -138,13 +137,21 @@
     <Compile Include="DocumentDb\IStateMetadata.cs" />
     <Compile Include="DocumentDb\StateMetadata.cs" />
     <Compile Include="DocumentDb\Testing\InMemoryStateWriter.cs" />
+    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
+    <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
+    <Compile Include="Actors\Runtime\ExternalState.cs" />
+    <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
+    <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Runtime\StateSession\FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\InMemoryStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\ReliableStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateWrapperQueueInfo.cs" />
+    <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
+    <Compile Include="Services\Runtime\StateSession\TextStateSession.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

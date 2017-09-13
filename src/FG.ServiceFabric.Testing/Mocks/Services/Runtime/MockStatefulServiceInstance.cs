@@ -32,7 +32,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				return;
 			}
 
-			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ServiceRegistration.Name);
+			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
 			StateManager = (ServiceRegistration.CreateStateManager ??
 			                (() => (IReliableStateManagerReplica)new MockReliableStateManager(FabricRuntime))).Invoke();
 			var serviceFactory = ServiceRegistration.CreateStatefulService ?? GetMockStatefulService;
