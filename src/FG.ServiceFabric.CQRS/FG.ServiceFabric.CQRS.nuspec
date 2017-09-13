@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta4</version>
+    <version>$version$-beta1</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -12,9 +12,9 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric actors services</tags>
     <dependencies>
-      <dependency id="FG.Common" version="$version$-beta4" />
-      <dependency id="FG.CQRS" version="$version$-beta4" />
-      <dependency id="FG.ServiceFabric.Extensions" version="$version$-beta4" />
+      <dependency id="FG.Common" version="$version$-beta1" />
+      <dependency id="FG.CQRS" version="$version$-beta1" />
+      <dependency id="FG.ServiceFabric.Extensions" version="$version$-beta1" />
     </dependencies>
   </metadata>
 </package>
