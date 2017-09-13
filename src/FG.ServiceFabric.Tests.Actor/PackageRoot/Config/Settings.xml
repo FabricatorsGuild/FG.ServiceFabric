@@ -1,17 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Settings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://schemas.microsoft.com/2011/01/fabric">
-  <Section Name="ActorDemoActorServiceReplicatorConfig">
-    <Parameter Name="ReplicatorEndpoint" Value="ActorDemoActorServiceReplicatorEndpoint" />
-    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
-  </Section>
-  <Section Name="ActorDemoActorServiceReplicatorSecurityConfig">
-    <Parameter Name="CredentialType" Value="None" />
-  </Section>
   <Section Name="ActorWithReminderDemoActorServiceReplicatorConfig">
     <Parameter Name="ReplicatorEndpoint" Value="ActorWithReminderDemoActorServiceReplicatorEndpoint" />
     <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
   </Section>
   <Section Name="ActorWithReminderDemoActorServiceReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrorsReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ActorDemoActorService_WithoutInternalErrorsReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrorsReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorSecurityConfig">
+    <Parameter Name="CredentialType" Value="None" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithInteralErrorReplicatorConfig">
+    <Parameter Name="ReplicatorEndpoint" Value="ActorDemoActorService_WithInteralErrorReplicatorEndpoint" />
+    <Parameter Name="BatchAcknowledgementInterval" Value="0.005" />
+  </Section>
+  <Section Name="ActorDemoActorService_WithInteralErrorReplicatorSecurityConfig">
     <Parameter Name="CredentialType" Value="None" />
   </Section>
   <!-- The content will be generated during build -->

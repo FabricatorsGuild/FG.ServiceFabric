@@ -12,6 +12,7 @@ namespace FG.ServiceFabric.Tests.Actor
 
 	namespace WithInteralError
 	{
+		[Microsoft.ServiceFabric.Actors.Runtime.ActorServiceAttribute(Name = "ActorDemoActorService_WithInteralError")]
 		[StatePersistence(StatePersistence.Persisted)]
 		internal class ActorDemo : FG.ServiceFabric.Actors.Runtime.ActorBase, IActorDemo
 		{
@@ -57,6 +58,7 @@ namespace FG.ServiceFabric.Tests.Actor
 
 	namespace WithoutInternalErrors
 	{
+		[Microsoft.ServiceFabric.Actors.Runtime.ActorServiceAttribute(Name = "ActorDemoActorService_WithoutInternalErrors")]
 		[StatePersistence(StatePersistence.Persisted)]
 		public class ActorDemo : FG.ServiceFabric.Actors.Runtime.ActorBase, IActorDemo
 		{
@@ -93,6 +95,7 @@ namespace FG.ServiceFabric.Tests.Actor
 				public DateTime Time { get; set; }
 			}
 
+			[Microsoft.ServiceFabric.Actors.Runtime.ActorServiceAttribute(Name = "ActorDemoActorService_WithoutInternalErrors_WithMultipleStates")]
 			[StatePersistence(StatePersistence.Persisted)]
 			public class ActorDemo : FG.ServiceFabric.Actors.Runtime.ActorBase, IActorDemo
 			{
@@ -131,6 +134,7 @@ namespace FG.ServiceFabric.Tests.Actor
 				public string SomeOtherValue { get; set; }
 			}
 
+			[Microsoft.ServiceFabric.Actors.Runtime.ActorServiceAttribute(Name = "ActorDemoActorService_WithoutInternalErrors_WithReminders")]
 			[StatePersistence(StatePersistence.Persisted)]
 			public class ActorDemo : FG.ServiceFabric.Actors.Runtime.ActorBase, IActorDemo, IRemindable
 			{
