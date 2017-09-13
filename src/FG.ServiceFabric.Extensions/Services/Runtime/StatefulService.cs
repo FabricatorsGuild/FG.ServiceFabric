@@ -20,7 +20,9 @@ namespace FG.ServiceFabric.Services.Runtime
 			Func<IActorClientLogger> actorClientLoggerFactory = null,
 			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext)
         {
-            _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
+			_actorClientLoggerFactory = actorClientLoggerFactory;
+			_serviceClientLoggerFactory = serviceClientLoggerFactory;
+			_applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
         }
 
 	    protected StatefulService(StatefulServiceContext serviceContext, 
