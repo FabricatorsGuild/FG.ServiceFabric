@@ -18,7 +18,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
 	namespace With_StateSessionManager
 	{
-		namespace and_InMemoryStateSession
+		namespace and_InMemoryStateSession2
 		{
 			public abstract class TestBase<T>
 				where T : StatefulServiceDemoBase
@@ -92,7 +92,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					return Task.FromResult(true);
 				}
 
-				protected virtual Task SetUpStates(InMemoryStateSessionManager stateSessionManager)
+				protected virtual Task SetUpStates(InMemoryStateSessionManager2 stateSessionManager)
 				{
 					return Task.FromResult(true);
 				}
@@ -104,7 +104,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 				{
-					var stateManager = new InMemoryStateSessionManager(
+					var stateManager = new InMemoryStateSessionManager2(
 						StateSessionHelper.GetServiceName(context.ServiceName),
 						context.PartitionId,
 						StateSessionHelper.GetPartitionInfo(context,

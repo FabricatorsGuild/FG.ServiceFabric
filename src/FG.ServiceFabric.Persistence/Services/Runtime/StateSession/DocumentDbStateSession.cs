@@ -31,52 +31,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IEnumerable<string>> GetActorReminders(string service, string partition, string actor);
 	}
 
-	public class DocumentDbStateSessionManager2 : TextStateSessionManager
-	{
-		public DocumentDbStateSessionManager2(string serviceName, Guid partitionId, string partitionKey) : base(serviceName, partitionId, partitionKey)
-		{
-		}
-
-		protected override TextStateSession CreateSessionInner(TextStateSessionManager manager)
-		{
-			return new DocumentDbStateSession(this);
-		}
-
-		private sealed class DocumentDbStateSession : TextStateSession
-		{
-			public DocumentDbStateSession(TextStateSessionManager manager) : base(manager)
-			{
-			}
-
-			protected override bool Contains(string id)
-			{
-				throw new NotImplementedException();
-			}
-
-			protected override string Read(string id)
-			{
-				throw new NotImplementedException();
-			}
-
-			protected override void Delete(string id)
-			{
-				throw new NotImplementedException();
-			}
-
-			protected override void Write(string id, string content)
-			{
-				throw new NotImplementedException();
-			}
-
-			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null,
-				CancellationToken cancellationToken = new CancellationToken())
-			{
-				throw new NotImplementedException();
-			}
-		}
-	}
-
-	public class DocumentDbStateSessionManager : StateSessionManagerBase, IStateSessionManager, IStateQuerySessionManager
+	public class DocumentDbStateSessionManager : StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession> , IStateSessionManager, IStateQuerySessionManager
 	{
 		private readonly string _collection;
 		private readonly string _databaseName;
@@ -114,21 +69,29 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		{
 			return Task.FromResult(true);
 		}
-
-		public IStateSession CreateSession()
-		{
-			return new DocumentDbStateSession(this);
-		}
+		
 
 		IStateQuerySession IStateQuerySessionManager.CreateSession()
 		{
 			return new DocumentDbStateQuerySession(this);
 		}
 
-		
+		protected override string GetEscapedKey(string key)
+		{
+			return key;
+		}
 
+		protected override string GetUnescapedKey(string key)
+		{
+			return key;
+		}
 
-		private sealed class DocumentDbStateSession : IStateSession
+		protected override DocumentDbStateSession CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager)
+		{
+			return new DocumentDbStateSession(this);
+		}
+
+		public sealed class DocumentDbStateSession : IStateSession
 		{
 			private readonly DocumentDbStateSessionManager _manager;
 			private readonly DocumentClient _documentClient;

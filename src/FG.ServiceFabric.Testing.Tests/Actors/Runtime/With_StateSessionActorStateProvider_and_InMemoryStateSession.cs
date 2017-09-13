@@ -139,7 +139,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			{
 				protected override async Task SetUpStates(InMemoryStateSessionManager stateSessionManager)
 				{
-					if (stateSessionManager.GetPrivateProperty<StateSessionManagerBase, string>("PartitionKey").Equals("range-1"))
+					if (stateSessionManager.GetPrivateProperty<InMemoryStateSessionManager, string>("PartitionKey").Equals("range-1"))
 					{
 						using (var session = stateSessionManager.CreateSession())
 						{

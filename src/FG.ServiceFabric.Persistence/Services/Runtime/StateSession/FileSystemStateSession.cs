@@ -17,8 +17,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		private const string CommonPathDefault = @"c:\temp\servicefabric";
 		private readonly string _commonPath;
 
-		private IDictionary<string, string> _invalidCharsReplacement;
-		private IDictionary<string, string> _replacementsToInvalidChars;
+		private readonly IDictionary<string, string> _invalidCharsReplacement;
+		private readonly IDictionary<string, string> _replacementsToInvalidChars;
 
 		public FileSystemStateSessionManager(
 			string serviceName,
@@ -56,11 +56,22 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			return stringBuilder.ToString();
 		}
+		
+		protected override string GetEscapedKey(string key)
+		{
+			return EscapeFileName(key);
+		}
 
-		protected override TextStateSession CreateSessionInner(TextStateSessionManager manager)
+		protected override string GetUnescapedKey(string key)
+		{
+			return UnescapeFileName(key);
+		}
+
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager)
 		{
 			return new FileSystemStateSession(this);
 		}
+
 
 		private class FileSystemStateSession : TextStateSession, IStateSession
 		{

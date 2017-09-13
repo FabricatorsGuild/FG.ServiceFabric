@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -12,317 +13,188 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public abstract class StateSessionManagerBase
+	public abstract class TextStateSessionManager2 : StateSessionManagerBase<TextStateSessionManager2.TextStateSession>, IStateSessionManager
 	{
-		protected Guid PartitionId { get; }
-		protected string PartitionKey { get; }
-		protected string ServiceName { get; }
-
-		protected StateSessionManagerBase(
+		protected TextStateSessionManager2(
 			string serviceName,
 			Guid partitionId,
-			string partitionKey)
+			string partitionKey) :
+			base(serviceName, partitionId, partitionKey)
 		{
-			ServiceName = serviceName;
-			PartitionId = partitionId;
-			PartitionKey = partitionKey;
+
 		}
 
-		protected string GetSchemaKey(string schema = null, string key = null)
+		protected override string GetEscapedKey(string key)
 		{
-			return new StateSessionHelper.SchemaStateKey(ServiceName, PartitionKey, schema, key).ToString();
+			return key;
 		}
 
-		protected string GetSchemaFromSchemaKey(string schemaKey)
+		protected override string GetUnescapedKey(string key)
 		{
-			return StateSessionHelper.SchemaStateKey.Parse(schemaKey).Schema;
+			return key;
 		}
 
-		protected string GetSchemaStateKey(string schema, string stateName)
+		public abstract class TextStateSession : StateSessionManagerBase<TextStateSessionManager2.TextStateSession>.StateSessionBase, IStateSession
 		{
-			return StateSessionHelper.GetSchemaStateKey(ServiceName, PartitionKey, schema, stateName);
-		}
+			private readonly TextStateSessionManager2 _manager;
+			private readonly object _lock = new object();
 
-		private IServiceMetadata GetMetadata()
-		{
-			return new ServiceMetadata() {ServiceName = ServiceName, PartitionKey = PartitionKey};
-		}
-
-		protected IValueMetadata GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type)
-		{
-			if (metadata == null)
-			{
-				metadata = new ValueMetadata(type);
-			}
-			else
-			{
-				metadata.SetType(type);
-			}
-			return metadata;
-		}
-
-		protected StateWrapper<T> BuildWrapper<T>(IValueMetadata valueMetadata, string id, string schema, string key, T value)
-		{
-			var serviceMetadata = GetMetadata();
-			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
-			valueMetadata.Key = key;
-			valueMetadata.Schema = schema;
-			var wrapper = valueMetadata.BuildStateWrapper(id, value, serviceMetadata);
-			return wrapper;
-		}		
-
-		protected string GetSchemaStateQueueInfoKey(string schema)
-		{
-			return StateSessionHelper.GetSchemaStateQueueInfoKey(ServiceName, PartitionKey, schema);
-		}
-
-		protected string GetSchemaQueueStateKey(string schema, long index)
-		{
-			return StateSessionHelper.GetSchemaQueueStateKey(ServiceName, PartitionKey, schema, index);
-		}
-
-		protected abstract string GetEscapedKey(string key);
-		protected abstract string GetUnescapedKey(string key);
-
-		public abstract class StateSessionBase : IStateSession
-		{
-			private readonly StateSessionManagerBase _manager;
-			private object _lock = new object();
-
-			protected StateSessionBase(StateSessionManagerBase manager)
+			protected TextStateSession(
+				TextStateSessionManager2 manager)
+				: base(manager)
 			{
 				_manager = manager;
 			}
 
-			public Task<bool> Contains<T>(string schema, string key, 
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				return Contains(schema, key, cancellationToken);
-			}
+			protected abstract bool Contains(string id);
 
-			public Task<bool> Contains(string schema, string key, 
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				return ContainsInternal(id, schema, key, cancellationToken);
-			}
+			protected abstract string Read(string id);
 
-			protected abstract Task<bool> ContainsInternal(string id, string schema, string key, 
-				CancellationToken cancellationToken = default(CancellationToken));
+			protected abstract void Delete(string id);
 
-			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix, int maxNumResults = 100000,
-				ContinuationToken continuationToken = null,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				return FindByKeyPrefixAsync(schema, keyPrefix, maxNumResults, continuationToken, cancellationToken);
-			}
+			protected abstract void Write(string id, string content);
 
-			public async Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix, int maxNumResults = 100000,
-				ContinuationToken continuationToken = null,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var schemaPrefix = _manager.GetSchemaKey(schema);
-				var schemaKeyPrefix = _manager.GetSchemaKey(schema, _manager.GetEscapedKey(keyPrefix));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				var result = await FindByKeyPrefixInternalAsync(schemaKeyPrefix, maxNumResults, continuationToken, cancellationToken);
-
-				return new FindByKeyPrefixResult()
-					{
-						ContinuationToken = result.ContinuationToken,
-						Items = result.Items.Select(i => _manager.GetUnescapedKey(i.Substring(schemaPrefix.Length))).ToArray()
-					};
-			}
-
-			protected abstract Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix, int maxNumResults = 100000,
-				ContinuationToken continuationToken = null,
+			protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken());
 
-			public async Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key, 
-				CancellationToken cancellationToken = default(CancellationToken))
+			protected override Task<bool> ContainsInternal(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var schemaKeyPrefix = _manager.GetSchemaKey();
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				var result = await EnumerateSchemaNamesInternalAsync(schemaKeyPrefix, cancellationToken);
-				return result.Select(file => _manager.GetSchemaFromSchemaKey(file));
+				try
+				{
+					lock (_lock)
+					{
+						return Task.FromResult(Contains(id));
+					}
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"ContainsInternal for {id} failed", ex);
+				}
 			}
 
-			protected abstract Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, 
-				CancellationToken cancellationToken = default(CancellationToken));
+			protected override Task<StateWrapper<T>> GetValueInternalAsync<T>(string id, CancellationToken cancellationToken = new CancellationToken())
+			{				
+				try
+				{
+					StateWrapper<T> value = null;
+					lock (_lock)
+					{
+						if (!Contains(id))
+						{
+							throw new KeyNotFoundException($"State with {id} does not exist");
+						}
+						var stringValue = Read(id);
 
-			public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key, 
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				return TryGetValueInternalAsync<T>(id, cancellationToken);
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);						
+					}
+					return Task.FromResult(value);
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+				}
 			}
 
-			protected abstract Task<ConditionalValue<T>> TryGetValueInternalAsync<T>(string id, 
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			public Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken))
+			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				return GetValueInternalAsync<T>(id, cancellationToken);
+				try
+				{
+					StateWrapper<T> value;
+					lock (_lock)
+					{
+						if (!Contains(id))
+						{
+							return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+						}
+						var stringValue = Read(id);
+
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+					}
+					return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, value));
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+				}
 			}
 
-			protected abstract Task<T> GetValueInternalAsync<T>(string id, 
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			public Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata, 
-				CancellationToken cancellationToken = default(CancellationToken))
+			protected override Task SetValueInternalAsync(string id, string schema, string key, StateWrapper value, Type valueType, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				var document = _manager.BuildWrapper(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
-				return SetValueInternalAsync<T>(id, schema, key, document, cancellationToken);
+				try
+				{
+					lock (_lock)
+					{
+						if (value == null)
+						{
+							if (Contains(id))
+							{
+								Delete(id);
+							}
+						}
+						else
+						{
+							var stringValue = JsonConvert.SerializeObject(value, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+							Write(id, stringValue);
+						}
+					}
+
+					return Task.FromResult(true);
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"SetValueAsync for {id} failed", ex);
+				}
 			}
 
-			public Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metaData,
+			protected override Task RemoveInternalAsync(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			{
+				try
+				{
+					lock (_lock)
+					{
+						if (Contains(id))
+						{
+							Delete(id);
+						}
+					}
+
+					return Task.FromResult(true);
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"RemoveAsync for {id} failed", ex);
+				}
+			}
+
+			protected override Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix, int maxNumResults = 100000, ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
-				return (Task)this.CallGenericMethod(nameof(SetValueAsync), new Type[] {valueType}, schema, key, value, metaData, cancellationToken);
+				var result = Find(schemaKeyPrefix, null, maxNumResults, continuationToken, cancellationToken);
+
+				return
+					Task.FromResult(new FindByKeyPrefixResult()
+					{
+						ContinuationToken = result.ContinuationToken,
+						Items = result.Items.Select(i => _manager.GetUnescapedKey(i.Substring(schemaKeyPrefix.Length))).ToArray()
+					});
 			}
 
-			protected abstract Task SetValueInternalAsync<T>(string id, string schema, string key, StateWrapper<T> value,
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			public Task RemoveAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key, 
+				CancellationToken cancellationToken = new CancellationToken())
 			{
-				return RemoveAsync(schema, key, cancellationToken);
-			}
+				return Task.FromResult(
+					Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
+					.Items.Select(file => _manager.GetSchemaFromSchemaKey(file)));
+			}			
 
-			public Task RemoveAsync(string schema, string key, 
-				CancellationToken cancellationToken = default(CancellationToken))
+			protected override void Dispose(bool disposing)
 			{
-				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				return RemoveInternalAsync(id, schema, key, cancellationToken);
 			}
-
-			protected abstract Task RemoveInternalAsync(string id, string schema, string key,
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			private async Task<QueueInfo> GetOrAddQueueInfo(string schema,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-
-				var id = _manager.GetSchemaStateQueueInfoKey(schema);
-				var key = StateSessionHelper.ReliableStateQueueInfoName;
-				var queueInfo = await SafeGetQueueInfoInternalAsync(id, schema, key, cancellationToken);
-				if (queueInfo != null)
-				{
-					return queueInfo;
-				}
-
-				queueInfo = new QueueInfo()
-				{
-					HeadKey = -1L,
-					TailKey = 0L,
-				};
-				var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-				var document = _manager.BuildWrapper(metadata, id, schema, key, queueInfo);
-
-				await SetQueueInfoInternalAsync(id, schema, key, document, cancellationToken);
-
-				return queueInfo;
-			}
-
-			protected abstract Task<QueueInfo> SafeGetQueueInfoInternalAsync(string id, string schema, string key,
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			protected abstract Task<QueueInfo> SetQueueInfoInternalAsync(string id, string schema, string key, StateWrapper<QueueInfo> value,
-				CancellationToken cancellationToken = default(CancellationToken));
-
-			private Task<QueueInfo> SetQueueInfo(string schema, QueueInfo value,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-
-				var id = _manager.GetSchemaStateQueueInfoKey(schema);
-				var key = StateSessionHelper.ReliableStateQueueInfoName;
-				var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-				var document = _manager.BuildWrapper(metadata, id, schema, key, value);
-				return SetQueueInfoInternalAsync(id, schema, key, document, cancellationToken);
-			}
-
-			public async Task EnqueueAsync<T>(string schema, T value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
-			{
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-
-				var stateQueueInfo = await GetOrAddQueueInfo(schema, cancellationToken);
-				var head = stateQueueInfo.HeadKey;
-				head++;
-				stateQueueInfo.HeadKey = head;
-				var key = head.ToString();
-				var id = _manager.GetSchemaStateKey(schema, key);
-				var document = _manager.BuildWrapper(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableQueueInfo), id, schema, key, value);
-
-				await SetValueInternalAsync(id, schema, key, document, cancellationToken);
-			}
-
-			public async Task<ConditionalValue<T>> DequeueAsync<T>(string schema,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var stateQueueInfo = await GetOrAddQueueInfo(schema, cancellationToken);
-				var tail = stateQueueInfo.TailKey;
-				var head = stateQueueInfo.HeadKey;
-
-				if ((tail - head) == 1)
-				{
-					return new ConditionalValue<T>(false, default(T));
-				}
-				var id = _manager.GetSchemaQueueStateKey(schema, tail);
-				var key = tail.ToString();
-				var value = await DequeueInternalAsync<T>(id, schema, key, cancellationToken);
-				tail++;
-
-				stateQueueInfo.TailKey = tail;
-				await SetQueueInfo(schema, stateQueueInfo, cancellationToken);
-
-				return value;
-			}
-
-			protected abstract Task<ConditionalValue<T>> DequeueInternalAsync<T>(string id, string schema, string key,
-				CancellationToken cancellationToken = new CancellationToken());
-
-			public async Task<ConditionalValue<T>> PeekAsync<T>(string schema,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-
-				var stateQueueInfo = await GetOrAddQueueInfo(schema, cancellationToken);
-				var tail = stateQueueInfo.TailKey;
-				var head = stateQueueInfo.HeadKey;
-
-				if ((tail - head) == 1)
-				{
-					return new ConditionalValue<T>(false, default(T));
-				}
-				var id = _manager.GetSchemaQueueStateKey(schema, tail);
-				var key = tail.ToString();
-				var value = await PeekInternalAsync<T>(id, schema, key, cancellationToken);
-
-				return value;
-
-			}
-
-			protected abstract Task<ConditionalValue<T>> PeekInternalAsync<T>(string id, string schema, string key,
-				CancellationToken cancellationToken = new CancellationToken());
-
-			public abstract void Dispose();
-
-			public abstract Task CommitAsync();
-
-			public abstract Task AbortAsync();
 		}
+
 	}
 
-
-	public abstract class TextStateSessionManager : StateSessionManagerBase, IStateSessionManager
+	public abstract class TextStateSessionManager : StateSessionManagerBase<TextStateSessionManager.TextStateSession>, IStateSessionManager
 	{
 		protected TextStateSessionManager(
 			string serviceName,
@@ -333,24 +205,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			
 		}
 
-		public Task OpenDictionary<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
+		protected override string GetEscapedKey(string key)
 		{
-			return Task.FromResult(true);
+			return key;
 		}
 
-		public Task OpenQueue<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
+		protected override string GetUnescapedKey(string key)
 		{
-			return Task.FromResult(true);
+			return key;
 		}
 
-		protected abstract TextStateSession CreateSessionInner(TextStateSessionManager manager);
-
-		public IStateSession CreateSession()
-		{
-			return CreateSessionInner(this);
-		}
-
-		protected abstract class TextStateSession : IStateSession
+		public abstract class TextStateSession : IStateSession
 		{
 			private readonly TextStateSessionManager _manager;
 			private readonly object _lock = new object();

@@ -141,6 +141,7 @@
     <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
     <Compile Include="Actors\Runtime\ExternalState.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

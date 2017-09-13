@@ -98,8 +98,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 					case (StateChangeKind.None):
 						break;
 				}
-
 			}
+			await GetSession().CommitAsync();
 		}
 
 		public Task<bool> ContainsStateAsync(ActorId actorId, string actorStateName, CancellationToken cancellationToken = default(CancellationToken))
@@ -127,7 +127,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 				{
 					// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
 					await GetSession().RemoveAsync(schemaName, key, cancellationToken);
-				}	
+				}
+				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)
 			{
@@ -193,6 +194,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
 				var metadata = new ActorStateValueMetadata(StateWrapperType.ActorReminder,  actorId);
 				await GetSession().SetValueAsync(schemaName, stateName, actorReminderData, metadata, cancellationToken);
+				await GetSession().CommitAsync();			
 			}
 			catch (Exception ex)
 			{
@@ -210,7 +212,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 				var stateName = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminderName);
 
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
-				await GetSession().RemoveAsync(schemaName, stateName, cancellationToken);				
+				await GetSession().RemoveAsync(schemaName, stateName, cancellationToken);
+				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)
 			{
@@ -236,6 +239,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 						await GetSession().RemoveAsync(schemaName, stateName, cancellationToken);
 					}
 				}
+				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)
 			{
@@ -282,13 +286,21 @@ namespace FG.ServiceFabric.Actors.Runtime
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-			var schemaName = StateSessionHelper.ActorReminderCompletedSchemaName;
-			var key = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminder.Name);
+			try
+			{
+				var schemaName = StateSessionHelper.ActorReminderCompletedSchemaName;
+				var key = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminder.Name);
 
-			var reminderCompletedState = new ActorReminderCompletedData(actorId, reminder.Name, DateTime.UtcNow);
-			// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
-			var metadata = new ActorStateValueMetadata(StateWrapperType.ActorReminderCompleted, actorId);
-			await GetSession().SetValueAsync(schemaName, key, reminderCompletedState, metadata, cancellationToken);
+				var reminderCompletedState = new ActorReminderCompletedData(actorId, reminder.Name, DateTime.UtcNow);
+				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
+				var metadata = new ActorStateValueMetadata(StateWrapperType.ActorReminderCompleted, actorId);
+				await GetSession().SetValueAsync(schemaName, key, reminderCompletedState, metadata, cancellationToken);
+				await GetSession().CommitAsync();
+			}
+			catch (Exception ex)
+			{
+				throw new SessionStateActorStateProviderException($"Failed on ReminderCallbackCompletedAsync", ex);
+			}
 		}
 
 
