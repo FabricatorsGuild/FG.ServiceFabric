@@ -38,16 +38,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				_manager = manager;
 			}
 
-			private IDictionary<string, string> Storage => _manager._storage;
+			private IDictionary<string, string> Storage => _manager._storage;			
 
-			protected override bool Contains(string id)
+			protected override string Read(string id, bool checkExistsOnly = false)
 			{
-				return Storage.ContainsKey(id);
-			}
-
-			protected override string Read(string id)
-			{
-				return Storage[id];
+				if (Storage.ContainsKey(id))
+				{
+					// Quick return not-null value if check for existance only
+					return checkExistsOnly ? "" : Storage[id];
+				}
+				return null;
 			}
 
 			protected override void Delete(string id)

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
@@ -10,6 +11,7 @@ using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FluentAssertions;
+using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Runtime;
 using NUnit.Framework;
@@ -20,6 +22,147 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 	{
 		namespace and_InMemoryStateSession2
 		{
+			public class StateSession_transacted_scope
+			{
+
+				[Test]
+				public async Task _should_be_able_to_page_findbykey_results()
+				{
+					var state = new Dictionary<string, string>();
+
+					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+
+					var session1 = manager.CreateSession();
+
+					var keys = new List<string>();
+					for (int i = (int)'a'; i <= (int)'z'; i++)
+					{
+						var key = ((char) i).ToString();
+						keys.Add(key);
+						await session1.SetValueAsync<string>("values", key, $"Value from session1 schema values key {key}", null, CancellationToken.None);
+					}
+					await session1.CommitAsync();
+
+					state.Should().HaveCount(keys.Count);
+
+					var results = new List<string>();
+					var pages = 0;
+					ContinuationToken token = null;
+					do
+					{
+						var foundKeys = await session1.FindByKeyPrefixAsync("values", null, 10, token, CancellationToken.None);
+						results.AddRange(foundKeys.Items);
+						token = foundKeys.ContinuationToken;
+						Console.WriteLine($"Found {foundKeys.Items.Count()} {foundKeys.Items.First()}-{foundKeys.Items.Last()} with next token {token?.Marker}");
+						pages++;
+					} while (token != null);
+
+					results.Should().BeEquivalentTo(keys);
+					pages.Should().Be(3);
+				}
+
+				[Test]
+				public async Task should_not_be_available_from_another_session()
+				{
+					var state = new Dictionary<string, string>();
+
+					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+
+					var session1 = manager.CreateSession();
+					var session2 = manager.CreateSession();
+
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null, CancellationToken.None);
+
+					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null, CancellationToken.None);
+
+					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+					var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+
+					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+					var session2ValueBPreCommit = await session2.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+
+					session1ValueBPreCommit.HasValue.Should().Be(false);
+					session2ValueAPreCommit.HasValue.Should().Be(false);
+
+					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
+					session2ValueBPreCommit.Value.Should().Be("Value from session2 schema values key b");
+
+					await session1.CommitAsync();
+					await session2.CommitAsync();
+
+					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
+					var session2ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
+
+					session1ValueBPostCommit.Should().Be("Value from session2 schema values key b");
+					session2ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+				}
+
+				[Test]
+				public async Task should_not_be_included_in_FindBykey()
+				{
+					var state = new Dictionary<string, string>();
+
+					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+
+					var session1 = manager.CreateSession();
+
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "b", "Value from session1 schema values key b", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "c", "Value from session1 schema values key c", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "d", "Value from session1 schema values key d", null, CancellationToken.None);
+
+					await session1.CommitAsync();
+
+					var committedResults = await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+
+					committedResults.Items.ShouldBeEquivalentTo(new []{"a", "b", "c", "d"});
+
+					await session1.SetValueAsync<string>("values", "e", "Value from session1 schema values key e", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "f", "Value from session1 schema values key f", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "g", "Value from session1 schema values key g", null, CancellationToken.None);
+					await session1.RemoveAsync<string>("values", "a", CancellationToken.None);
+					await session1.RemoveAsync<string>("values", "b", CancellationToken.None);
+					await session1.RemoveAsync<string>("values", "c", CancellationToken.None);
+					await session1.RemoveAsync<string>("values", "d", CancellationToken.None);
+
+					var uncommittedResults = await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+					uncommittedResults.Items.ShouldBeEquivalentTo(new[] { "a", "b", "c", "d" });
+
+					committedResults.ShouldBeEquivalentTo(uncommittedResults);
+				}
+
+				[Test]
+				public async Task should_not_be_included_in_enumerateSchemaNames()
+				{
+					var state = new Dictionary<string, string>();
+
+					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+
+					var session1 = manager.CreateSession();
+
+					var schemas = new[] {"a-series", "b-series", "c-series"};
+					foreach (var schema in schemas)
+					{
+						await session1.SetValueAsync<string>(schema, "a", $"Value from session1 schema {schema} key a", null, CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "b", $"Value from session1 schema {schema} key b", null, CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "c", $"Value from session1 schema {schema} key c", null, CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "d", $"Value from session1 schema {schema} key d", null, CancellationToken.None);
+
+					}
+
+					var schemaKeysPreCommit = await session1.EnumerateSchemaNamesAsync("a", CancellationToken.None);
+
+					schemaKeysPreCommit.Should().HaveCount(0);
+
+					await session1.CommitAsync();
+
+					var schemaKeysPostCommit = await session1.EnumerateSchemaNamesAsync("a", CancellationToken.None);
+
+					schemaKeysPostCommit.ShouldBeEquivalentTo(schemas);
+
+				}
+			}
+
 			public abstract class TestBase<T>
 				where T : StatefulServiceDemoBase
 			{
@@ -27,7 +170,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 				protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
-
 
 				protected TestBase()
 				{
@@ -131,6 +273,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(2);
 				}
+
 			}
 
 			public class Service_with_multiple_states : TestBase<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
@@ -326,6 +469,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					item.Single().Should().Be(6L);
 				}
 			}
-		}
+		}		
 	}
 }

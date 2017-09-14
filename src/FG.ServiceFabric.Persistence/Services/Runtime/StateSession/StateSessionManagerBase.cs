@@ -63,7 +63,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return metadata;
 		}
 
-		protected StateWrapper<T> BuildWrapper<T>(IValueMetadata valueMetadata, string id, string schema, string key, T value)
+		protected StateWrapper BuildWrapper(IValueMetadata metadata, string id, string schema, string key, Type valueType, object value)
+		{
+			return (StateWrapper) this.CallGenericMethod(nameof(BuildWrapperGeneric), new Type[] {valueType},
+				this.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
+		}
+
+		protected StateWrapper<T> BuildWrapperGeneric<T>(IValueMetadata valueMetadata, string id, string schema, string key, T value)
 		{
 			var serviceMetadata = GetMetadata();
 			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
@@ -202,7 +208,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var schemaKeyPrefix = _manager.GetSchemaKey();
 				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 				var result = await EnumerateSchemaNamesInternalAsync(schemaKeyPrefix, key, cancellationToken);
-				return result.Select(file => _manager.GetSchemaFromSchemaKey(file));
+				return result;
 			}
 
 			protected abstract Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key,
@@ -295,15 +301,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			public Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata, 
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
-				return SetValueAsync(schema, key, typeof(T), value, metadata, cancellationToken);
+				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
+				var valueType = typeof(T);
+				var document = _manager.BuildWrapperGeneric<T>(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
+
+				_transactedChanges[id] = new StateChange(StateChangeType.AddOrUpdate, document, valueType);
+				return Task.FromResult(true);
 			}
 
 			public Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metadata,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
-				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
-				var document = _manager.BuildWrapper(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
+				var document = _manager.BuildWrapper(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, valueType, value);
 
 				_transactedChanges[id] = new StateChange(StateChangeType.AddOrUpdate, document, valueType);
 				return Task.FromResult(true);
@@ -373,7 +383,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					TailKey = 0L,
 				};
 				var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-				var document = _manager.BuildWrapper(metadata, id, schema, key, queueInfo);
+				var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, queueInfo);
 
 				await SetValueInternalAsync(id, schema, key, document, typeof(QueueInfo), cancellationToken);
 
@@ -394,7 +404,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var id = _manager.GetSchemaStateQueueInfoKey(schema);
 				var key = StateSessionHelper.ReliableStateQueueInfoName;
 				var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-				var document = _manager.BuildWrapper(metadata, id, schema, key, value);
+				var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
 
 				await SetValueInternalAsync(id, schema, key, document, typeof(QueueInfo), cancellationToken);
 
@@ -414,7 +424,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				stateQueueInfo.HeadKey = head;
 				var key = head.ToString();
 				var id = _manager.GetSchemaStateKey(schema, key);
-				var document = _manager.BuildWrapper(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableQueueInfo), id, schema, key, value);
+				var document = _manager.BuildWrapperGeneric(_manager.GetOrCreateMetadata(metadata, StateWrapperType.ReliableQueueInfo), id, schema, key, value);
 
 				await SetValueInternalAsync(id, schema, key, document, typeof(T), cancellationToken);
 			}

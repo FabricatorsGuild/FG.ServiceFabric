@@ -46,9 +46,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				_manager = manager;
 			}
 
-			protected abstract bool Contains(string id);
+			private bool ContainsByRead(string id)
+			{
+				return Read(id, checkExistsOnly: true) != null;
+			}
+			//protected abstract bool Contains(string id);
 
-			protected abstract string Read(string id);
+			protected abstract string Read(string id, bool checkExistsOnly = false);
 
 			protected abstract void Delete(string id);
 
@@ -63,7 +67,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					lock (_lock)
 					{
-						return Task.FromResult(Contains(id));
+						return Task.FromResult(ContainsByRead(id));
 					}
 				}
 				catch (Exception ex)
@@ -79,11 +83,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					StateWrapper<T> value = null;
 					lock (_lock)
 					{
-						if (!Contains(id))
+
+						var stringValue = Read(id);
+						if (stringValue == null)
 						{
 							throw new KeyNotFoundException($"State with {id} does not exist");
 						}
-						var stringValue = Read(id);
 
 						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);						
 					}
@@ -102,11 +107,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					StateWrapper<T> value;
 					lock (_lock)
 					{
-						if (!Contains(id))
+						var stringValue = Read(id);
+						if (stringValue == null)
 						{
 							return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
 						}
-						var stringValue = Read(id);
 
 						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
 					}
@@ -126,7 +131,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					{
 						if (value == null)
 						{
-							if (Contains(id))
+							if (ContainsByRead(id))
 							{
 								Delete(id);
 							}
@@ -152,7 +157,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					lock (_lock)
 					{
-						if (Contains(id))
+						if (ContainsByRead(id))
 						{
 							Delete(id);
 						}
@@ -184,7 +189,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				return Task.FromResult(
 					Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
-					.Items.Select(file => _manager.GetSchemaFromSchemaKey(file)));
+					.Items
+						.Select(id => id.Substring(schemaKeyPrefix.Length, id.Length - schemaKeyPrefix.Length - key.Length - 1))
+						.Distinct());
 			}			
 
 			protected override void Dispose(bool disposing)
@@ -310,7 +317,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var schemaKeyPrefix = _manager.GetSchemaKey();
 				return Task.FromResult(
 					Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
-					.Items.Select(file => _manager.GetSchemaFromSchemaKey(file)));
+						.Items
+							.Select(id => id.Substring(schemaKeyPrefix.Length, id.Length - schemaKeyPrefix.Length - key.Length - 1))
+							.Distinct());
+
 			}
 
 			public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
@@ -370,7 +380,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					lock (_lock)
 					{
-						var wrapper = _manager.BuildWrapper(metadata, id, schema, key, value);
+						var wrapper = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented});
 
 						if (value == null)
@@ -402,7 +412,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					lock (_lock)
 					{
 
-						var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapper), new Type[] {valueType}, metaData, id, schema, key, value);
+						var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapperGeneric), new Type[] {valueType}, metaData, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented});
 
 						if (value == null)
@@ -497,7 +507,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					lock (_lock)
 					{
 						var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-						var document = _manager.BuildWrapper(metadata, id, schema, key, value);
+						var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented});
 						Write(id, stringValue);
 					}
@@ -525,7 +535,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 						Console.WriteLine($"Enqueued {value} t:{stateQueueInfo.TailKey} h:{stateQueueInfo.HeadKey}");
 
-						var document = _manager.BuildWrapper(metadata, id, schema, head.ToString(), value);
+						var document = _manager.BuildWrapperGeneric(metadata, id, schema, head.ToString(), value);
 						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented});
 						Write(id, stringValue);
 					}

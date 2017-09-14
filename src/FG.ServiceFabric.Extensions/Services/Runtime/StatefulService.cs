@@ -38,8 +38,8 @@ namespace FG.ServiceFabric.Services.Runtime
 
         public ApplicationUriBuilder ApplicationUriBuilder => _applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
 
-        public IActorProxyFactory ActorProxyFactory => _actorProxyFactory ?? (_actorProxyFactory = new FG.ServiceFabric.Actors.Client.ActorProxyFactory(_actorClientLoggerFactory()));
+        public IActorProxyFactory ActorProxyFactory => _actorProxyFactory ?? (_actorProxyFactory = new FG.ServiceFabric.Actors.Client.ActorProxyFactory(_actorClientLoggerFactory?.Invoke()));
 
-        public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory ?? (_serviceProxyFactory = new FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory(_serviceClientLoggerFactory()));                
+        public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory ?? (_serviceProxyFactory = new FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke()));                
     }
 }

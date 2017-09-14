@@ -140,6 +140,7 @@
     <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
     <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
     <Compile Include="Actors\Runtime\ExternalState.cs" />
+    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSessionManager2.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />

@@ -197,7 +197,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var id = _manager.GetSchemaStateKey(schema, key);
 				try
 				{
-					var document = _manager.BuildWrapper(metadata, id, schema, key, value);					
+					var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);					
 					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 				}
@@ -216,7 +216,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var id = _manager.GetSchemaStateKey(schema, key);
 				try
 				{
-					var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapper), new Type[] { valueType }, metadata, id, schema, key, value);
+					var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapperGeneric), new Type[] { valueType }, metadata, id, schema, key, value);
 					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), wrapper,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 				}
@@ -292,7 +292,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				try
 				{
 					var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-					var document = _manager.BuildWrapper(metadata, id, schema, key, value);
+					var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
 					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 
@@ -320,7 +320,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 					var key = head.ToString();
 					var id = _manager.GetSchemaQueueStateKey(schema, head);
-					var document = _manager.BuildWrapper(metadata, id, schema, key, value);
+					var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
 					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 					await SetQueueInfo(schema, stateQueueInfo);
