@@ -156,7 +156,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					if (item.CompareTo(nextMarker) > 0)
 					{
-						if (item.StartsWith(idPrefix))
+						if (item.StartsWith(idPrefix) && ((key == null) || item.Contains(key)))
 						{
 							results.Add(item);
 							if (resultCount > maxNumResults)

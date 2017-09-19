@@ -148,7 +148,9 @@ namespace FG.ServiceFabric.Actors.Runtime
 				var baseSchemaNames = await GetSession().EnumerateSchemaNamesAsync(key, cancellationToken);
 
 				// e.g.: servicename_partition1_ACTORSTATE-xyz_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-				return baseSchemaNames.Where(schema => schema.StartsWith(StateSessionHelper.ActorStateSchemaName)).ToArray();
+				return baseSchemaNames
+					.Where(schema => schema.StartsWith(StateSessionHelper.ActorStateSchemaName))
+					.Select(schema => schema.Substring(StateSessionHelper.ActorStateSchemaName.Length + 1)).ToArray();
 			}
 			catch (Exception ex)
 			{
