@@ -137,9 +137,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			{
 				var actorService = instance.ServiceInstance as ActorService;
 				object target = null;
+				var firstActivation = true;
 				if (instance.Actors.ContainsKey(actorId))
 				{
 					target = instance.Actors[actorId];
+					firstActivation = false;
 				}
 				else if (actorRegistration.Activator != null)
 				{
@@ -165,10 +167,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 					mockableTarget.SetPrivateField("_applicationUriBuilder", _fabricRuntime.ApplicationUriBuilder);
 				}
 
-				target.CallPrivateMethod("OnActivateAsync");
+				if (firstActivation)
+				{
+					target.CallPrivateMethod("OnActivateAsync");
 
-				var actorStateProvider = instance.ActorStateProvider;
-				await actorStateProvider.ActorActivatedAsync(actorId);
+					var actorStateProvider = instance.ActorStateProvider;
+					await actorStateProvider.ActorActivatedAsync(actorId);
+				}
 
 				var serviceUri = instance.ActorRegistration.ServiceRegistration.ServiceUri;
 				var actorProxy = new MockActorProxy(

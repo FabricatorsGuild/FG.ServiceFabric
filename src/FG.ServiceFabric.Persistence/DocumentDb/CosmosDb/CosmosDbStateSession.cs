@@ -3,10 +3,11 @@ using System.Threading.Tasks;
 using FG.ServiceFabric.Utils;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
+using FG.ServiceFabric.DocumentDb.CosmosDb;
 
 namespace FG.ServiceFabric.DocumentDb.CosmosDb
 {
-    public class CosmosDbStateSession : IDocumentDbStateWriter, IDocumentDbStateReader
+	public class CosmosDbStateSession : IDocumentDbStateWriter, IDocumentDbStateReader
     {
         private readonly string _collection;
         private readonly string _databaseName;
@@ -19,10 +20,10 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
         {
             factory = factory ?? new CosmosDbClientFactory();
 
-            _collection = settingsProvider["Collection"];
-            _databaseName = settingsProvider["DatabaseName"];
-            var endpointiUri = settingsProvider["EndpointUri"];
-            var primaryKey = settingsProvider["PrimaryKey"];
+            _collection = settingsProvider.EndpointUri();
+            _databaseName = settingsProvider.DatabaseName();
+            var endpointiUri = settingsProvider.EndpointUri();
+            var primaryKey = settingsProvider.PrimaryKey();
             
             _documentClient = factory.OpenAsync( // TODO: Do proper init.
                 databaseName: _databaseName,

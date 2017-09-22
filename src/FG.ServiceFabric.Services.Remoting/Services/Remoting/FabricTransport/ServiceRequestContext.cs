@@ -23,7 +23,9 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
             set { _values[index] = value; }
         }
 
-        public static ServiceRequestContext Current
+	    public IEnumerable<string> Keys => _values.Keys;
+
+	    public static ServiceRequestContext Current
         {
             get { return (ServiceRequestContext) CallContext.LogicalGetData(ContextKey); }
             internal set

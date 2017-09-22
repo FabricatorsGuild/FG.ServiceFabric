@@ -68,4 +68,86 @@ namespace FG.Common.Tests
 		}
 	}
 
+	public class TextUtils_test
+	{
+		[Test]
+		public void Concat_should_not_throw_exception_for_empty_enumerable()
+		{
+			var collection = new string[0];
+
+			var result = collection.Concat(" - ");
+
+			result.Should().Be("");
+		}
+
+		[Test]
+		public void Concat_for_single_item_should_return_item_without_glue()
+		{
+			var collection = new string[] {"first"};
+
+			var result = collection.Concat(" - ");
+
+			result.Should().Be("first");
+		}
+
+		[Test]
+		public void Concat_for_two_items_should_return_item_with_glue()
+		{
+			var collection = new string[] { "first", "second" };
+
+			var result = collection.Concat(" - ");
+
+			result.Should().Be("first - second");
+		}
+
+		[Test]
+		public void Concat_for_multiple_items_should_return_item_with_glue()
+		{
+			var collection = new string[] { "first", "second", "third", "fourth", "fifth" };
+
+			var result = collection.Concat(" - ");
+
+			result.Should().Be("first - second - third - fourth - fifth");
+		}
+
+		[Test]
+		public void Concat_with_lamba_glue_should_not_throw_exception_for_empty_enumerable()
+		{
+			var collection = new string[0];
+
+			var result = collection.Concat((a, b, i) => $"[{i}:{a?.Substring(0, 1)}|{b?.Substring(0, 1)}]");
+
+			result.Should().Be("");
+		}
+
+		[Test]
+		public void Concat_with_lamba_glue_for_single_item_should_return_item_without_glue()
+		{
+			var collection = new string[] { "first" };
+
+			var result = collection.Concat((a, b, i) => $"[{i}:{a?.Substring(0, 1)}|{b?.Substring(0, 1)}]");
+
+			result.Should().Be("first");
+		}
+
+		[Test]
+		public void Concat_with_lamba_glue_for_two_items_should_return_item_with_glue()
+		{
+			var collection = new string[] { "first", "second" };
+
+			var result = collection.Concat((a, b, i) => $"[{i}:{a?.Substring(0, 1)}|{b?.Substring(0, 1)}]");
+
+			result.Should().Be("first[0:f|s]second");
+		}
+
+		[Test]
+		public void Concat_with_lamba_glue_for_multiple_items_should_return_item_with_glue()
+		{
+			var collection = new string[] { "first", "second", "third", "fourth", "fifth" };
+
+			var result = collection.Concat((a, b, i) => $"[{i}:{a?.Substring(0, 1)}|{b?.Substring(0, 1)}]");
+
+			result.Should().Be("first[0:f|s]second[1:s|t]third[2:t|f]fourth[3:f|f]fifth");
+		}
+	}
 }

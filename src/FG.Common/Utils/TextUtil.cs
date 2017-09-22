@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace FG.Common.Utils
 {
@@ -20,6 +22,40 @@ namespace FG.Common.Utils
 
 			var result = Encoding.UTF8.GetString(output);
 			return result;
+		}
+
+		public static string Concat<T>(this IEnumerable<T> items, Func<T, T, int, string> glue)
+		{
+			var stringBuilder = new StringBuilder();
+			T lastItem = default(T);
+			var i = -1;
+			foreach (var item in items)
+			{
+				if ((lastItem != null) && !lastItem.Equals(default(T)))
+				{
+					stringBuilder.Append(glue(lastItem, item, i));
+				}
+				stringBuilder.Append(item);
+				lastItem = item;
+				i++;
+			}
+			return stringBuilder.ToString();
+		}
+
+		public static string Concat<T>(this IEnumerable<T> items, string glue)
+		{
+			var stringBuilder = new StringBuilder();
+			T lastItem = default(T);
+			foreach (var item in items)
+			{
+				if ((lastItem != null) && !lastItem.Equals(default(T)))
+				{
+					stringBuilder.Append(glue);
+				}
+				stringBuilder.Append(item);
+				lastItem = item;
+			}
+			return stringBuilder.ToString();
 		}
 	}
 }

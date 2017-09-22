@@ -126,6 +126,7 @@
     <Compile Include="AutoLogger\ActorReferenceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
+    <Compile Include="ApplicationInsightsSettingsProvider.cs" />
     <Compile Include="AutoLogger\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRequestContextTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\StatefulServiceContextTypeTemplateExtension.cs" />
@@ -133,6 +134,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
+      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
+      <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
       <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
       <Name>FG.ServiceFabric.Services.Remoting</Name>

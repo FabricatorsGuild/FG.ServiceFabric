@@ -48,10 +48,12 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
         {
             if (ServiceRequestContext.Current == null) return;
 
-            ServiceRequestContext.Current[ServiceRequestContextKeys.RequestUri] = serviceUri?.ToString();
-            if (ServiceRequestContext.Current[ServiceRequestContextKeys.CorrelationId] == null)
+			var contextWrapper = ServiceRequestContextWrapper.Current;
+
+			contextWrapper.RequestUri = serviceUri?.ToString();
+            if (contextWrapper.CorrelationId == null)
             {
-                ServiceRequestContext.Current[ServiceRequestContextKeys.CorrelationId] = Guid.NewGuid().ToString();
+				contextWrapper.CorrelationId = Guid.NewGuid().ToString();
             }
         }
     }

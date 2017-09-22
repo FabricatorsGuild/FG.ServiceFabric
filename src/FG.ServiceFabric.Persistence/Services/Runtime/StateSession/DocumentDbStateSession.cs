@@ -54,10 +54,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			_factory = factory ?? new CosmosDbClientFactory();
 
-			_collection = settingsProvider["Collection"];
-			_databaseName = settingsProvider["DatabaseName"];
-			_endpointUri = settingsProvider["EndpointUri"];
-			_collectionPrimaryKey = settingsProvider["PrimaryKey"];
+			_collection = settingsProvider.Collection();
+			_databaseName = settingsProvider.DatabaseName();
+			_endpointUri = settingsProvider.EndpointUri();
+			_collectionPrimaryKey = settingsProvider.PrimaryKey();
 		}
 
 		public Task OpenDictionary<T>(string schema, CancellationToken cancellationToken = new CancellationToken())

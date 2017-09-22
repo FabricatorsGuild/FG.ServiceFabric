@@ -46,12 +46,13 @@ namespace FG.ServiceFabric.Actors.Client
             var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
             var actorMethodDispatcher = GetOrDiscoverActorMethodDispatcher(actorInterfaceType);
 
-            var interfaceType = actorInterfaceType ?? serviceInterfaceType;
+			var contextWrapper = ServiceRequestContextWrapper.Current;
+			var interfaceType = actorInterfaceType ?? serviceInterfaceType;
 	        return FabricTransportActorRemotingHelpers.CreateServiceRemotingClientFactory(
 		        interfaceType: interfaceType,
 		        callbackClient: serviceRemotingCallbackClient,
 		        logger: Logger,
-		        correlationId: ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId],
+		        correlationId: contextWrapper.CorrelationId,
 		        actorMethodDispatcher: actorMethodDispatcher,
 		        serviceMethodDispatcher: serviceMethodDispatcher);
         }

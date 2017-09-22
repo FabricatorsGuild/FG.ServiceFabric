@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Fabric;
+using System.Linq;
 
 namespace FG.ServiceFabric.Utils
 {
@@ -26,7 +27,7 @@ namespace FG.ServiceFabric.Utils
 
             public RegistrationBuilder FromSettings(string section, string key, string namedKey = null)
             {
-                namedKey = namedKey ?? key;
+                namedKey = namedKey ?? $"{section}.{key}";
                 _settingsProvider._values.Add(namedKey, _settingsProvider.GetValueFromSettingsFile(section, key));
                 return this;
             }
@@ -60,5 +61,21 @@ namespace FG.ServiceFabric.Utils
                 return value;
             }
         }
+
+	    public string[] Keys => _values.Keys.ToArray();
+
+		public ISettingsProvider With(ISettingsProvider combine)
+	    {
+		    foreach (var key in combine.Keys)
+		    {
+			    this._values[key] = combine[key];
+		    }
+		    return this;
+	    }
+
+	    public bool Contains(string key)
+	    {
+		    return _values.ContainsKey(key);
+	    }
     }
 }

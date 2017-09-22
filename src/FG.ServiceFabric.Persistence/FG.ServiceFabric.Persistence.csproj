@@ -128,6 +128,7 @@
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\StateSession\Metadata\ActorStateMetadata.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
+    <Compile Include="DocumentDb\CosmosDb\CosmosDbSettingsProvider.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
     <Compile Include="DocumentDb\CosmosDb\StateWrapper.cs" />
     <Compile Include="DocumentDb\IDocumentDbStateReader.cs" />

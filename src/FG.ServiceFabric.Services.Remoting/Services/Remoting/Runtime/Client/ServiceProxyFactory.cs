@@ -42,11 +42,12 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
         {
             var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
 
+	        var contextWrapper = ServiceRequestContextWrapper.Current;
             return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
                  serviceInterfaceType,
                 serviceRemotingCallbackClient,
                 Logger,
-                ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId],
+				contextWrapper.CorrelationId,
                 serviceMethodDispatcher);
         }
 

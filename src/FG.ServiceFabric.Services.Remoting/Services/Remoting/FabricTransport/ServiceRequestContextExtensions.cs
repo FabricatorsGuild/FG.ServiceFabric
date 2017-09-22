@@ -5,13 +5,15 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 	public static class ServiceRequestContextExtensions
 	{
 		public static CustomServiceRequestHeader GetCustomHeader(
-			this ServiceRequestContext context, 
-			IServiceRequestContextWrapperHandler keyHandler = null)
+			this ServiceRequestContext context)
 		{			
 			var headerValues = new Dictionary<string, string>();
 			if (context != null)
 			{
-				foreach (var key in (keyHandler ?? new DefaultServiceRequestContextWrapperHandler()).GetKeys())
+
+
+				var contextWrapper = ServiceRequestContextWrapper.Current;
+				foreach (var key in contextWrapper.GetAllKeys())
 				{
 					headerValues[key ] = context[key];
 				}
