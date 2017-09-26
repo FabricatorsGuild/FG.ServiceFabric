@@ -474,8 +474,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				try
 				{
 					IDocumentQuery<IdWrapper> documentCollectionQuery;
-					var nextToken = continuationToken?.Marker as string;
-					if (nextToken != null)
+					if (continuationToken?.Marker is string nextToken)
 					{
 						documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
 								UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
@@ -483,8 +482,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 								{
 									PartitionKey = new PartitionKey(ServicePartitionKey),
 									MaxItemCount = maxNumResults,
+									RequestContinuation = nextToken,
 								})
-							.Where(d => d.Id.StartsWith(schemaKeyPrefix) && string.Compare(d.Id, nextToken, StringComparison.Ordinal) > 0)
+							.Where(d => d.Id.StartsWith(schemaKeyPrefix))
 							.AsDocumentQuery();
 					}
 					else
@@ -513,7 +513,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 							if (resultCount > maxNumResults)
 							{
-								return new FindByKeyPrefixResult() {ContinuationToken = new ContinuationToken(documentId.Id), Items = results};
+								var nextContinuationToken = response.ResponseContinuation == null ? null : new ContinuationToken(response.ResponseContinuation);
+								return new FindByKeyPrefixResult() {ContinuationToken = nextContinuationToken, Items = results};
 							}
 						}
 					}
