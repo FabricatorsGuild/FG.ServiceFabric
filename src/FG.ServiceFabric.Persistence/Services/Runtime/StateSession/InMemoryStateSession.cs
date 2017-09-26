@@ -7,12 +7,12 @@ using Microsoft.ServiceFabric.Actors.Query;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public class InMemoryStateSessionManager2 : TextStateSessionManager2
+	public class InMemoryStateSessionManagerWithTransaction : TextStateSessionManagerWithTransaction
 	{
 		private readonly IDictionary<string, string> _storage;
 
 
-		public InMemoryStateSessionManager2(
+		public InMemoryStateSessionManagerWithTransaction(
 			string serviceName,
 			Guid partitionId,
 			string partitionKey,
@@ -30,10 +30,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		public sealed class InMemoryStateSession : TextStateSession, IStateSession
 		{
-			private readonly InMemoryStateSessionManager2 _manager;
+			private readonly InMemoryStateSessionManagerWithTransaction _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManager2 manager) : base(manager)
+				InMemoryStateSessionManagerWithTransaction manager) : base(manager)
 			{
 				_manager = manager;
 			}

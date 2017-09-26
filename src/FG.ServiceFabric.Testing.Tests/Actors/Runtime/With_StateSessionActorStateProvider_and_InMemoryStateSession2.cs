@@ -72,7 +72,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					return Task.FromResult(true);
 				}
 
-				protected virtual Task SetUpStates(InMemoryStateSessionManager2 stateSessionManager)
+				protected virtual Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
 				{
 					return Task.FromResult(true);
 				}
@@ -84,7 +84,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 				{
-					var stateManager = new InMemoryStateSessionManager2(
+					var stateManager = new InMemoryStateSessionManagerWithTransaction(
 							StateSessionHelper.GetServiceName(context.ServiceName),
 							context.PartitionId,
 							StateSessionHelper.GetPartitionInfo(context,
@@ -137,9 +137,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 			public class _with_state : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo>
 			{
-				protected override async Task SetUpStates(InMemoryStateSessionManager2 stateSessionManager)
+				protected override async Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
 				{
-					if (stateSessionManager.GetPrivateProperty<InMemoryStateSessionManager2, string>("PartitionKey").Equals("range-1"))
+					if (stateSessionManager.GetPrivateProperty<InMemoryStateSessionManagerWithTransaction, string>("PartitionKey").Equals("range-1"))
 					{
 						using (var session = stateSessionManager.CreateSession())
 						{

@@ -9,7 +9,7 @@ using Microsoft.ServiceFabric.Actors.Query;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public class DocumentDbStateSessionManager2 : TextStateSessionManager2
+	public class DocumentDbStateSessionManagerWithTransaction : TextStateSessionManagerWithTransaction
 	{
 		private readonly string _collection;
 		private readonly string _databaseName;
@@ -19,7 +19,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		private readonly ICosmosDbClientFactory _factory;
 
-		public DocumentDbStateSessionManager2(
+		public DocumentDbStateSessionManagerWithTransaction(
 			string serviceName,
 			Guid partitionId,
 			string partitionKey,
@@ -43,13 +43,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return new DocumentDbStateSession(this);
 		}
 
-		public class DocumentDbStateSession : TextStateSessionManager2.TextStateSession
+		public class DocumentDbStateSession : TextStateSessionManagerWithTransaction.TextStateSession
 		{
-			private readonly DocumentDbStateSessionManager2 _manager;
+			private readonly DocumentDbStateSessionManagerWithTransaction _manager;
 			private readonly DocumentClient _documentClient;
 
 			public DocumentDbStateSession(
-				DocumentDbStateSessionManager2 manager)
+				DocumentDbStateSessionManagerWithTransaction manager)
 				: base(manager)
 			{
 				_manager = manager;

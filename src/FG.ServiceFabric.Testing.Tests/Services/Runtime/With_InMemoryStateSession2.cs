@@ -30,7 +30,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					var state = new Dictionary<string, string>();
 
-					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
 					var session1 = manager.CreateSession();
 
@@ -66,7 +66,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					var state = new Dictionary<string, string>();
 
-					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
 					var session1 = manager.CreateSession();
 					var session2 = manager.CreateSession();
@@ -102,7 +102,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					var state = new Dictionary<string, string>();
 
-					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
 					var session1 = manager.CreateSession();
 
@@ -136,7 +136,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					var state = new Dictionary<string, string>();
 
-					var manager = new InMemoryStateSessionManager2("testservice", Guid.NewGuid(), "range-0", state);
+					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
 					var session1 = manager.CreateSession();
 
@@ -234,7 +234,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					return Task.FromResult(true);
 				}
 
-				protected virtual Task SetUpStates(InMemoryStateSessionManager2 stateSessionManager)
+				protected virtual Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
 				{
 					return Task.FromResult(true);
 				}
@@ -246,7 +246,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 				{
-					var stateManager = new InMemoryStateSessionManager2(
+					var stateManager = new InMemoryStateSessionManagerWithTransaction(
 						StateSessionHelper.GetServiceName(context.ServiceName),
 						context.PartitionId,
 						StateSessionHelper.GetPartitionInfo(context,
