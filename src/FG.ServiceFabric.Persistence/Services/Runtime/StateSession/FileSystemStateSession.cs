@@ -96,31 +96,40 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			protected override string GetEscapedKey(string id)
 			{
-				return $"{CommonPath}{System.IO.Path.DirectorySeparatorChar}{_manager.EscapeFileName(id)}";
+				return id == null ? null : _manager.EscapeFileName(id);				
+			}
+
+			protected override string GetUnescapedKey(string key)
+			{
+				return key == null ? null : _manager.UnescapeFileName(key);
 			}
 
 			protected override bool Contains(string id)
 			{
 				var fileName = $"{id}.json";
-				return System.IO.File.Exists(fileName);
+				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				return System.IO.File.Exists(filePath);
 			}
 
 			protected override string Read(string id)
 			{
 				var fileName = $"{id}.json";
-				return System.IO.File.ReadAllText(fileName);
+				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				return System.IO.File.ReadAllText(filePath);
 			}
 
 			protected override void Delete(string id)
 			{
 				var fileName = $"{id}.json";
-				System.IO.File.Delete(fileName);
+				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				System.IO.File.Delete(filePath);
 			}
 
 			protected override void Write(string id, string content)
 			{
 				var fileName = $"{id}.json";
-				System.IO.File.WriteAllText(fileName, content);
+				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				System.IO.File.WriteAllText(filePath, content);
 			}
 			
 			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())

@@ -99,6 +99,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\FG.Samples\src\FG.Samples.ServiceFabricPeople\Application\Application.csproj">
+      <Project>{E3324371-73A6-4578-A9D9-7221E7838C89}</Project>
+      <Name>Application</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>

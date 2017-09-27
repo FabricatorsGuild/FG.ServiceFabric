@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
+using Application;
 using FG.ServiceFabric.Fabric;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using Microsoft.ServiceFabric.Services.Runtime;
@@ -24,7 +25,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				// an instance of the class is created in this host process.
 
 				ServiceRuntime.RegisterServiceAsync("FG.ServiceFabric.Tests.StatefulServiceDemoType",
-					context => new With_simple_counter_state.StatefulServiceDemo(context, CreateStateManager(context))).GetAwaiter().GetResult();
+					context => new With_simple_counter_state.StatefulServiceDemo(context, StateSessionInitilaizer.CreateStateManager(context))).GetAwaiter().GetResult();
 
 				ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(With_simple_counter_state.StatefulServiceDemo).Name);
 
@@ -36,15 +37,6 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				ServiceEventSource.Current.ServiceHostInitializationFailed(e.ToString());
 				throw;
 			}
-		}
-		private static IStateSessionManager CreateStateManager(StatefulServiceContext context)
-		{
-			return new InMemoryStateSessionManager(
-					StateSessionHelper.GetServiceName(context.ServiceName),
-					context.PartitionId,
-					StateSessionHelper.GetPartitionInfo(context,
-						() => new FabricClientQueryManagerPartitionEnumerationManager(new FabricClient())).GetAwaiter().GetResult());
-
 		}
 	}
 }
