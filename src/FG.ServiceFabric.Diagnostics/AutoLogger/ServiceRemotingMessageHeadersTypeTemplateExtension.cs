@@ -6,7 +6,7 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
     {
         private string Definition = @"{
                   ""Name"": ""ServiceRemotingMessageHeaders"",
-                  ""CLRType"": ""Microsoft.ServiceFabric.Services.Remoting.ServiceRemotingMessageHeaders"",
+                  ""CLRType"": ""Microsoft.ServiceFabric.Services.Remoting.V1.ServiceRemotingMessageHeaders"",
                   ""Arguments"": [
                     {
                       ""Name"": ""InterfaceId"",

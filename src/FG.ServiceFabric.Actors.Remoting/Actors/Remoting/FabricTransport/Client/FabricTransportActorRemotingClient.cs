@@ -9,6 +9,8 @@ using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
 {

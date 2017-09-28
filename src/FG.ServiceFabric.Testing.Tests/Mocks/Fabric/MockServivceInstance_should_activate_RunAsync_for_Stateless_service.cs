@@ -65,7 +65,7 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 			}
 
 			public TestStatefulService(
-				StatefulServiceContext serviceContext, IReliableStateManagerReplica reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
+				StatefulServiceContext serviceContext, IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
 			{
 			}
 

@@ -2,6 +2,7 @@
 using FG.ServiceFabric.Actors.Remoting.Runtime;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Diagnostics
 {

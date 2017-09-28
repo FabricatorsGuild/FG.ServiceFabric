@@ -11,7 +11,7 @@ using Microsoft.ServiceFabric.Data.Notifications;
 
 namespace FG.ServiceFabric.Testing.Mocks.Data
 {
-    public class MockReliableStateManager : IReliableStateManagerReplica
+    public class MockReliableStateManager : IReliableStateManagerReplica2
     {
 	    private readonly MockFabricRuntime _fabricRuntime;
 	    private readonly ConcurrentDictionary<Uri, IReliableState> _store = new ConcurrentDictionary<Uri, IReliableState>();
@@ -248,5 +248,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Data
         {
             throw new NotImplementedException();
         }
+
+	    public Func<CancellationToken, Task> OnRestoreCompletedAsync { get; set; }
     }
 }

@@ -8,6 +8,8 @@ using FG.ServiceFabric.Services.Runtime;
 using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 
 namespace FG.ServiceFabric.Services.Remoting.Runtime
 {
@@ -30,7 +32,7 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
                 {
                     return ServiceMethodMap[lookup];
                 }
-                var methodName = ((Microsoft.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher)_innerMessageHandler).GetMethodDispatcherMapName(interfaceId, methodId);
+                var methodName = ((Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher)_innerMessageHandler).GetMethodDispatcherMapName(interfaceId, methodId);
                 ServiceMethodMap[lookup] = methodName;
                 return methodName;
             }

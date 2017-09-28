@@ -6,11 +6,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="6a84f0ec-cd3a-4430-9c2d-14e06b956462|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="ActorWithReminderDemoActorService" />
-            <ServiceEndpoint Name="ActorWithReminderDemoActorServiceEndpoint" />
             <ReplicatorEndpoint Name="ActorWithReminderDemoActorServiceReplicatorEndpoint" />
             <ReplicatorConfigSection Name="ActorWithReminderDemoActorServiceReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="ActorWithReminderDemoActorServiceReplicatorSecurityConfig" />
             <StoreConfigSection Name="ActorWithReminderDemoActorServiceLocalStoreConfig" />
+            <ServiceEndpoint Name="ActorWithReminderDemoActorServiceEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -20,11 +20,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="2588ff1c-a68b-45b3-9308-080195974dc6|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="ActorDemoActorService_WithoutInternalErrors" />
-            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrorsEndpoint" />
             <ReplicatorEndpoint Name="ActorDemoActorService_WithoutInternalErrorsReplicatorEndpoint" />
             <ReplicatorConfigSection Name="ActorDemoActorService_WithoutInternalErrorsReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="ActorDemoActorService_WithoutInternalErrorsReplicatorSecurityConfig" />
             <StoreConfigSection Name="ActorDemoActorService_WithoutInternalErrorsLocalStoreConfig" />
+            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrorsEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -34,11 +34,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="0182b727-5eb3-48ea-a4b7-3919cb5a142b|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="ActorDemoActorService_WithoutInternalErrors_WithReminders" />
-            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersEndpoint" />
             <ReplicatorEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorEndpoint" />
             <ReplicatorConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersReplicatorSecurityConfig" />
             <StoreConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersLocalStoreConfig" />
+            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithRemindersEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -48,11 +48,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="1a6da03a-429c-42ae-b568-851955c34a39|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStates" />
-            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesEndpoint" />
             <ReplicatorEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorEndpoint" />
             <ReplicatorConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesReplicatorSecurityConfig" />
             <StoreConfigSection Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesLocalStoreConfig" />
+            <ServiceEndpoint Name="ActorDemoActorService_WithoutInternalErrors_WithMultipleStatesEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -62,11 +62,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="c576f1a5-d684-48cf-8e26-9260e323e7c6|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="ActorDemoActorService_WithInteralError" />
-            <ServiceEndpoint Name="ActorDemoActorService_WithInteralErrorEndpoint" />
             <ReplicatorEndpoint Name="ActorDemoActorService_WithInteralErrorReplicatorEndpoint" />
             <ReplicatorConfigSection Name="ActorDemoActorService_WithInteralErrorReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="ActorDemoActorService_WithInteralErrorReplicatorSecurityConfig" />
             <StoreConfigSection Name="ActorDemoActorService_WithInteralErrorLocalStoreConfig" />
+            <ServiceEndpoint Name="ActorDemoActorService_WithInteralErrorEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>

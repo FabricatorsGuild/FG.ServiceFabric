@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
@@ -21,8 +22,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         }
 
 	    public static bool HasHeader(this ServiceRemotingMessageHeaders messageHeaders, string headerName)
-	    {
-			
+	    {			
 			return messageHeaders.TryGetHeaderValue(headerName, out byte[] value);
 		}
     }

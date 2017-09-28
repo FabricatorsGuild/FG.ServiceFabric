@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Actors.Remoting.Runtime
 {

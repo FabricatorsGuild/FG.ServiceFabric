@@ -6,11 +6,13 @@ using FG.ServiceFabric.Services.Remoting.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
-using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Client;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.FabricTransport.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.FabricTransport.Runtime;
 
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {

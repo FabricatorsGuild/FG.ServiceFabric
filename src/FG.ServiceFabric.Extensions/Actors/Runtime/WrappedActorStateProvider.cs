@@ -144,5 +144,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 	    {
 			return _innerStateProvider.DeleteRemindersAsync(reminderNames, cancellationToken);
 		}
+
+	    public Func<CancellationToken, Task> OnRestoreCompletedAsync { set => _innerStateProvider.OnRestoreCompletedAsync = value; }
     }
 }

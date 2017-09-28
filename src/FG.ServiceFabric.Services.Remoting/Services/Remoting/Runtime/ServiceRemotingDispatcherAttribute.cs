@@ -3,6 +3,7 @@ using System.Fabric;
 using System.Reflection;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 
 namespace FG.ServiceFabric.Services.Remoting.Runtime
 {
@@ -53,7 +54,7 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
                 // Ignore
                 // TODO: Should probably log this.
             }
-            return new ServiceRemotingDispatcher(service, new Microsoft.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher(serviceContext, service), null);
+            return new ServiceRemotingDispatcher(service, new Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher(serviceContext, service), null);
         }
     }
 }

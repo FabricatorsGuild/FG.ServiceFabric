@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using FG.Common.Utils;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {

@@ -308,5 +308,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 		#endregion
 
+		public Func<CancellationToken, Task> OnRestoreCompletedAsync { get; set; }
 	}
 }

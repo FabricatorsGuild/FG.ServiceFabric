@@ -8,11 +8,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
 	internal class MockStatefulServiceInstance : MockServiceInstance
 	{
-		public IReliableStateManagerReplica StateManager { get; private set; }
+		public IReliableStateManagerReplica2 StateManager { get; private set; }
 
 		private StatefulService GetMockStatefulService(
 			StatefulServiceContext serviceContext,
-			IReliableStateManagerReplica stateManager)
+			IReliableStateManagerReplica2 stateManager)
 		{
 			return new MockStatefulService(
 				codePackageActivationContext: FabricRuntime.CodePackageContext,
@@ -34,7 +34,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
 			StateManager = (ServiceRegistration.CreateStateManager ??
-			                (() => (IReliableStateManagerReplica)new MockReliableStateManager(FabricRuntime))).Invoke();
+			                (() => (IReliableStateManagerReplica2)new MockReliableStateManager(FabricRuntime))).Invoke();
 			var serviceFactory = ServiceRegistration.CreateStatefulService ?? GetMockStatefulService;
 			// TODO: consider this further, is it really what should be done???
 

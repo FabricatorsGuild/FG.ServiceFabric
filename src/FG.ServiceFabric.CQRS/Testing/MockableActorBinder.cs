@@ -1,6 +1,5 @@
 ﻿using FG.ServiceFabric.Actors;
 using FG.ServiceFabric.Actors.Runtime;
-using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
 
 namespace FG.ServiceFabric.Testing

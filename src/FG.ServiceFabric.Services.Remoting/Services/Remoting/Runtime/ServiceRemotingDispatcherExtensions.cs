@@ -6,11 +6,11 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
 {
     public static class ServiceRemotingDispatcherExtensions
     {
-        public static string GetMethodDispatcherMapName(this Microsoft.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher that, int interfaceId, int methodId)
+        public static string GetMethodDispatcherMapName(this Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher that, int interfaceId, int methodId)
         {
             try
             {
-                var methodDispatcherMapFieldInfo = typeof(Microsoft.ServiceFabric.Services.Remoting.Runtime.ServiceRemotingDispatcher).GetField("methodDispatcherMap",
+                var methodDispatcherMapFieldInfo = typeof(Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher).GetField("methodDispatcherMap",
                     BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
                 var methodDispatcherMap = methodDispatcherMapFieldInfo?.GetValue(that);
                 var methodDispatcher = methodDispatcherMap?.GetType()

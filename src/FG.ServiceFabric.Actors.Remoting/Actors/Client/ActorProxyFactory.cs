@@ -10,6 +10,8 @@ using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Actors.Client
 { 
@@ -41,23 +43,23 @@ namespace FG.ServiceFabric.Actors.Client
             Logger = logger;
         }
 
-        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType, Type actorInterfaceType)
-        {
-            var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
-            var actorMethodDispatcher = GetOrDiscoverActorMethodDispatcher(actorInterfaceType);
+		private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType, Type actorInterfaceType)
+		{
+			var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
+			var actorMethodDispatcher = GetOrDiscoverActorMethodDispatcher(actorInterfaceType);
 
 			var contextWrapper = ServiceRequestContextWrapper.Current;
 			var interfaceType = actorInterfaceType ?? serviceInterfaceType;
-	        return FabricTransportActorRemotingHelpers.CreateServiceRemotingClientFactory(
-		        interfaceType: interfaceType,
-		        callbackClient: serviceRemotingCallbackClient,
-		        logger: Logger,
-		        correlationId: contextWrapper.CorrelationId,
-		        actorMethodDispatcher: actorMethodDispatcher,
-		        serviceMethodDispatcher: serviceMethodDispatcher);
-        }
+			return FabricTransportActorRemotingHelpers.CreateServiceRemotingClientFactory(
+				interfaceType: interfaceType,
+				callbackClient: serviceRemotingCallbackClient,
+				logger: Logger,
+				correlationId: contextWrapper.CorrelationId,
+				actorMethodDispatcher: actorMethodDispatcher,
+				serviceMethodDispatcher: serviceMethodDispatcher);
+		}
 
-        private IActorProxyFactory GetInnerActorProxyFactory(Type serviceInterfaceType, Type actorInterfaceType)
+		private IActorProxyFactory GetInnerActorProxyFactory(Type serviceInterfaceType, Type actorInterfaceType)
         {
 			if (_innerActorProxyFactory != null)
 			{
@@ -99,7 +101,8 @@ namespace FG.ServiceFabric.Actors.Client
         {
             GetOrDiscoverActorMethodDispatcher(typeof(TActorInterface));
             var proxy = GetInnerActorProxyFactory(null, typeof(TActorInterface)).CreateActorProxy<TActorInterface>(actorId, applicationName, serviceName, listenerName);
-            UpdateRequestContext(proxy.GetActorReference().ServiceUri);
+	        var serviceUri = ((IActorProxy) proxy).ActorServicePartitionClient.ServiceUri;
+			UpdateRequestContext(serviceUri);
             return proxy;
         }
 
@@ -107,7 +110,7 @@ namespace FG.ServiceFabric.Actors.Client
         {
             GetOrDiscoverActorMethodDispatcher(typeof(TActorInterface));
             var proxy = GetInnerActorProxyFactory(null, typeof(TActorInterface)).CreateActorProxy<TActorInterface>(serviceUri, actorId, listenerName);
-            UpdateRequestContext(proxy.GetActorReference().ServiceUri);
+	        UpdateRequestContext(serviceUri);
             return proxy;
         }
 

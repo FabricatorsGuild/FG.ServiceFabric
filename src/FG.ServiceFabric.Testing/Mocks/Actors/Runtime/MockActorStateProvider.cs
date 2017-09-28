@@ -259,5 +259,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 		{
 			throw new NotImplementedException();
 		}
-	}
+
+	    public Func<CancellationToken, Task> OnRestoreCompletedAsync { get; set; }
+    }
 }

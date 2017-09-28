@@ -11,6 +11,7 @@ using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
@@ -54,6 +55,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 
 		public Type ServiceInterfaceType { get; }
 		public IServiceRemotingPartitionClient ServicePartitionClient { get; }
+		public Microsoft.ServiceFabric.Services.Remoting.V2.Client.IServiceRemotingPartitionClient ServicePartitionClient2 { get; }
 
 		private class MockServicePartitionClient : IServiceRemotingPartitionClient
 		{

@@ -7,6 +7,7 @@ using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 {

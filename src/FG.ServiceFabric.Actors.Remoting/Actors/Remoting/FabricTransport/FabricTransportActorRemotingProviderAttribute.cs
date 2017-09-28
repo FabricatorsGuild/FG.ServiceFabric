@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using FG.ServiceFabric.Services.Communication;
 using Microsoft.ServiceFabric.Actors.Generator;
-using Microsoft.ServiceFabric.Actors.Remoting.FabricTransport.Runtime;
+using Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
-using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
-using FabricTransportActorRemotingClientFactory = FG.ServiceFabric.Actors.Remoting.FabricTransport.Client.FabricTransportActorRemotingClientFactory;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
 {
@@ -55,8 +54,8 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
             fabricTransportSettings.OperationTimeout = this.GetandValidateOperationTimeout(fabricTransportSettings.OperationTimeout);
             fabricTransportSettings.KeepAliveTimeout = this.GetandValidateKeepAliveTimeout(fabricTransportSettings.KeepAliveTimeout);
             var exceptionHandlers = GetExceptionHandlers();
-            return (IServiceRemotingClientFactory)new FabricTransportActorRemotingClientFactory(
-                new Microsoft.ServiceFabric.Actors.Remoting.FabricTransport.FabricTransportActorRemotingClientFactory(
+            return (IServiceRemotingClientFactory)new FG.ServiceFabric.Actors.Remoting.FabricTransport.Client.FabricTransportActorRemotingClientFactory(
+                new Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Client.FabricTransportActorRemotingClientFactory(
                 fabricTransportSettings,
                 callbackClient,
                 (IServicePartitionResolver)null,

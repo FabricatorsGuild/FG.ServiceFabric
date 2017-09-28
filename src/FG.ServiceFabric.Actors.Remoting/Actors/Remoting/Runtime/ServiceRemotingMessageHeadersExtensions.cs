@@ -1,6 +1,7 @@
 ﻿using System;
 using FG.ServiceFabric.Diagnostics;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Actors.Remoting.Runtime
 {

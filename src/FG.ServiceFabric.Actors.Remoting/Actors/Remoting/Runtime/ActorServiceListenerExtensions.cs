@@ -1,5 +1,5 @@
 ﻿using FG.ServiceFabric.Diagnostics;
-using Microsoft.ServiceFabric.Actors.Remoting.FabricTransport.Runtime;
+using Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
@@ -16,7 +16,7 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
                     serviceContext: ctxt,
                     messageHandler: new ActorServiceRemotingDispatcher(
                         actorService: actorService,
-                        innerMessageHandler: new Microsoft.ServiceFabric.Actors.Remoting.Runtime.ActorServiceRemotingDispatcher(actorService),
+                        innerMessageHandler: new Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher(actorService),
                         logger: logger),
                     listenerSettings: new FabricTransportRemotingListenerSettings()
                     {

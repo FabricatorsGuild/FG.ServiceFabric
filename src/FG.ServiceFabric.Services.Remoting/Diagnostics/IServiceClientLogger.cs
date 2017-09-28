@@ -1,15 +1,17 @@
 using System;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
-using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Diagnostics
 {
-    public interface IServiceClientLogger : IServiceRemotingLogger
-    {
-        IDisposable CallService(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader);
+	public interface IServiceClientLogger : IServiceRemotingLogger
+	{
+		IDisposable CallService(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders,
+			CustomServiceRequestHeader customServiceRequestHeader);
 
-        void CallServiceFailed(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders, CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
-        
-        void ServiceClientFailed(Uri requestUri, CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
-    }
+		void CallServiceFailed(Uri requestUri, string serviceMethodName, ServiceRemotingMessageHeaders serviceMessageHeaders,
+			CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
+
+		void ServiceClientFailed(Uri requestUri, CustomServiceRequestHeader customServiceRequestHeader, Exception ex);
+	}
 }

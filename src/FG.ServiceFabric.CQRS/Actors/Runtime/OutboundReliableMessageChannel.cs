@@ -31,7 +31,7 @@ namespace FG.ServiceFabric.Actors.Runtime
     internal sealed class ActorReliableMessage
     {
         [DataMember]
-        public ActorReference ActorReference { get; internal set; }
+        public Microsoft.ServiceFabric.Actors.ActorReference ActorReference { get; internal set; }
 
         [DataMember]
         public ReliableMessage Message { get; set; }
@@ -123,9 +123,10 @@ namespace FG.ServiceFabric.Actors.Runtime
                 listerName);
 
             var channelState = await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, _stateManager, cancellationToken);
+
             channelState.Enqueue(new ActorReliableMessage
             {
-                ActorReference = ActorReference.Get(proxy),
+                ActorReference = ActorReference.Get((IActorProxy)proxy),
                 Message = message
             });
             await AddOrUpdateStateWithRetriesAsync(ReliableMessageQueueStateKey, channelState, _stateManager, cancellationToken);

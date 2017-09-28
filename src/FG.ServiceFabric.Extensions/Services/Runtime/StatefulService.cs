@@ -26,7 +26,7 @@ namespace FG.ServiceFabric.Services.Runtime
         }
 
 	    protected StatefulService(StatefulServiceContext serviceContext, 
-			IReliableStateManagerReplica reliableStateManagerReplica, 
+			IReliableStateManagerReplica2 reliableStateManagerReplica, 
 			Func<IActorClientLogger> actorClientLoggerFactory = null, 
 			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext, reliableStateManagerReplica)
 	    {

@@ -21,15 +21,15 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 		string Name { get; set; }
 	}
 
-	public delegate IReliableStateManagerReplica CreateStateManager();
+	public delegate IReliableStateManagerReplica2 CreateStateManager();
 
 	public delegate StatefulService CreateStatefulService(
 		StatefulServiceContext context,
-		IReliableStateManagerReplica stateManager);
+		IReliableStateManagerReplica2 stateManager);
 
 	public delegate TService CreateStatefulService<out TService>(
 		StatefulServiceContext context,
-		IReliableStateManagerReplica stateManager)
+		IReliableStateManagerReplica2 stateManager)
 		where TService : IService;
 
 	public delegate StatelessService CreateStatelessService(

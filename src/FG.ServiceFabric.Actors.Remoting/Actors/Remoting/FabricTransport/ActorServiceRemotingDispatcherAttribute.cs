@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 using ActorServiceRemotingDispatcher = FG.ServiceFabric.Actors.Remoting.Runtime.ActorServiceRemotingDispatcher;
 
 namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
@@ -53,7 +54,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
                 // Ignore
                 // TODO: Should probably log this.
             }
-            return new ActorServiceRemotingDispatcher(actorService, new Microsoft.ServiceFabric.Actors.Remoting.Runtime.ActorServiceRemotingDispatcher(actorService), null);
+            return new ActorServiceRemotingDispatcher(actorService, new Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher(actorService), null);
         }
     }
 }

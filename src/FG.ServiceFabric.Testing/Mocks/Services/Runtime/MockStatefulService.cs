@@ -17,7 +17,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			IServiceProxyFactory serviceProxyFactory,
 			NodeContext nodeContext,
 			StatefulServiceContext statefulServiceContext,
-			IReliableStateManagerReplica stateManager = null
+			IReliableStateManagerReplica2 stateManager = null
 		) :
 			base(
 				serviceContext: statefulServiceContext, 

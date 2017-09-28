@@ -7,12 +7,12 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 {
     public static class ActorServiceRemotingDispatcherExtensions
     {
-        public static string GetMethodDispatcherMapName(this Microsoft.ServiceFabric.Actors.Remoting.Runtime.ActorServiceRemotingDispatcher that,
+        public static string GetMethodDispatcherMapName(this Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher that,
             int interfaceId, int methodId)
         {
             try
             {
-                var actorServiceFieldInfo = typeof(Microsoft.ServiceFabric.Actors.Remoting.Runtime.ActorServiceRemotingDispatcher).GetField("actorService",
+                var actorServiceFieldInfo = typeof(Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher).GetField("actorService",
                     BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
                 var actorService = actorServiceFieldInfo?.GetValue(that);
                 var methodDispatcherMapPropertyInfo = typeof(ActorService).GetProperty("MethodDispatcherMap",

@@ -128,7 +128,7 @@ namespace FG.ServiceFabric.Testing.Mocks
         }
 		
 	    public void SetupService<TServiceImplementation>(
-			Func<StatefulServiceContext, IReliableStateManagerReplica, TServiceImplementation> createService,
+			Func<StatefulServiceContext, IReliableStateManagerReplica2, TServiceImplementation> createService,
 			CreateStateManager createStateManager = null,
 			MockServiceDefinition serviceDefinition = null
 		) where TServiceImplementation : Microsoft.ServiceFabric.Services.Runtime.StatefulService

@@ -13,6 +13,8 @@ using Microsoft.ServiceFabric.Services.Remoting.Builder;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 using FabricTransportActorRemotingClientFactory = FG.ServiceFabric.Actors.Remoting.FabricTransport.Client.FabricTransportActorRemotingClientFactory;
 
 namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
@@ -96,7 +98,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
             var exceptionHandlers = GetExceptionHandlers(interfaceType);
             return
                 (IServiceRemotingClientFactory) new FabricTransportActorRemotingClientFactory(
-                    new Microsoft.ServiceFabric.Actors.Remoting.FabricTransport.FabricTransportActorRemotingClientFactory(
+                    new Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Client.FabricTransportActorRemotingClientFactory(
                         fabricTransportSettings,
                         callbackClient,
                         (IServicePartitionResolver) null,

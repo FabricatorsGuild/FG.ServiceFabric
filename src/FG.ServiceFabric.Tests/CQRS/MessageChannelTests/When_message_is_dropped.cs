@@ -8,6 +8,7 @@ using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
+using ActorReference = FG.ServiceFabric.Actors.ActorReference;
 
 // ReSharper disable InconsistentNaming
 
