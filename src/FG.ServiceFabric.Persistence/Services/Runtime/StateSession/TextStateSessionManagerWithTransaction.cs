@@ -86,7 +86,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							throw new KeyNotFoundException($"State with {id} does not exist");
 						}
 
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);						
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto });						
 					}
 					return Task.FromResult(value);
 				}
@@ -109,7 +109,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
 						}
 
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 					}
 					return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, value));
 				}
@@ -134,7 +134,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						}
 						else
 						{
-							var stringValue = JsonConvert.SerializeObject(value, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+							var stringValue = JsonConvert.SerializeObject(value, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented });
 							Write(id, stringValue);
 						}
 					}

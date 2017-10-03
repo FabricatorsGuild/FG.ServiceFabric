@@ -12,7 +12,7 @@ using Microsoft.ServiceFabric.Data.Collections;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public class FileSystemStateSessionManager : TextStateSessionManager
+	public class FileSystemStateSessionManager : TextStateSessionManagerWithTransaction
 	{
 		private const string CommonPathDefault = @"c:\temp\servicefabric";
 		private readonly string _commonPath;
@@ -39,6 +39,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		private string EscapeFileName(string fileName)
 		{
+			if (string.IsNullOrWhiteSpace(fileName)) return fileName;
+
 			var stringBuilder = new StringBuilder(fileName);
 			foreach (var replacer in _invalidCharsReplacement)
 			{
@@ -49,6 +51,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		private string UnescapeFileName(string fileName)
 		{
+			if (string.IsNullOrWhiteSpace(fileName)) return fileName;
+
 			var stringBuilder = new StringBuilder(fileName);
 			foreach (var replacer in _replacementsToInvalidChars)
 			{
@@ -92,46 +96,41 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						System.IO.Directory.CreateDirectory(CommonPath);
 					}
 				}
-			}			
-
-			protected override string GetEscapedKey(string id)
-			{
-				return id == null ? null : _manager.EscapeFileName(id);				
 			}
 
-			protected override string GetUnescapedKey(string key)
+			private string GetFilePath(string id)
 			{
-				return key == null ? null : _manager.UnescapeFileName(key);
-			}
-
-			protected override bool Contains(string id)
-			{
-				var fileName = $"{id}.json";
+				var fileName = $"{_manager.EscapeFileName(id)}.json";
 				var filePath = System.IO.Path.Combine(CommonPath, fileName);
-				return System.IO.File.Exists(filePath);
+				return filePath;
 			}
-
-			protected override string Read(string id)
+			protected override string Read(string id, bool checkExistsOnly = false)
 			{
-				var fileName = $"{id}.json";
-				var filePath = System.IO.Path.Combine(CommonPath, fileName);
-				return System.IO.File.ReadAllText(filePath);
+				var filePath = GetFilePath(id);
+				if (System.IO.File.Exists(filePath))
+				{
+					if (checkExistsOnly)
+					{
+						return "";
+					}
+					// Quick return not-null value if check for existance only
+					return System.IO.File.ReadAllText(filePath);
+				}
+				return null;
 			}
 
 			protected override void Delete(string id)
 			{
-				var fileName = $"{id}.json";
-				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				var filePath = GetFilePath(id);
 				System.IO.File.Delete(filePath);
 			}
 
 			protected override void Write(string id, string content)
 			{
-				var fileName = $"{id}.json";
-				var filePath = System.IO.Path.Combine(CommonPath, fileName);
+				var filePath = GetFilePath(id);
 				System.IO.File.WriteAllText(filePath, content);
-			}
-			
+			}			
+						
 			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
 				var results = new List<string>();
@@ -148,8 +147,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						{
 							return new FindByKeyPrefixResult() {ContinuationToken = new ContinuationToken(fileName), Items = results};
 						}
+						resultCount++;
 					}
-					resultCount++;
 				}
 				return new FindByKeyPrefixResult() {ContinuationToken = null, Items = results};
 			}			

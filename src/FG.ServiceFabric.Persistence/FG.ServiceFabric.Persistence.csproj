@@ -158,7 +158,7 @@
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
     <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
     <Compile Include="Services\Runtime\StateSession\TextStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\TextStateSession2.cs" />
+    <Compile Include="Services\Runtime\StateSession\TextStateSessionManagerWithTransaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

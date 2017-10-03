@@ -118,6 +118,75 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 		}
 	}
 
+	namespace With_polymorphic_array_state
+	{
+		public class ArrayState
+		{
+			public IInnerStateItem[] Items { get; set; }
+		}
+
+		public interface IInnerStateItem
+		{
+			string Name { get; set; }
+		}
+
+		public class InnerStateItemTypeA : IInnerStateItem
+		{
+			public string Name { get; set; }
+
+			public string PropertyInA { get; set; }
+		}
+
+		public class InnerStateItemTypeB : IInnerStateItem
+		{
+			public string Name { get; set; }
+			public string PropertyInB { get; set; }
+
+		}		
+
+		public sealed class StatefulServiceDemo : StatefulServiceDemoBase
+		{
+			private readonly IStateSessionManager _stateSessionManager;
+
+			public StatefulServiceDemo(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				: base(context, stateSessionManager)
+			{
+				_stateSessionManager = stateSessionManager;
+			}
+
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+			{
+				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession())
+				{
+					var state = new ArrayState()
+					{
+						Items = new IInnerStateItem[]
+							{new InnerStateItemTypeA() {Name = "I am a", PropertyInA = "Prop in A"}, new InnerStateItemTypeB() {Name = "I am b", PropertyInB = "Prop in B"},}
+					};
+
+
+					await session.SetValueAsync("myDictionary2", "theValue", state, null, cancellationToken);
+				}
+
+				OnRunAsyncLoop(0);
+			}
+
+			public async Task< ArrayState> GetStateAsync(CancellationToken cancellationToken)
+			{
+				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession())
+				{
+					var stateValue = await session.GetValueAsync<ArrayState>("myDictionary2", "theValue", cancellationToken);
+
+					return stateValue;
+				}				
+			}
+		}
+	}
+
 	namespace With_simple_queue_enqueued
 	{
 		public interface IStatefulServiceDemo : IService

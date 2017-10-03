@@ -135,7 +135,9 @@
     <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession2.cs" />
     <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession.cs" />
     <Compile Include="Mocks\Fabric\MockServivceInstance_should_activate_RunAsync_for_Stateless_service.cs" />
-    <Compile Include="Services\Runtime\With_InMemoryStateSession2.cs" />
+    <Compile Include="Services\Runtime\TestBase.cs" />
+    <Compile Include="Services\Runtime\With_FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\With_InMemoryStateSessionWithTransactions.cs" />
     <Compile Include="Services\Runtime\With_InMemoryStateSession.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
