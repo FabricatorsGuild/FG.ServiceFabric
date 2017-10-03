@@ -38,5 +38,5 @@ namespace FG.ServiceFabric.Services.Communication.Tests
             canHandle.Should().BeFalse();
             exceptionHandlingResult.Should().BeOfType(typeof(ExceptionHandlingThrowResult));
         }
-    }	
+    }
 }

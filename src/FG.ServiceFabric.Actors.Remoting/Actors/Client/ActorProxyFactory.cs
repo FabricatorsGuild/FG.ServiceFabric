@@ -133,7 +133,7 @@ namespace FG.ServiceFabric.Actors.Client
         private static MethodDispatcherBase GetActorMethodInformation(Type actorInterfaceType )
         {
             var codeBuilderType = typeof(Microsoft.ServiceFabric.Actors.Client.ActorProxyFactory)?.Assembly.GetType(
-                "Microsoft.ServiceFabric.Actors.Remoting.Builder.ActorCodeBuilder");
+				"Microsoft.ServiceFabric.Actors.Remoting.V1.Builder.ActorCodeBuilder");
 
             var getOrCreateMethodDispatcher = codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
             var methodDispatcherBase = getOrCreateMethodDispatcher?.Invoke(null, new object[] { actorInterfaceType }) as MethodDispatcherBase;

@@ -33,10 +33,10 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
             }
         }
 
-        private MethodDispatcherBase GetServiceMethodInformation(Type serviceInterfaceType)
+        private static MethodDispatcherBase GetServiceMethodInformation(Type serviceInterfaceType)
         {
             var codeBuilderType = typeof(Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory)?.Assembly.GetType(
-                "Microsoft.ServiceFabric.Services.Remoting.Builder.ServiceCodeBuilder");
+				"Microsoft.ServiceFabric.Services.Remoting.V1.Builder.ServiceCodeBuilder");
 
             var getOrCreateMethodDispatcher = codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
             var methodDispatcherBase = getOrCreateMethodDispatcher?.Invoke(null, new object[] { serviceInterfaceType }) as MethodDispatcherBase;

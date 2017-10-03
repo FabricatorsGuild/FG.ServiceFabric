@@ -128,11 +128,16 @@
     <Compile Include="ReflectionUtils_test.cs" />
     <Compile Include="Services\Communication\Tests\ExceptionHandler_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Communication\Tests\ServiceProxyFactoryBase_tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FG.Common\FG.Common.csproj">
       <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
       <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
+      <Project>{1A4F9C49-629B-4331-BE3C-698FFFAA294C}</Project>
+      <Name>FG.ServiceFabric.Services.Remoting</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}</Project>
@@ -149,6 +154,10 @@
     <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
       <Project>{2F2B5701-77B5-4467-9504-8BE73A3725A7}</Project>
       <Name>FG.ServiceFabric.Testing</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj">
+      <Project>{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}</Project>
+      <Name>FG.ServiceFabric.Tests.StatefulService</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
