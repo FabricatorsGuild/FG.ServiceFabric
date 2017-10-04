@@ -46,6 +46,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public string[] Keys => _settings.Keys.ToArray();
 			}
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
 			{
 				
@@ -62,6 +63,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public override IDictionary<string, string> State => null;
 			}
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class StateSession_transacted_scope
 			{
 				private ISettingsProvider _settingsProvider;
@@ -186,6 +188,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_simple_counter_state : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -204,6 +207,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 			}
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_multiple_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
 
@@ -223,6 +227,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_polymorphic_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
 
@@ -259,7 +264,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_simple_queue_enqueued : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
 
