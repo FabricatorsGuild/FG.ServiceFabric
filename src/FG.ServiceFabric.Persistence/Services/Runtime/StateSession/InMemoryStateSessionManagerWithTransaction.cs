@@ -7,14 +7,14 @@ using Microsoft.ServiceFabric.Actors.Query;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public class InMemoryStateSessionManager : TextStateSessionManager
+	public class InMemoryStateSessionManagerWithTransaction : TextStateSessionManagerWithTransaction
 	{
 		private readonly IDictionary<string, string> _storage;
 
 
-		public InMemoryStateSessionManager(
-			string serviceName, 
-			Guid partitionId, 
+		public InMemoryStateSessionManagerWithTransaction(
+			string serviceName,
+			Guid partitionId,
 			string partitionKey,
 			IDictionary<string, string> state = null) : 
 			base(serviceName, partitionId, partitionKey)
@@ -28,33 +28,26 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return new InMemoryStateSession(this);
 		}
 
-
-		private sealed class InMemoryStateSession : TextStateSession, IStateSession
+		public sealed class InMemoryStateSession : TextStateSession, IStateSession
 		{
-			private readonly InMemoryStateSessionManager _manager;
+			private readonly InMemoryStateSessionManagerWithTransaction _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManager manager) : base(manager)
+				InMemoryStateSessionManagerWithTransaction manager) : base(manager)
 			{
 				_manager = manager;
 			}
 
-			private IDictionary<string, string> Storage => _manager._storage;
+			private IDictionary<string, string> Storage => _manager._storage;			
 
-
-			protected override string GetEscapedKey(string id)
+			protected override string Read(string id, bool checkExistsOnly = false)
 			{
-				return base.GetEscapedKey(id);
-			}
-
-			protected override bool Contains(string id)
-			{
-				return Storage.ContainsKey(id);
-			}
-
-			protected override string Read(string id)
-			{
-				return Storage[id];
+				if (Storage.ContainsKey(id))
+				{
+					// Quick return not-null value if check for existance only
+					return checkExistsOnly ? "" : Storage[id];
+				}
+				return null;
 			}
 
 			protected override void Delete(string id)
@@ -65,7 +58,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			protected override void Write(string id, string content)
 			{
 				Storage[id] = content;
-			}			
+			}
 
 			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
@@ -77,7 +70,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					if (item.CompareTo(nextMarker) > 0)
 					{
-						if (item.StartsWith(idPrefix) && ((key == null) || item.Contains(key)))
+						if (item.StartsWith(idPrefix))
 						{
 							results.Add(item);
 							if (resultCount > maxNumResults)
