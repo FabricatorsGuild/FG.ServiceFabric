@@ -149,7 +149,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						}
 						var stringValue = Read(id);
 
-						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto});
 						value = response.State;
 					}
 					return Task.FromResult(new ConditionalValue<T>(true, value));
@@ -174,7 +174,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						}
 						var stringValue = Read(id);
 
-						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 						value = response.State;
 					}
 					return Task.FromResult(value);
@@ -193,7 +193,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					lock (_lock)
 					{
 						var wrapper = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
-						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented});
+						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 
 						if (value == null)
 						{
@@ -225,7 +225,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					{
 
 						var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapperGeneric), new Type[] {valueType}, metaData, id, schema, key, value);
-						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented});
+						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 
 						if (value == null)
 						{
@@ -289,7 +289,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						{
 							var stringValue = Read(id);
 
-							var queueInfoResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<QueueInfo>>(stringValue);
+							var queueInfoResponse = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<QueueInfo>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 							var stateQueueInfo = queueInfoResponse.State;
 							return Task.FromResult(stateQueueInfo);
 						}
@@ -320,7 +320,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					{
 						var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
 						var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
-						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented});
+						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 						Write(id, stringValue);
 					}
 					return Task.FromResult(value);
@@ -348,7 +348,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						Console.WriteLine($"Enqueued {value} t:{stateQueueInfo.TailKey} h:{stateQueueInfo.HeadKey}");
 
 						var document = _manager.BuildWrapperGeneric(metadata, id, schema, head.ToString(), value);
-						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented});
+						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 						Write(id, stringValue);
 					}
 					await SetQueueInfo(schema, stateQueueInfo);
@@ -387,7 +387,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 						var stringValue = Read(id);
 
-						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 						value = response.State;
 
 						Delete(id);
@@ -434,7 +434,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 						var stringValue = Read(id);
 
-						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue);
+						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
 						value = response.State;
 					}
 
