@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Fabric.Query;
+using System.Threading;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
@@ -12,5 +13,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		DateTime? RunAsyncStarted { get; }
 		DateTime? RunAsyncEnded { get; }
+
+		CancellationTokenSource CancellationTokenSource { get; }
 	}
 }

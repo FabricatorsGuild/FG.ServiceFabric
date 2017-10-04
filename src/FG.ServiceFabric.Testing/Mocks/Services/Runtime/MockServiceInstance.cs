@@ -18,6 +18,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		public MockActorServiceInstanceStatus Status { get; private set; }
 
+		public CancellationTokenSource CancellationTokenSource { get; private set; }
+
 		public Uri ServiceUri { get; private set; }
 		public Partition Partition { get; private set; }
 		public Replica Replica { get; private set; }
@@ -61,6 +63,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 		{
 			MethodInfo runAsyncMethod = null;
 			Type serviceType = null;
+			CancellationTokenSource = new CancellationTokenSource();
 			if (ServiceRegistration.IsStateful)
 			{
 				serviceType = typeof(Microsoft.ServiceFabric.Services.Runtime.StatefulServiceBase);
@@ -76,7 +79,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				{
 					RunAsyncStarted = DateTime.Now;
 					Console.WriteLine($"Started RunAsync for {this.ServiceInstance.GetHashCode()}");
-					var runAsyncTask = runAsyncMethod.Invoke(this.ServiceInstance, new object[] {FabricRuntime.CancellationToken}) as Task;
+					var runAsyncTask = runAsyncMethod.Invoke(this.ServiceInstance, new object[] {CancellationTokenSource.Token}) as Task;
 
 					runAsyncTask?.ContinueWith(t =>
 					{

@@ -31,6 +31,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 		private readonly MockPartitionEnumerationManager _partitionEnumerationManager;
 
 		public CancellationToken CancellationToken { get; private set; }
+	    public CancellationTokenSource CancellationTokenSource { get; private set; }
 
 		public string ApplicationName { get; private set; }
 
@@ -124,7 +125,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 	        _activeInstances = new List<MockServiceInstance>();
 
-			CancellationToken = new CancellationToken();
+	        CancellationTokenSource = new CancellationTokenSource();
+	        CancellationToken = CancellationTokenSource.Token;
+
         }
 		
 	    public void SetupService<TServiceImplementation>(

@@ -18,7 +18,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 	{
 		protected MockFabricRuntime FabricRuntime;
 
-		protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
 		private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
 		protected TestBase()
@@ -31,10 +30,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 		[SetUp]
 		public void Setup()
 		{
-			State.Clear();
+			OnSetup();
+
 			FabricRuntime = new MockFabricRuntime("Overlord") {DisableMethodCallOutput = true};
 			FabricRuntime.SetupService(
-				(context, stateManager) => CreateAndMonitorService(context, CreateStateManager(context)),
+				(context, stateManager) => CreateAndMonitorService(context, CreateStateManager(FabricRuntime, context)),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
 
 			SetupService().GetAwaiter().GetResult();
@@ -43,14 +43,30 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			var i = 0;
 			do
 			{
-				if (i > 50)
+				if (i > 200)
 				{
 					Assert.Fail(@"Should have run the loop and updated the states by now");
 				}
-				Task.Delay(TimeSpan.FromMilliseconds(100)).GetAwaiter().GetResult();
+				Task.Delay(TimeSpan.FromMilliseconds(5)).GetAwaiter().GetResult();
 				i++;
-			} while (_runAsyncLoopUpdates.Count < instances);
+			} while (_runAsyncLoopUpdates.Keys.Count() < instances);
+
+			foreach (var serviceInstance in FabricRuntime.GetInstances())
+			{
+				serviceInstance.CancellationTokenSource.Cancel();
+			}
+			foreach (var serviceInstance in FabricRuntime.GetInstances())
+			{
+				while (serviceInstance.RunAsyncEnded == null)
+				{
+					Task.Delay(TimeSpan.FromMilliseconds(5)).GetAwaiter().GetResult();
+				}
+			}
 		}
+
+		protected virtual void OnSetup() { }
+
+		protected virtual void OnTearDown() { }
 
 		private T CreateAndMonitorService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 		{
@@ -73,6 +89,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 		[TearDown]
 		public void TearDown()
 		{
+
 			Console.WriteLine($"States stored");
 			Console.WriteLine($"______________________");
 			foreach (var stateKey in State.Keys)
@@ -81,6 +98,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 				Console.WriteLine($"{State[stateKey]}");
 				Console.WriteLine($"______________________");
 			}
+			OnTearDown();
 		}
 
 		protected virtual Task SetupService()
@@ -98,17 +116,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(State[key]);
 		}
 
-		private IStateSessionManager CreateStateManager(StatefulServiceContext context)
-		{
-			var stateManager = new InMemoryStateSessionManagerWithTransaction(
-				StateSessionHelper.GetServiceName(context.ServiceName),
-				context.PartitionId,
-				StateSessionHelper.GetPartitionInfo(context,
-					() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
-				State
-			);
-			SetUpStates(stateManager);
-			return stateManager;
-		}
+		public abstract IDictionary<string, string> State { get; }
+
+		public abstract IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context);		
 	}
 }

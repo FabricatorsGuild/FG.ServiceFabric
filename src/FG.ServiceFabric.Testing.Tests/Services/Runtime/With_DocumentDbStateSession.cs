@@ -2,13 +2,15 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Fabric;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
+using FG.ServiceFabric.Utils;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Services.Client;
@@ -17,145 +19,81 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
-	namespace With_StateSessionManager
-	{
-	}
-
 
 	namespace With_StateSessionManager
 	{
-		namespace and_FileSystemStateSessionManagerWithTransaction
+		namespace and_DocumentDbStateSessionManagerWithTransaction
 		{
-			public abstract class TestBaseFileSystemStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
+			public class SettingsProvider : ISettingsProvider
 			{
-				private string _path;
+				private readonly IDictionary<string, string> _settings = new Dictionary<string, string>();
 
-				protected override void OnSetup()
+				public SettingsProvider()
 				{
-					_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{this.GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
-					System.IO.Directory.CreateDirectory(_path);
-					base.OnSetup();
+					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}", "");
+					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}", "");
+					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}", "");
+					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", "");
 				}
 
-				protected override void OnTearDown()
+				public bool Contains(string key)
 				{
-					try
-					{
-						System.IO.Directory.Delete(_path, true);
-
-					}
-					catch (IOException ex)
-					{
-						// Just ignore it, it's a temp file anyway
-					}
-					base.OnTearDown();
+					return _settings.ContainsKey(key);
 				}
 
+				public string this[string key] => _settings[key];
+
+				public string[] Keys => _settings.Keys.ToArray();
+			}
+
+			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
+			{
+				
 				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context)
 				{
-					return new FileSystemStateSessionManager(
-						context.ServiceName.ToString(),
-						context.PartitionId,
-						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
-						_path);
+						return new DocumentDbStateSessionManager(
+							"StatefulServiceDemo",
+							Guid.NewGuid(),
+							StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
+							new SettingsProvider()
+						);
 				}
 
-				public override IDictionary<string, string> State => GetState();
-
-
-				private IDictionary<string, string> GetState()
-				{
-					var state = new Dictionary<string, string>();
-					var files = System.IO.Directory.GetFiles(_path);
-
-					foreach (var file in files)
-					{
-						var name = System.IO.Path.GetFileNameWithoutExtension(file);
-						var content = System.IO.File.ReadAllText(file);
-
-						state.Add(name, content);
-					}
-					return state;
-				}
+				public override IDictionary<string, string> State => null;
 			}
+
 			public class StateSession_transacted_scope
 			{
-				private string _path;
+				private ISettingsProvider _settingsProvider;
+
 
 				[SetUp]
 				public void Setup()
 				{
-					_path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{this.GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
-					System.IO.Directory.CreateDirectory(_path);
+					_settingsProvider = new SettingsProvider();
+
 				}
 
 				[TearDown]
 				public void Teardown()
 				{
-					try
-					{
-						System.IO.Directory.Delete(_path, true);
-					}
-					catch (IOException ex)
-					{
-						// Just ignore it, it's a temp file anyway
-					}
+					
 				}
 
-				private IDictionary<string, string> GetState()
+				public static IStateSessionManager CreateStateManager()
 				{
-					var state = new Dictionary<string, string>();
-					var files = System.IO.Directory.GetFiles(_path);
-
-					foreach (var file in files)
-					{
-						var name = System.IO.Path.GetFileNameWithoutExtension(file);
-						var content = System.IO.File.ReadAllText(file);
-
-						state.Add(name, content);
-					}
-					return state;
-				}
-
-				[Test]
-				public async Task _should_be_able_to_page_findbykey_results()
-				{
-					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
-
-					var session1 = manager.CreateSession();
-
-					var keys = new List<string>();
-					for (int i = (int)'a'; i <= (int)'z'; i++)
-					{
-						var key = ((char)i).ToString();
-						keys.Add(key);
-						await session1.SetValueAsync<string>("values", key, $"Value from session1 schema values key {key}", null, CancellationToken.None);
-					}
-					await session1.CommitAsync();
-
-					var state = GetState();
-					state.Should().HaveCount(keys.Count);
-
-					var results = new List<string>();
-					var pages = 0;
-					ContinuationToken token = null;
-					do
-					{
-						var foundKeys = await session1.FindByKeyPrefixAsync("values", null, 10, token, CancellationToken.None);
-						token = foundKeys.ContinuationToken;
-						results.AddRange(foundKeys.Items);
-						Console.WriteLine($"Found {foundKeys.Items.Count()} {foundKeys.Items.First()}-{foundKeys.Items.Last()} with next token {token?.Marker}");
-						pages++;
-					} while (token != null);
-
-					results.Should().BeEquivalentTo(keys);
-					pages.Should().Be(3);
+					return new DocumentDbStateSessionManager(
+							"StatefulServiceDemo",
+							Guid.NewGuid(), 
+							"range-0",
+							new SettingsProvider()
+						);
 				}
 
 				[Test]
 				public async Task should_not_be_available_from_another_session()
 				{
-					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
+					var manager = CreateStateManager();
 
 					var session1 = manager.CreateSession();
 					var session2 = manager.CreateSession();
@@ -189,7 +127,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task should_not_be_included_in_FindBykey()
 				{
-					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
+					var manager = CreateStateManager();
 
 					var session1 = manager.CreateSession();
 
@@ -221,7 +159,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task should_not_be_included_in_enumerateSchemaNames()
 				{
-					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
+					var manager = CreateStateManager();
 
 					var session1 = manager.CreateSession();
 
@@ -248,7 +186,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			public class Service_with_simple_counter_state : TestBaseFileSystemStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
+			public class Service_with_simple_counter_state : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
@@ -266,7 +204,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 			}
 
-			public class Service_with_multiple_states : TestBaseFileSystemStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
+			public class Service_with_multiple_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -285,7 +223,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			public class Service_with_polymorphic_states : TestBaseFileSystemStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
+			public class Service_with_polymorphic_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -322,7 +260,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			public class Service_with_simple_queue_enqueued : TestBaseFileSystemStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
+			public class Service_with_simple_queue_enqueued : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -375,7 +313,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should().HaveCount(1, $"Expected _myQueue_{i} to be there");
 
 						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
-						var state = GetState<StateWrapper<long>>(key);
+						var state = GetState<ServiceFabric.Services.Runtime.StateSession.StateWrapper<long>>(key);
 						state.State.Should().Be(i + 1);
 					}
 				}

@@ -5,6 +5,7 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
@@ -21,8 +22,29 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 	{
 		namespace and_InMemoryStateSession
 		{
+			public abstract class TestBaseInMemoryStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
+			{
+				protected readonly IDictionary<string, string> _state = new ConcurrentDictionary<string, string>();
 
-			public class Service_with_simple_counter_state : TestBase<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
+				protected override void OnSetup()
+				{
+					State.Clear();
+					base.OnSetup();
+				}				
+
+				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context)
+				{
+					return new InMemoryStateSessionManager(
+						context.ServiceName.ToString(), 
+						context.PartitionId, 
+						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(), 
+						_state);
+				}
+
+				public override IDictionary<string, string> State => _state;
+			}
+
+			public class Service_with_simple_counter_state : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
@@ -39,7 +61,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			public class Service_with_multiple_states : TestBase<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
+			public class Service_with_multiple_states : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -58,7 +80,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			public class Service_with_polymorphic_states : TestBase<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
+			public class Service_with_polymorphic_states : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -94,7 +116,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			public class Service_with_simple_queue_enqueued : TestBase<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
+			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
 
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -200,22 +222,46 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
+				public async Task _check_stored_string()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					await statefulServiceDemo.Enqueue(1);
+					await statefulServiceDemo.Dequeue(1);
+
+					State.Single().Key.Should().Be(@"fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info");
+					State.Single().Value.TrimInternalWhitespace(true).Replace("\r\n", "").Should().Be(@"{
+						  ""state"": {
+							""HeadKey"": 0,
+							""TailKey"": 1
+						  },
+						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
+						  ""partitionKey"": ""range-0"",
+						  ""schema"": ""myQueue"",
+						  ""key"": ""queue-info"",
+						  ""type"": ""ReliableQueueItem"",
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
+						}".TrimInternalWhitespace(true));
+				}
+
+				[Test]
 				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
 				{
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
 							""HeadKey"": 4,
 							""TailKey"": 5
 						  },
-						  ""serviceTypeName"": ""Overlord-StatefulServiceDemo"",
+						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
 						  ""partitionKey"": ""range-0"",
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
-						  ""type"": ""ReliableQueuItem"",
-						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""type"": ""ReliableQueueItem"",
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
 						}");
 
 					// Enqueue 5 items
@@ -240,17 +286,17 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
 							""HeadKey"": %%HEAD%%,
 							""TailKey"": %%TAIL%%
 						  },
-						  ""serviceTypeName"": ""Overlord-StatefulServiceDemo"",
+						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
 						  ""partitionKey"": ""range-0"",
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
-						  ""type"": ""ReliableQueuItem"",
-						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""type"": ""ReliableQueueItem"",
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
 						}".Replace("%%HEAD%%", (long.MaxValue - 1).ToString()).Replace("%%TAIL%%", (long.MaxValue).ToString()));
 
 					// Enqueue 5 items

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FG.Common.Utils
 {
@@ -57,5 +58,14 @@ namespace FG.Common.Utils
 			}
 			return stringBuilder.ToString();
 		}
+
+	    private static readonly Regex TrimInternalWhitespaceRegEx = new Regex(@"(\r\n|\n)\s+", RegexOptions.Compiled);
+
+	    public static string TrimInternalWhitespace(this string that, bool removeLineEndings)
+	    {
+		    return TrimInternalWhitespaceRegEx.Replace(that, removeLineEndings ? "" : "\n");
+	    }
+
+		
 	}
 }
