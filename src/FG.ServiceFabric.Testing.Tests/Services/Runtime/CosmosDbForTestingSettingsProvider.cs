@@ -17,6 +17,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", "");
 		}
 
+		public void AppendCollectionName(string appended)
+		{
+			_settings[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}"] = $"dev-sfp-testing-{appended}";
+		}
+
 		public bool Contains(string key)
 		{
 			return _settings.ContainsKey(key);

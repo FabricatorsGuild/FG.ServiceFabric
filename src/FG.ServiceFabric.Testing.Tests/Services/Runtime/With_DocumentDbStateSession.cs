@@ -5,7 +5,6 @@ using System.Fabric;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
@@ -24,28 +23,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 	{
 		namespace and_DocumentDbStateSessionManagerWithTransaction
 		{
-			public class SettingsProvider : ISettingsProvider
-			{
-				private readonly IDictionary<string, string> _settings = new Dictionary<string, string>();
-
-				public SettingsProvider()
-				{
-					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}", "");
-					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}", "");
-					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}", "");
-					_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", "");
-				}
-
-				public bool Contains(string key)
-				{
-					return _settings.ContainsKey(key);
-				}
-
-				public string this[string key] => _settings[key];
-
-				public string[] Keys => _settings.Keys.ToArray();
-			}
-
 			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
 			{
@@ -56,7 +33,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							"StatefulServiceDemo",
 							Guid.NewGuid(),
 							StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
-							new SettingsProvider()
+							new CosmosDbForTestingSettingsProvider()
 						);
 				}
 
@@ -67,13 +44,15 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			public class StateSession_transacted_scope
 			{
 				private ISettingsProvider _settingsProvider;
-
+				private string _sessionId;
 
 				[SetUp]
 				public void Setup()
 				{
-					_settingsProvider = new SettingsProvider();
-
+					_sessionId = Guid.NewGuid().ToString();
+					var settingsProvider = new CosmosDbForTestingSettingsProvider();
+					settingsProvider.AppendCollectionName(_sessionId);
+					_settingsProvider = settingsProvider;
 				}
 
 				[TearDown]
@@ -88,7 +67,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							"StatefulServiceDemo",
 							Guid.NewGuid(), 
 							"range-0",
-							new SettingsProvider()
+							new CosmosDbForTestingSettingsProvider()
 						);
 				}
 
