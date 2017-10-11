@@ -22,16 +22,33 @@ namespace FG.ServiceFabric.Utils
 
         public class RegistrationBuilder
         {
+			
+
             private readonly SettingsProviderBase _settingsProvider;
             public RegistrationBuilder(SettingsProviderBase settingsProvider) { _settingsProvider = settingsProvider; }
 
-            public RegistrationBuilder FromSettings(string section, string key, string namedKey = null)
+            public RegistrationBuilder FromSettings(string section, string key, KeyNameBuilder keyNameBuilder =null)
             {
-                namedKey = namedKey ?? $"{section}.{key}";
+	            var namedKey = (keyNameBuilder ?? KeyNameBuilder.KeyNameOnly).GetKeyName(section, key);
                 _settingsProvider._values.Add(namedKey, _settingsProvider.GetValueFromSettingsFile(section, key));
                 return this;
             }
-        }
+
+	        public class KeyNameBuilder
+	        {
+		        private readonly Func<string, string, string> _builder;
+
+		        protected KeyNameBuilder(Func<string, string, string> builder) { this._builder = builder; }
+
+		        public static KeyNameBuilder Default => KeyNameOnly;
+		        public static KeyNameBuilder SectionAndKeyName { get; } = new KeyNameBuilder((section, key) => $"{section}.{key}");
+
+				public static KeyNameBuilder KeyNameOnly { get; } = new KeyNameBuilder((section, key) => key);
+
+		        public string GetKeyName(string section, string key) { return _builder?.Invoke(section, key) ?? key; }
+	        }
+		}
+
 
         private string GetValueFromSettingsFile(string section, string key)
         {

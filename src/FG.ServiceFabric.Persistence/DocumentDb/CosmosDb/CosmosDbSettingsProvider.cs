@@ -17,10 +17,10 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 		public CosmosDbSettingsProvider(ServiceContext context) : base(context)
 		{
 			Configure()
-				.FromSettings(ConfigSection, ConfigKeyEndpointUri)
-				.FromSettings(ConfigSection, ConfigKeyPrimaryKey)
-				.FromSettings(ConfigSection, ConfigKeyDatabaseName)
-				.FromSettings(ConfigSection, ConfigKeyCollection);
+				.FromSettings(ConfigSection, ConfigKeyEndpointUri, RegistrationBuilder.KeyNameBuilder.SectionAndKeyName)
+				.FromSettings(ConfigSection, ConfigKeyPrimaryKey, RegistrationBuilder.KeyNameBuilder.SectionAndKeyName)
+				.FromSettings(ConfigSection, ConfigKeyDatabaseName, RegistrationBuilder.KeyNameBuilder.SectionAndKeyName)
+				.FromSettings(ConfigSection, ConfigKeyCollection, RegistrationBuilder.KeyNameBuilder.SectionAndKeyName);
 		}
 	}
 
