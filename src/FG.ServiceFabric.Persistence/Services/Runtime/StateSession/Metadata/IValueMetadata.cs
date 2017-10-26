@@ -6,6 +6,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Metadata
 		string Key { get; set; }
 		string Type { get; set; }
 		StateWrapper<T> BuildStateWrapper<T>(string id, T value, IServiceMetadata serviceMetadata);
+
+		StateWrapper BuildStateWrapper(string id, IServiceMetadata serviceMetadata);
 	}
 
 	public static class ValueMetadataExtensions
@@ -36,6 +38,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Metadata
 		public virtual StateWrapper<T> BuildStateWrapper<T>(string id, T value, IServiceMetadata serviceMetadata)
 		{
 			return new StateWrapper<T>(id, value, serviceMetadata, this);
+		}
+		public StateWrapper BuildStateWrapper(string id, IServiceMetadata serviceMetadata)
+		{
+			return new StateWrapper(id, serviceMetadata, this);
 		}
 	}
 }

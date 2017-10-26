@@ -63,6 +63,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return metadata;
 		}
 
+		protected StateWrapper BuildWrapper(IValueMetadata valueMetadata, string id, string schema, string key)
+		{
+			var serviceMetadata = GetMetadata();
+			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
+			valueMetadata.Key = key;
+			valueMetadata.Schema = schema;
+			var wrapper = valueMetadata.BuildStateWrapper(id, serviceMetadata);
+			return wrapper;
+		}
+
 		protected StateWrapper BuildWrapper(IValueMetadata metadata, string id, string schema, string key, Type valueType, object value)
 		{
 			return (StateWrapper) this.CallGenericMethod(nameof(BuildWrapperGeneric), new Type[] {valueType},
@@ -333,7 +343,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var id = _manager.GetSchemaStateKey(schema, _manager.GetEscapedKey(key));
 				cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-				_transactedChanges[id] = new StateChange(StateChangeType.Remove, null, null );
+				var stateWrapper =_manager.BuildWrapper(_manager.GetOrCreateMetadata(null, StateWrapperType.ReliableDictionaryItem), id, schema, key);
+
+				_transactedChanges[id] = new StateChange(StateChangeType.Remove, stateWrapper, null);
 				return Task.FromResult(true);
 			}
 
