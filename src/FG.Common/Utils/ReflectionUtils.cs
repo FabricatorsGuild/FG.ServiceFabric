@@ -230,8 +230,23 @@ namespace FG.Common.Utils
 
         public static TResult CallPrivateStaticMethod<TResult>(this Type type, string methodName, params object[] args)
         {
-            var methodInfo = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-            if (methodInfo == null) throw new ArgumentException($"Method {methodName} does not exist on {type.Name}");
+	        var methodInfo = type.GetMethod(
+				name: methodName, 
+				bindingAttr: BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+				types: args.Select(a => a.GetType()).ToArray(),
+				binder: null,
+		        modifiers: null);
+
+	        if(methodInfo == null)
+	        {
+				methodInfo = type.GetMethod(
+					name: methodName, 
+					bindingAttr: BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+		        if(methodInfo == null)
+		        {
+			        throw new ArgumentException($"Method {methodName} does not exist on {type.Name}");
+		        }
+	        }
 
             return  (TResult)methodInfo.Invoke(null, args);
         }
