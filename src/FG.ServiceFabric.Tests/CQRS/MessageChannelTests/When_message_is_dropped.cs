@@ -34,7 +34,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
         public async Task SendMessage()
         {
             var message = ReliableMessage.Create(new IndexCommand { PersonId = Guid.NewGuid() });
-            await OutboundChannel.SendMessageAsync<IIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None, FabricRuntime.ApplicationName);
+            await OutboundChannel.SendMessageAsync<IIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None, this.ApplicationName);
             await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
         }
 

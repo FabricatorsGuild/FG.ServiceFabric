@@ -240,7 +240,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Should().HaveCount(0);
 
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -261,7 +261,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Should().HaveCount(0);
 
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -287,7 +287,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Should().HaveCount(0);
 
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -310,7 +310,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Should().HaveCount(0);
 
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -332,7 +332,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
 				{
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 					
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -354,7 +354,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public async Task _check_stored_string()
 				{
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					await statefulServiceDemo.Enqueue(1);
 					await statefulServiceDemo.Dequeue(1);
@@ -378,7 +378,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public async Task _should_be_able_to_store_beyond_int_maxvalue()
 				{
 					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						FabricRuntime.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+						FabricRuntime.GetApplicationUriBuilder("Overlord").Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {

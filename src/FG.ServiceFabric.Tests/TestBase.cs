@@ -1,5 +1,4 @@
-﻿using System;
-using FG.ServiceFabric.Services.Runtime;
+﻿using FG.ServiceFabric.Services.Runtime;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Tests.CQRS;
 using Microsoft.ServiceFabric.Actors.Client;
@@ -10,16 +9,17 @@ namespace FG.ServiceFabric.Tests
 {
     public abstract class TestBase
     {
+	    protected string ApplicationName => @"Overlord";
+
         protected MockFabricRuntime FabricRuntime;
 
         protected IServiceProxyFactory ServiceProxyFactory => FabricRuntime.ServiceProxyFactory;
         protected IActorProxyFactory ActorProxyFactory => FabricRuntime.ActorProxyFactory;
-        protected ApplicationUriBuilder ApplicationUriBuilder => FabricRuntime.ApplicationUriBuilder;
         
         [SetUp]
         public void Setup()
         {
-            FabricRuntime = new MockFabricRuntime(Guid.NewGuid().ToString());
+            FabricRuntime = new MockFabricRuntime();
             // ReSharper disable once VirtualMemberCallInConstructor
             SetupRuntime();
         }

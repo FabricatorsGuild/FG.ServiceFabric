@@ -17,6 +17,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 {
 	public class When_starting_actor
 	{
+		private string ApplicationName => @"Overlord";
 		protected MockFabricRuntime _fabricRuntime;
 		protected MockServiceDefinition _actorDemoServiceDefinition;
 
@@ -25,10 +26,11 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		[SetUp]
 		public void CreateActorsWithActorService()
 		{
-			_fabricRuntime = new MockFabricRuntime("Overlord");
+			_fabricRuntime = new MockFabricRuntime();
 
 			_actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
 			_fabricRuntime.SetupActor<ActorWithReminderDemo, ActorService>(
+				this.ApplicationName,
 				(service, actorId) => new ActorWithReminderDemo(service, actorId),
 				createActorService: (context, information, provider, factory) => new FG.ServiceFabric.Actors.Runtime.ActorService(context, information, stateProvider: provider, stateManagerFactory: factory),
 				createActorStateProvider: (context, actorInfo) => new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),

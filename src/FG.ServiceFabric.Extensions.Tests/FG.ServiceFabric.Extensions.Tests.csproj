@@ -125,6 +125,7 @@
   <ItemGroup>
     <Compile Include="Actors\Runtime\Tests\ActorStateProviderHelperTests.cs" />
     <Compile Include="Actors\Runtime\Tests\ReminderDataBaseTests.cs" />
+    <Compile Include="MockableServiceRegistrationTests.cs" />
     <Compile Include="ReflectionUtils_test.cs" />
     <Compile Include="Services\Communication\Tests\ExceptionHandler_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

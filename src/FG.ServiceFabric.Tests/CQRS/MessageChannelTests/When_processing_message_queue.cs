@@ -35,14 +35,14 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
             await OutboundChannel.SendMessageAsync<IIndexActor>(
                 message, new ActorId("PersonIndex"), 
                 CancellationToken.None,
-                FabricRuntime.ApplicationName);
+                this.ApplicationName);
         }
 
         [Test]
         public async Task Then_receiver_gets_message()
         {
             var proxy = ActorProxyFactory.CreateActorProxy<IIndexActor>(new ActorId("PersonIndex"),
-                FabricRuntime.ApplicationName);
+                this.ApplicationName);
 
             var list = await proxy.ListCommandsAsync();
             list.Should().Contain(_message1.CommandId);
@@ -52,7 +52,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
         public async Task Then_all_messages_are_delivered_in_order()
         {
             var proxy = ActorProxyFactory.CreateActorProxy<IIndexActor>(new ActorId("PersonIndex"),
-                FabricRuntime.ApplicationName);
+                this.ApplicationName);
 
             var list = await proxy.ListCommandsAsync();
             list.ShouldBeEquivalentTo(new [] {_message1.CommandId, _message2.CommandId, _message3.CommandId});

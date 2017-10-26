@@ -22,7 +22,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
             await OutboundChannel.SendMessageAsync<IIndexActor>(
                 _message, new ActorId("PersonIndex"), 
                 CancellationToken.None,
-                FabricRuntime.ApplicationName);
+                this.ApplicationName);
         }
 
         [Test]

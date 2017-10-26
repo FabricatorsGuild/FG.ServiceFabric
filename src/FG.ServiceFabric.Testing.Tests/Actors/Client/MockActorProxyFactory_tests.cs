@@ -21,14 +21,17 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
     // ReSharper disable once InconsistentNaming
     public class MockActorProxyFactory_tests
     {
-        [Test]
+	    private string ApplicationName => @"Overlord";
+
+		[Test]
         public async Task MockActorProxy_should_SaveState_after_Actor_method()
         {
 
-            var fabricRuntime = new MockFabricRuntime("Overlord");
+            var fabricRuntime = new MockFabricRuntime();
             var stateActions = new List<string>();
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
+				this.ApplicationName,
 				(service, actorId) => new ActorDemo(service, actorId), 
 				createActorStateProvider: (context, actorInfo) => mockActorStateProvider, 
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
@@ -51,9 +54,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
         [Test]
         public async Task MockActorProxy_should_should_be_able_to_create_proxy_for_Actor_with_specific_ActorService()
         {
-            var fabricRuntime = new MockFabricRuntime("Overlord");
+            var fabricRuntime = new MockFabricRuntime();
             
             fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+				this.ApplicationName,
                 (service, actorId) => new ActorDemo(service, actorId),
                 (context, actorTypeInformation, stateProvider, stateManagerFactory) => new ActorDemoActorService(context, actorTypeInformation,
                 stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
@@ -73,8 +77,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
         [Test]
         public async Task MockActorProxy_should_should_be_able_to_create_proxy_for_specific_ActorService()
         {
-            var fabricRuntime = new MockFabricRuntime("Overlord");
+            var fabricRuntime = new MockFabricRuntime();
             fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+				this.ApplicationName,
                 (service, actorId) => new ActorDemo(service, actorId),
                 (context, actorTypeInformation, stateProvider, stateManagerFactory) => new ActorDemoActorService(context, actorTypeInformation),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
@@ -83,7 +88,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
             await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
             {
                 proxy = fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
-                  fabricRuntime.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
+                  fabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
                 return Task.FromResult(true);
             }, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
@@ -94,10 +99,11 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
         public async Task MockActorProxy_should_should_persist_state_across_multiple_proxies()
         {
 
-            var fabricRuntime = new MockFabricRuntime("Overlord");
+            var fabricRuntime = new MockFabricRuntime();
             var stateActions = new List<string>();
             var mockActorStateProvider = new MockActorStateProvider(fabricRuntime, stateActions);
             fabricRuntime.SetupActor(
+				this.ApplicationName,
                 (service, actorId) => new ActorDemo(service, actorId),                
                 createActorStateProvider: (context, actorInfo) => mockActorStateProvider,
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue)
@@ -126,9 +132,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		public async Task MockActorProxy_should_activate_actor_with_custom_constructor()
 #pragma warning restore 1998
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
 
 			fabricRuntime.SetupActor<TestActor, TestActorService>(
+				this.ApplicationName,
 				(service, actorId) => new TestActor(service, actorId, "Heimlich"),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context, actorTypeInformation,
 				stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(1));

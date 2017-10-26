@@ -28,6 +28,4 @@ namespace FG.Common.Utils.Tests
 			instance.Should().BeOfType<ReflectionUtils.InternallyActivatedClass>();
 		}
 	}
-
-	
 }

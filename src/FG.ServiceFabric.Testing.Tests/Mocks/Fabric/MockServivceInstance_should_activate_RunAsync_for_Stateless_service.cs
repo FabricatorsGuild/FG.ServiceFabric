@@ -20,6 +20,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 {
 	public class MockFabricRuntime_service_instance_activation
 	{
+		protected string ApplicationName => @"Overlord";
+
 		public interface IRunningService : IService
 		{
 			Task<int> GetCount();
@@ -126,9 +128,10 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Actor_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
 
 			fabricRuntime.SetupActor<TestActor, TestActorService>(
+				this.ApplicationName,
 				(service, actorId) => new TestActor(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context, actorTypeInformation,
 				stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
@@ -158,9 +161,10 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateless_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
 
 			fabricRuntime.SetupService(
+				this.ApplicationName,
 				(context) => new TestStatelessService(context),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
@@ -189,9 +193,10 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateful_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
 
 			fabricRuntime.SetupService(
+				this.ApplicationName,
 				(context, stateManager) => new TestStatefulService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 

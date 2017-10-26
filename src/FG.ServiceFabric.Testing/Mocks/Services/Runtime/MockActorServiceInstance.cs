@@ -4,7 +4,9 @@ using System.Fabric;
 using System.Linq;
 using System.Reflection;
 using FG.Common.Utils;
+using FG.ServiceFabric.Services.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
@@ -34,7 +36,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory)
 		{
 			return (ActorService)new MockActorService(
-				codePackageActivationContext: FabricRuntime.CodePackageContext,
+				codePackageActivationContext: serviceContext.CodePackageActivationContext,
 				serviceProxyFactory: FabricRuntime.ServiceProxyFactory,
 				actorProxyFactory: FabricRuntime.ActorProxyFactory,
 				nodeContext: FabricRuntime.BuildNodeContext(),
@@ -118,7 +120,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 
 			var actorTypeInformation = ActorTypeInformation.Get(ActorRegistration.ImplementationType);
-			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ActorRegistration.ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
+			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ActorRegistration.ServiceRegistration.GetApplicationName(), ActorRegistration.ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
 			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
 			                      ((context, actorInfo) => (IActorStateProvider) new MockActorStateProvider(FabricRuntime))).Invoke(statefulServiceContext, actorTypeInformation);
 
@@ -132,9 +134,10 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			var actorService = actorServiceFactory(statefulServiceContext, actorTypeInformation, ActorStateProvider, stateManagerFactory);
 			if (actorService is FG.ServiceFabric.Actors.Runtime.ActorService)
 			{
+				var applicationUriBuilder = new ApplicationUriBuilder(statefulServiceContext.CodePackageActivationContext, statefulServiceContext.CodePackageActivationContext.ApplicationName);
 				actorService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
 				actorService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
-				actorService.SetPrivateField("_applicationUriBuilder", FabricRuntime.ApplicationUriBuilder);
+				actorService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
 			}
 	
 			ServiceInstance = actorService;

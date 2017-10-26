@@ -30,7 +30,7 @@ namespace FG.ServiceFabric.Tests.Persistance
         protected override void SetupRuntime()
         {
             _inMemoryStateSession = new InMemoryStateSession();
-           ForTestDbStoredActor.Setup(FabricRuntime, _inMemoryStateSession);
+           ForTestDbStoredActor.Setup(FabricRuntime, _inMemoryStateSession, this.ApplicationName);
         }
 
         [Test]

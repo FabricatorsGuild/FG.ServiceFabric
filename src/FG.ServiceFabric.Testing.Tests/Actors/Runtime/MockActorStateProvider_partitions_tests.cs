@@ -20,6 +20,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 	// ReSharper disable InconsistentNaming
 	public class MockActorStateProvider_partitions_tests
 	{
+		private string ApplicationName => @"Overlord";
 		private MockFabricRuntime _fabricRuntime;
 		private MockServiceDefinition _actorDemoServiceDefinition;
 
@@ -28,10 +29,11 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		public async Task CreateActorsWithActorService()
 #pragma warning restore 1998
 		{
-			_fabricRuntime = new MockFabricRuntime("Overlord");
+			_fabricRuntime = new MockFabricRuntime();
 
 			 _actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
 			_fabricRuntime.SetupActor(
+				this.ApplicationName,
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),
@@ -88,7 +90,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		[Test]
 		public async Task Should_be_able_to_remove_actor_from_ActorService()
 		{
-			var serviceUri = _fabricRuntime.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+			var serviceUri = _fabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();
 
 			var nameCount = 100;
 			foreach (var name in new []{"first", "second", "third"})

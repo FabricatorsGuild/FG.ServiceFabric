@@ -6,9 +6,11 @@ namespace FG.ServiceFabric.Tests
 {
     public class ForTestIndexActor
     {
-        public static void Setup(MockFabricRuntime mockFabricRuntime)
+        public static void Setup(MockFabricRuntime mockFabricRuntime, string applicationName)
         {
-            mockFabricRuntime.SetupActor<IndexActor>((service, id) =>
+            mockFabricRuntime.SetupActor<IndexActor>(
+	            applicationName,
+				(service, id) =>
                     new IndexActor(
                         actorService: service,
                         actorId: id),

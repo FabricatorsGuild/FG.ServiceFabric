@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using FG.Common.Utils;
 using FG.ServiceFabric.Actors.State;
+using FG.ServiceFabric.Services.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
@@ -101,7 +102,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory)
 		{
 			return (ActorService) new MockActorService(
-				codePackageActivationContext: _fabricRuntime.CodePackageContext,
+				codePackageActivationContext: serviceContext.CodePackageActivationContext,
 				serviceProxyFactory: _fabricRuntime.ServiceProxyFactory,
 				actorProxyFactory: _fabricRuntime.ActorProxyFactory,
 				nodeContext: _fabricRuntime.BuildNodeContext(),
@@ -162,9 +163,12 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 				var mockableTarget = (FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);
 				if (mockableTarget != null)
 				{
+					var applicationName = actorService.Context.CodePackageActivationContext.ApplicationName;
+					var applicationUriBuilder = new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName), applicationName);
+
 					mockableTarget.SetPrivateField("_serviceProxyFactory", _fabricRuntime.ServiceProxyFactory);
 					mockableTarget.SetPrivateField("_actorProxyFactory", _fabricRuntime.ActorProxyFactory);
-					mockableTarget.SetPrivateField("_applicationUriBuilder", _fabricRuntime.ApplicationUriBuilder);
+					mockableTarget.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
 				}
 
 				if (firstActivation)
