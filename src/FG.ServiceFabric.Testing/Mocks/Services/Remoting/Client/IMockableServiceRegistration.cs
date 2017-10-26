@@ -1,5 +1,6 @@
 using System;
 using System.Fabric;
+using FG.Common.Utils;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Remoting;
@@ -21,9 +22,23 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 		string Name { get; set; }
 	}
 
+	public static class MockableServiceRegistrationExtensions
+	{
+		public static string GetApplicationName(this IMockableServiceRegistration serviceRegistration)
+		{
+			var uri = serviceRegistration.ServiceUri.AbsoluteUri;
+			if (uri.Matches(@"fabric:/[^/]*/.*", StringComparison.InvariantCulture, useWildcards: false))
+			{
+				var applicationName = uri.Split('/')[1];
+				return applicationName;
+			}
+			return uri.RemoveFromEnd(serviceRegistration.Name).RemoveFromEnd("/").RemoveFromStart("fabric:/");
+		}
+	}
+
 	public delegate IReliableStateManagerReplica2 CreateStateManager();
 
-	public delegate StatefulService CreateStatefulService(
+	public delegate StatefulServiceBase CreateStatefulService(
 		StatefulServiceContext context,
 		IReliableStateManagerReplica2 stateManager);
 

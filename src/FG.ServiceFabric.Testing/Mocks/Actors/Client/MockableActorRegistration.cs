@@ -44,12 +44,14 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			Type interfaceType, 
             Type implementationType, 
             Func<ActorService, ActorId, object> activator,
+			CreateActorService createActorService = null,
             CreateActorStateManager createActorStateManager = null,
             CreateActorStateProvider createActorStateProvider = null)
         {
             InterfaceType = interfaceType;
             ImplementationType = implementationType;
             Activator = activator;
+	        CreateActorService = createActorService;
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
 	        ServiceRegistration = serviceRegistration;

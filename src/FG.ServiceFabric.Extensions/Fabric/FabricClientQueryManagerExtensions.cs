@@ -1,4 +1,5 @@
 using System.Fabric;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
 
 namespace FG.ServiceFabric.Fabric
 {

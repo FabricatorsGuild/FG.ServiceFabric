@@ -28,8 +28,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			for (int i = 0; i < instances; i++)
 			{
 				var instance = ReflectionUtils.ActivateInternalCtor<StatelessServiceInstance>();
-				instance.SetPrivateProperty(() => instance.ServiceKind, ServiceKind.Stateless);
-				instance.SetPrivateProperty(() => instance.HealthState, HealthState.Ok);
 				instance.SetPrivateProperty(() => instance.Id, instance.GetHashCode());
 
 				mockServiceDefinition._instances.Add(instance);
@@ -154,6 +152,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 
 			throw new NotSupportedException($"PartitionKind {this.PartitionKind} is not supported");
+		}
+
+		public override string ToString()
+		{
+			return $"ServiceDefinition {this.PartitionKind}, partitions {this._partitions?.Count ?? 0}, instances {this._instances?.Count ?? 0}";
 		}
 	}
 }
