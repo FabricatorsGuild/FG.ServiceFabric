@@ -45,14 +45,8 @@ namespace FG.ServiceFabric.Services.Runtime
         /// <returns></returns>
         public Uri ToUri()
         {
-            string applicationInstance = this.ApplicationInstance;
-
-            if (String.IsNullOrEmpty(applicationInstance))
-            {
-                // the ApplicationName property here automatically prepends "fabric:/" for us
-                applicationInstance = this.ActivationContext.ApplicationName.Replace("fabric:/", String.Empty);
-            }
-
+            var applicationInstance = this.ApplicationInstance ?? this.ActivationContext.ApplicationName;
+	        applicationInstance = this.ActivationContext.ApplicationName.Replace("fabric:/", String.Empty);
             return new Uri("fabric:/" + applicationInstance + "/" + this.ServiceInstance);
         }
 

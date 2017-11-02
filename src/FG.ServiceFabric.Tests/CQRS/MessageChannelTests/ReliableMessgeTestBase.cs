@@ -17,7 +17,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 
         protected override void SetupRuntime()
         {
-            ForTestIndexActor.Setup(FabricRuntime, this.ApplicationName);
+            ForTestIndexActor.Setup(_fabricApplication);
             base.SetupRuntime();
         }
 

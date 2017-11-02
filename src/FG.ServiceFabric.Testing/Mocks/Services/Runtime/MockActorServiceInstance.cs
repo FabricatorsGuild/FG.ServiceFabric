@@ -166,6 +166,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			return serviceUri.ToString().Equals(this.ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase) &&
 			       ActorRegistration.ServiceRegistration.InterfaceTypes.Any(i => i == serviceInterfaceType) &&
 			       Partition.PartitionInformation.Id == partitionId;
-		}		
+		}
+
+		public override string ToString() { return $"{nameof(MockActorServiceInstance)}: {ServiceUri}"; }
 	}
 }

@@ -72,19 +72,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			{
 				serviceType = typeof(Microsoft.ServiceFabric.Services.Runtime.StatelessService);
 			}
-			runAsyncMethod = serviceType.GetMethod("RunAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-
+			runAsyncMethod = serviceType.GetMethod("RunAsync", BindingFlags.Instance | BindingFlags.NonPublic);			
 
 			Task.Run(() =>
 				{
 					RunAsyncStarted = DateTime.Now;
-					Console.WriteLine($"Started RunAsync for {this.ServiceInstance.GetHashCode()}");
+					if(!this.FabricRuntime.DisableMethodCallOutput) { Console.WriteLine($"Started RunAsync for {this.ServiceUri} {this.Partition.PartitionInformation.Id}/{this.Replica.Id} - {this.ServiceInstance.GetHashCode()}"); }
 					var runAsyncTask = runAsyncMethod.Invoke(this.ServiceInstance, new object[] {CancellationTokenSource.Token}) as Task;
 
 					runAsyncTask?.ContinueWith(t =>
 					{
 						RunAsyncEnded = DateTime.Now;
-						Console.WriteLine($"Finished RunAsync for {this.ServiceInstance.GetHashCode()}");
+						if(!this.FabricRuntime.DisableMethodCallOutput) { Console.WriteLine($"Finished RunAsync for {this.ServiceInstance.GetHashCode()} in {(RunAsyncEnded.Value-RunAsyncStarted.Value).TotalMilliseconds} ms"); }
 					});
 				}).FireAndForget();		
 		}
@@ -169,5 +168,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			return instances;
 		}
 
+		public override string ToString() { return $"{nameof(MockServiceInstance)}: {ServiceUri}"; }
 	}
 }

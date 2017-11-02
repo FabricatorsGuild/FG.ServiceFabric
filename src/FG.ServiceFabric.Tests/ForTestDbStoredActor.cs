@@ -6,10 +6,9 @@ namespace FG.ServiceFabric.Tests
 {
     public class ForTestDbStoredActor
     {
-        public static void Setup(MockFabricRuntime mockFabricRuntime, InMemoryStateSession inMemoryStateSession, string applicationName)
+        public static void Setup(MockFabricApplication mockFabricApplication, InMemoryStateSession inMemoryStateSession)
         {
-            mockFabricRuntime.SetupActor(
-	            applicationName,
+            mockFabricApplication.SetupActor(
 				(service, id) =>
                     new DbStoredActor.DbStoredActor(
                         actorService: service,

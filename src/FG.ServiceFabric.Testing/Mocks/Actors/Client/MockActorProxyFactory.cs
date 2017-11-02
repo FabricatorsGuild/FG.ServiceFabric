@@ -19,6 +19,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
@@ -166,8 +167,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 					var applicationName = actorService.Context.CodePackageActivationContext.ApplicationName;
 					var applicationUriBuilder = new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName), applicationName);
 
-					mockableTarget.SetPrivateField("_serviceProxyFactory", _fabricRuntime.ServiceProxyFactory);
-					mockableTarget.SetPrivateField("_actorProxyFactory", _fabricRuntime.ActorProxyFactory);
+					mockableTarget.SetPrivateField("_serviceProxyFactoryFactory", (Func<IServiceProxyFactory>)(() => _fabricRuntime.ServiceProxyFactory));
+					mockableTarget.SetPrivateField("_actorProxyFactoryFactory", (Func<IActorProxyFactory>)(() => _fabricRuntime.ActorProxyFactory));
 					mockableTarget.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
 				}
 

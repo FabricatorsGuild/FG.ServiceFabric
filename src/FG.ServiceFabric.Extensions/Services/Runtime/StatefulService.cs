@@ -35,6 +35,8 @@ namespace FG.ServiceFabric.Services.Runtime
 		    _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
 	    }
 
+		[Obsolete("Dont use this, use IStateSessionManager API instead", true)]
+	    public new IReliableStateManager StateManager => base.StateManager;
 
         public ApplicationUriBuilder ApplicationUriBuilder => _applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
 

@@ -144,7 +144,6 @@
     <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
     <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
     <Compile Include="Actors\Runtime\ExternalState.cs" />
-    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSessionWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemoryStateSessionManagerWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />

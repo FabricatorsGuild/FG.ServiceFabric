@@ -30,8 +30,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			public abstract class TestBase<T>
 				where T: ActorBase, IActorDemo
 			{
-				protected string ApplicationName => @"Overlord";
+				private string ApplicationName => @"Overlord";
 				protected MockFabricRuntime FabricRuntime;
+				protected MockFabricApplication _fabricApplication;
 
 				protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
 
@@ -44,8 +45,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				{
 					State.Clear();
 					FabricRuntime = new MockFabricRuntime() { DisableMethodCallOutput = true };
-					FabricRuntime.SetupActor(
-						this.ApplicationName,
+					_fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
+
+					_fabricApplication.SetupActor(
 						activator: CreateActor,
 						createActorService: (context, information, provider, factory) => new ActorDemoActorService(context, information, stateProvider: provider),
 						createActorStateProvider: (context, actorInfo) => new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
@@ -244,7 +246,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					await base.SetupActor();
 
-					var serviceName = FabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();
+					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 					var partitions = new List<Guid>();
 					_partitionKeys = new List<long>();
@@ -293,7 +295,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				[Test]
 				public async Task _should_enumerate_all_actors()
 				{
-					var serviceName = FabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();					
+					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();					
 
 					var actors = new List<string>();
 					foreach (var partitionKey in _partitionKeys)
@@ -311,7 +313,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				[Test]
 				public async Task _should_enumerate_all_state_for_all_actors()
 				{
-					var serviceName = FabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();
+					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 					var actors = new List<string>();
 					foreach (var partitionKey in _partitionKeys)
@@ -363,7 +365,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					await base.SetupActor();
 
-					var serviceName = FabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();
+					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 					var partitions = new List<Guid>();
 					_partitionKeys = new List<long>();

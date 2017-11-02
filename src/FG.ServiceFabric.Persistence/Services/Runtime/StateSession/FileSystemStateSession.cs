@@ -60,20 +60,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			return stringBuilder.ToString();
 		}
-		
-		protected override string GetEscapedKey(string key)
+
+		protected override string GetEscapedKeyInternal(string key)
 		{
 			return EscapeFileName(key);
-		}
+		}		
 
-		protected override string GetUnescapedKey(string key)
+		protected override string GetUnescapedKeyInternal(string key)
 		{
 			return UnescapeFileName(key);
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
 		{
-			return new FileSystemStateSession(this);
+			return new FileSystemStateSession(this, stateSessionObjects);
 		}
 
 
@@ -85,7 +85,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			private readonly FileSystemStateSessionManager _manager;
 
 			public FileSystemStateSession(
-				FileSystemStateSessionManager manager) : base(manager)
+				FileSystemStateSessionManager manager, 
+				IStateSessionObject[] stateSessionObjects) 
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 
@@ -151,8 +153,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					}
 				}
 				return new FindByKeyPrefixResult() {ContinuationToken = null, Items = results};
-			}			
+			}
 
+			protected override Task<long> GetCountInternalAsync(string schema, CancellationToken cancellationToken)
+			{
+				var files = System.IO.Directory.GetFiles(CommonPath, $"{schema}*").OrderBy(f => f);
+				return Task.FromResult(files.LongCount());
+			}			
 		}
 	}
 }

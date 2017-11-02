@@ -15,6 +15,68 @@ using Microsoft.ServiceFabric.Data.Collections;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
+	public class ReliableStateSessionQueue<T> : IStateSessionQueue<T>
+	{
+		private readonly IReliableConcurrentQueue<T> _reliableConcurrentQueue;
+		public ReliableStateSessionQueue(IReliableConcurrentQueue<T> reliableConcurrentQueue) { _reliableConcurrentQueue = reliableConcurrentQueue; }
+		public Task EnqueueAsync(T value, CancellationToken cancellationToken = default(CancellationToken)) { throw new NotImplementedException(); }
+		public Task EnqueueAsync(T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();			
+		}
+		public Task<ConditionalValue<T>> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken)) { throw new NotImplementedException(); }
+		public Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken)) { throw new NotImplementedException(); }
+		public Task<IAsyncEnumerable<T>> CreateEnumerableAsync() { throw new NotImplementedException(); }
+		public Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken)) { throw new NotImplementedException(); }
+	}
+
+	public class ReliableStateSessionDictionary<T> : IStateSessionDictionary<T>
+	{
+		private readonly IReliableDictionary2<string, T> _reliableDictionary;
+
+		public ReliableStateSessionDictionary(IReliableDictionary2<string, T> reliableDictionary)
+		{
+			_reliableDictionary = reliableDictionary;
+		}
+
+		public Task<bool> Contains(string key, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string keyPrefix, int maxNumResults = 100000, ContinuationToken continuationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<ConditionalValue<T>> TryGetValueAsync(string key, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<T> GetValueAsync(string key, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task SetValueAsync(string key, T value, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task SetValueAsync(string key, T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task RemoveAsync(string key, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+		public Task<IAsyncEnumerable<KeyValuePair<string, T>>> CreateEnumerableAsync() { throw new NotImplementedException(); }
+		public Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken)) { throw new NotImplementedException(); }
+	}
 
 	public class ReliableStateSessionManager : IStateSessionManager
 	{
@@ -52,29 +114,35 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		{
 			return urn.AbsolutePath;
 		}
-		public async Task OpenDictionary<T>(string schema, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
+			IReliableDictionary2<string, T> reliableDictionary2 = null;
 			await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
 			{
-				var reliableDictionary2 = await _stateManager.GetOrAddAsync<IReliableDictionary2<string, T>>(schema);
+				reliableDictionary2 = await _stateManager.GetOrAddAsync<IReliableDictionary2<string, T>>(schema);
 				_reliableDictionaries[schema] = reliableDictionary2;
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
+
+			return new ReliableStateSessionDictionary<T>(reliableDictionary2);
 		}
 
-		public async Task OpenQueue<T>(string schema, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IStateSessionQueue<T>> OpenQueue<T>(string schema, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
+			IReliableConcurrentQueue<T> reliableConcurrentQueue = null;
 			await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
 			{
-				var reliableConcurrentQueue = await _stateManager.GetOrAddAsync<IReliableConcurrentQueue<T>>(schema);
+				reliableConcurrentQueue = await _stateManager.GetOrAddAsync<IReliableConcurrentQueue<T>>(schema);
 				_reliableQueues[schema] = reliableConcurrentQueue;
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
+
+			return  new ReliableStateSessionQueue<T>(reliableConcurrentQueue);
 		}
 
-		public IStateSession CreateSession()
+		public IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects)
 		{
 			return new ReliableStateSession(this);
 		}		
@@ -458,6 +526,28 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
+			public async Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken)
+			{
+				try
+				{
+					cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
+					var dictionary = GetDictionary<T>(schema);
+
+					long value = 0;
+					await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
+					                                              {
+						                                              value = await dictionary.GetCountAsync(GetTransaction());
+					                                              }, 3, TimeSpan.FromSeconds(1), cancellationToken);
+					_needsCommit = true;
+
+					return value;
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"PeekAsync failed", ex);
+				}
+			}
+
 			public async Task EnqueueAsync<T>(string schema, T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken))
 			{
 				try
@@ -511,6 +601,28 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					{
 						value = await queue.TryPeekAsync(GetTransaction(), TimeSpan.FromSeconds(3), cancellationToken);
 					}, 3, TimeSpan.FromSeconds(1), cancellationToken);
+					_needsCommit = true;
+
+					return value;
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"PeekAsync failed", ex);
+				}
+			}
+
+			public async Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken)
+			{
+				try
+				{
+					cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
+					var queue = GetQueue<T>(schema);
+
+					long value = 0;
+					await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
+					                                              {
+						                                              value = await queue.GetCountAsync(GetTransaction());
+					                                              }, 3, TimeSpan.FromSeconds(1), cancellationToken);
 					_needsCommit = true;
 
 					return value;

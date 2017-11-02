@@ -6,10 +6,9 @@ namespace FG.ServiceFabric.Tests
 {
     public class ForTestEventStoredActor
     {
-        public static void Setup(MockFabricRuntime mockFabricRuntime, string applicationName)
+        public static void Setup(MockFabricApplication mockFabricApplication)
         {
-            mockFabricRuntime.SetupActor(
-	            applicationName,
+            mockFabricApplication.SetupActor(
 				(service, id) =>
                     new EventStoredActor.EventStoredActor(
                         actorService: service,

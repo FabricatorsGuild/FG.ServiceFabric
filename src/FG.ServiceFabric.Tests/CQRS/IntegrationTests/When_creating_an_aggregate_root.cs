@@ -12,11 +12,10 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
 {
     public class When_creating_an_aggregate_root : TestBase
     {
-	    protected string ApplicationName => @"Overlord";
         protected override void SetupRuntime()
         {
-            ForTestEventStoredActor.Setup(FabricRuntime, this.ApplicationName);
-            ForTestIndexActor.Setup(FabricRuntime, this.ApplicationName);
+            ForTestEventStoredActor.Setup(_fabricApplication);
+            ForTestIndexActor.Setup(_fabricApplication);
             base.SetupRuntime();
         }
 
@@ -32,7 +31,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         public async Task Then_event_is_applied()
         {
             var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
-                serviceUri: FabricRuntime.GetApplicationUriBuilder("Overlord").Build("EventStoredActorService").ToUri(),
+                serviceUri: _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
                 actorId: new ActorId(_aggregateRootId));
 
             var result = await serviceProxy.GetAsync(_aggregateRootId);
@@ -45,7 +44,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         public async Task Then_event_is_stored()
         {
             var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
-                serviceUri: FabricRuntime.GetApplicationUriBuilder("Overlord").Build("EventStoredActorService").ToUri(),
+                serviceUri: _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
                 actorId: new ActorId(_aggregateRootId));
 
             var events = await serviceProxy.GetAllEventHistoryAsync(_aggregateRootId);

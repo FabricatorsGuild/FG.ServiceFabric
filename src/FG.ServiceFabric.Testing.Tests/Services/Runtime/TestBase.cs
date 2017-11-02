@@ -16,8 +16,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 	public abstract class TestBase<T>
 		where T : StatefulServiceDemoBase
 	{
-		protected string ApplicationName => @"Overlord";
+		private string ApplicationName => @"Overlord";
 		protected MockFabricRuntime FabricRuntime;
+		protected MockFabricApplication _fabricApplication;
 
 		private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
@@ -34,8 +35,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			OnSetup();
 
 			FabricRuntime = new MockFabricRuntime() {DisableMethodCallOutput = true};
-			FabricRuntime.SetupService(
-				this.ApplicationName,
+			_fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
+
+			_fabricApplication.SetupService(
 				(context, stateManager) => CreateAndMonitorService(context, CreateStateManager(FabricRuntime, context)),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
 

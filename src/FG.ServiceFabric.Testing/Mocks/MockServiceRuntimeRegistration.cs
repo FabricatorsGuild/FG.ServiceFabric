@@ -13,13 +13,13 @@ using Microsoft.ServiceFabric.Services.Runtime;
 namespace FG.ServiceFabric.Testing.Mocks {
 	public class MockServiceRuntimeRegistration : IServiceRuntimeRegistration
 	{
-		private readonly string _applicationName;
+		private readonly MockFabricApplication _application;
 		private readonly Assembly _serviceAssembly;
 		private readonly IDictionary<string, MockServiceDefinition> _serviceDefinitions;
 
-		public MockServiceRuntimeRegistration(string applicationName, Assembly serviceAssembly, IDictionary<string, MockServiceDefinition> serviceDefinitions)
+		public MockServiceRuntimeRegistration(MockFabricApplication application, Assembly serviceAssembly, IDictionary<string, MockServiceDefinition> serviceDefinitions)
 		{
-			_applicationName = applicationName;
+			_application = application;
 			_serviceAssembly = serviceAssembly;
 			_serviceDefinitions = serviceDefinitions;
 		}
@@ -46,7 +46,7 @@ namespace FG.ServiceFabric.Testing.Mocks {
 			System.Diagnostics.Debug.Assert(serviceType == type);
 
 			var serviceDefinitions = _serviceDefinitions[serviceTypeName];
-			MockFabricRuntime.Current.SetupService(_applicationName, serviceFactory, serviceDefinitions);
+			_application.SetupService(serviceFactory, serviceDefinitions);
 
 			return Task.FromResult(true);
 		}
@@ -71,8 +71,7 @@ namespace FG.ServiceFabric.Testing.Mocks {
 			System.Diagnostics.Debug.Assert(serviceType == type);
 
 			var serviceDefinitions = _serviceDefinitions[serviceTypeName];
-			MockFabricRuntime.Current.SetupService(
-				applicationName: _applicationName,
+			_application.SetupService(
 				createService: (context, replica2) => serviceFactory(context), 
 				createStateManager: null,
 				serviceDefinition: serviceDefinitions);

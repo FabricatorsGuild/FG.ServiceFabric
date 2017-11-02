@@ -91,12 +91,13 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 			protected override async Task RunAsync(CancellationToken cancellationToken)
 			{
-				await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
-				await _stateSessionManager.OpenDictionary<string>("myDictionary2", cancellationToken);
+				var myDictionary = await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
+				var dictionary2 = await _stateSessionManager.OpenDictionary<string>("myDictionary2", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.CreateSession(myDictionary, dictionary2))
 				{
-					await session.SetValueAsync("myDictionary2", "theValue", "is hello", null, cancellationToken);
+					await dictionary2.SetValueAsync("theValue", "is hello", null, cancellationToken);
+					//await session.SetValueAsync("myDictionary2", "theValue", "is hello", null, cancellationToken);
 				}
 
 				var i = 0;

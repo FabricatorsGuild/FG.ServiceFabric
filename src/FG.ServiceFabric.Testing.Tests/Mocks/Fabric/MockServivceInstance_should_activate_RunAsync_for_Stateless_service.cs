@@ -129,9 +129,9 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Actor_service()
 		{
 			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupActor<TestActor, TestActorService>(
-				this.ApplicationName,
+			fabricApplication.SetupActor<TestActor, TestActorService>(
 				(service, actorId) => new TestActor(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context, actorTypeInformation,
 				stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
@@ -162,9 +162,9 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateless_service()
 		{
 			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupService(
-				this.ApplicationName,
+			fabricApplication.SetupService(
 				(context) => new TestStatelessService(context),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
@@ -194,9 +194,9 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateful_service()
 		{
 			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupService(
-				this.ApplicationName,
+			fabricApplication.SetupService(
 				(context, stateManager) => new TestStatefulService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 

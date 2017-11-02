@@ -55,23 +55,29 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 
 		void IMockServiceProxyManager.BeforeMethod(IService service, MethodInfo method)
 	    {
-			Console.WriteLine();
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Green;
-			var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
-		}
+		    if(!_fabricRuntime.DisableMethodCallOutput)
+		    {
+			    Console.WriteLine();
+			    var color = Console.ForegroundColor;
+			    Console.ForegroundColor = ConsoleColor.Green;
+			    var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
+			    Console.WriteLine($"{message.PadRight(80, '=')}");
+			    Console.ForegroundColor = color;
+		    }
+	    }
 
 	    void IMockServiceProxyManager.AfterMethod(IService service, MethodInfo method)
 	    {
-			var color = Console.ForegroundColor;
-			Console.ForegroundColor = ConsoleColor.Red;
-			var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
-			Console.WriteLine($"{message.PadRight(80, '=')}");
-			Console.ForegroundColor = color;
-			Console.WriteLine();			
-		}
+		    if(!_fabricRuntime.DisableMethodCallOutput)
+		    {
+			    var color = Console.ForegroundColor;
+			    Console.ForegroundColor = ConsoleColor.Red;
+			    var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
+			    Console.WriteLine($"{message.PadRight(80, '=')}");
+			    Console.ForegroundColor = color;
+			    Console.WriteLine();
+		    }
+	    }
     }
 
     

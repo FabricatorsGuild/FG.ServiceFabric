@@ -9,8 +9,8 @@ namespace FG.ServiceFabric.Tests
 {
     public abstract class TestBase
     {
-	    protected string ApplicationName => @"Overlord";
-
+	    private string ApplicationName => @"Overlord";
+	    protected MockFabricApplication _fabricApplication;
         protected MockFabricRuntime FabricRuntime;
 
         protected IServiceProxyFactory ServiceProxyFactory => FabricRuntime.ServiceProxyFactory;
@@ -20,6 +20,7 @@ namespace FG.ServiceFabric.Tests
         public void Setup()
         {
             FabricRuntime = new MockFabricRuntime();
+	        _fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
             // ReSharper disable once VirtualMemberCallInConstructor
             SetupRuntime();
         }

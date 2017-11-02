@@ -38,42 +38,6 @@ namespace FG.Common.Utils {
 			return RemoveNonWordStringRegex.Replace(that, "");
 		}
 
-		public static string ToMD5(this byte[] that)
-		{
-			var hash = System.Security.Cryptography.MD5.Create();
-
-			var output = hash.ComputeHash(that);
-
-			var result = Encoding.UTF8.GetString(output);
-			return result;
-		}
-
-		public static string ToMD5(this string that)
-		{
-			var hash = System.Security.Cryptography.MD5.Create();
-
-			var input = Encoding.UTF8.GetBytes(that);
-			var output = hash.ComputeHash(input);
-
-			var result = Encoding.UTF8.GetString(output);
-			return result;
-		}
-
-		public static string ToBase64(this string that)
-		{
-			var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(that);
-			return System.Convert.ToBase64String(plainTextBytes);
-		}
-		public static string ToHex(this string that, bool upperCase = false)
-		{
-			var bytes = System.Text.Encoding.UTF8.GetBytes(that);
-			var result = new StringBuilder(bytes.Length * 2);
-
-			foreach (var t in bytes)
-				result.Append(t.ToString(upperCase ? "X2" : "x2"));
-
-			return result.ToString();
-		}
 
 		public static string RemoveFromEnd(this string that, string remove)
 		{

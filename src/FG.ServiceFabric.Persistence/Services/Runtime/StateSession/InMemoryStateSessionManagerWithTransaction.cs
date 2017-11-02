@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors.Query;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
@@ -23,17 +24,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
 		{
-			return new InMemoryStateSession(this);
+			return new InMemoryStateSession(this, stateSessionObjects);
 		}
 
-		public sealed class InMemoryStateSession : TextStateSession, IStateSession
+		private sealed class InMemoryStateSession : TextStateSession, IStateSession
 		{
 			private readonly InMemoryStateSessionManagerWithTransaction _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManagerWithTransaction manager) : base(manager)
+				InMemoryStateSessionManagerWithTransaction manager, 
+				IStateSessionObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 			}
@@ -82,6 +85,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					}
 				}
 				return new FindByKeyPrefixResult() { ContinuationToken = null, Items = results };
+			}
+			protected override Task<long> GetCountInternalAsync(string schema, CancellationToken cancellationToken)
+			{
+				var items = Storage.Keys.Where(item => item.StartsWith(schema));
+				var resultCount = items.LongCount();
+				return Task.FromResult(resultCount);
 			}
 		}
 	}

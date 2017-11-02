@@ -33,14 +33,15 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateless_service_with_Singleton_Partitioning()
 		{
-			var mockFabricRuntime = new MockFabricRuntime();
-			mockFabricRuntime.SetupService(
-				this.ApplicationName,
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
+
+			fabricApplication.SetupService(
 				(context, stateManager) => new TestService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateSingletonPartition());
 
 			var serviceName = new Uri(@"fabric:/Overlord/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(mockFabricRuntime);
+			var partitionEnumerationManager = new MockPartitionEnumerationManager(fabricRuntime);
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.
@@ -64,14 +65,15 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Uniform_Int64_Partitioning()
 		{
-			var mockFabricRuntime = new MockFabricRuntime();
-			mockFabricRuntime.SetupService(
-				this.ApplicationName,
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
+
+			fabricApplication.SetupService(
 				(context, stateManager) => new TestService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10));
 
 			var serviceName = new Uri(@"fabric:/Overlord/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(mockFabricRuntime);
+			var partitionEnumerationManager = new MockPartitionEnumerationManager(fabricRuntime);
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.
@@ -95,14 +97,15 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Named_Partitioning()
 		{
-			var mockFabricRuntime = new MockFabricRuntime();
-			mockFabricRuntime.SetupService(
-				this.ApplicationName,
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
+
+			fabricApplication.SetupService(
 				(context, stateManager) => new TestService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateNamedPartitions("one", "two", "three"));
 
 			var serviceName = new Uri(@"fabric:/Overlord/TestService", UriKind.Absolute);
-			var partitionEnumerationManager = new MockPartitionEnumerationManager(mockFabricRuntime);
+			var partitionEnumerationManager = new MockPartitionEnumerationManager(fabricRuntime);
 			var partitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceName);
 
 			// For each partition, build a service partition client used to resolve the low key served by the partition.

@@ -19,14 +19,15 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		private string ApplicationName => @"Overlord";
 		private IActorDemoActorService _proxy;
 		private MockFabricRuntime _fabricRuntime;
+		protected MockFabricApplication _fabricApplication;
 
 		[SetUp]
 		public async Task CreateActorsWithActorService()
 		{
 			_fabricRuntime = new MockFabricRuntime();
+			_fabricApplication = _fabricRuntime.RegisterApplication(ApplicationName);
 
-			_fabricRuntime.SetupActor(		
-				this.ApplicationName,
+			_fabricApplication.SetupActor(		
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),
@@ -51,7 +52,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
 			_proxy = _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
-				_fabricRuntime.GetApplicationUriBuilder(this.ApplicationName).Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
+				_fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
 		}
 
 

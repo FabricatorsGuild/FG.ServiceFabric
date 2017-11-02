@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors.Query;
@@ -20,27 +21,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		}
 
-		protected override string GetEscapedKey(string key)
-		{
-			return key;
-		}
-
-		protected override string GetUnescapedKey(string key)
-		{
-			return key;
-		}
-
-		public abstract class TextStateSession : StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>.StateSessionBase, IStateSession
+		public abstract class TextStateSession : StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>.StateSessionBase<TextStateSessionManagerWithTransaction>, IStateSession
 		{
 			private readonly TextStateSessionManagerWithTransaction _manager;
+			private IStateSessionManagerInternals _managerInternals => _manager;
 			private readonly object _lock = new object();
 
 			protected TextStateSession(
-				TextStateSessionManagerWithTransaction manager)
-				: base(manager)
+				TextStateSessionManagerWithTransaction manager, 
+				IStateSessionObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
-			}
+			}			
 
 			private bool ContainsByRead(string id)
 			{
@@ -176,7 +169,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					Task.FromResult(new FindByKeyPrefixResult()
 					{
 						ContinuationToken = result.ContinuationToken,
-						Items = result.Items.Select(i => _manager.GetUnescapedKey(i.Substring(schemaKeyPrefix.Length))).ToArray()
+						Items = result.Items.Select(i => _managerInternals.GetUnescapedKey(i.Substring(schemaKeyPrefix.Length))).ToArray()
 					});
 			}
 
@@ -192,6 +185,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			protected override void Dispose(bool disposing)
 			{
+				if (disposing)
+				{
+				}
 			}
 		}
 

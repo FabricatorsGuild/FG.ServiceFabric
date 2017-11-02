@@ -24,12 +24,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			
 		}
 
-		protected override string GetEscapedKey(string key)
+		protected override string GetEscapedKeyInternal(string key)
 		{
 			return key;
 		}
 
-		protected override string GetUnescapedKey(string key)
+		protected override string GetUnescapedKeyInternal(string key)
 		{
 			return key;
 		}
@@ -37,12 +37,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		public abstract class TextStateSession : IStateSession
 		{
 			private readonly TextStateSessionManager _manager;
+			private IStateSessionManagerInternals _managerInternals => (IStateSessionManagerInternals)_manager;
 			private readonly object _lock = new object();
+			private IEnumerable<IStateSessionObject> _attachedObjects;
 
 			protected TextStateSession(
-				TextStateSessionManager manager)
+				TextStateSessionManager manager, 
+				IStateSessionObject[] stateSessionObjects)
 			{
 				_manager = manager;
+				AttachObjects(stateSessionObjects);
 			}
 
 			protected virtual string GetEscapedKey(string id)
@@ -56,6 +60,34 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				if (string.IsNullOrWhiteSpace(key)) return key;
 				return System.Uri.UnescapeDataString(key.Replace("{", "%7B").Replace("}", "%7D"));
 			}
+
+			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
+			{
+				_attachedObjects = stateSessionObjects;
+				foreach (var stateSessionObject in _attachedObjects)
+				{
+					if (!(stateSessionObject is StateSessionBaseObject<TextStateSessionManager.TextStateSession> stateSessionBaseObject))
+					{
+						throw new StateSessionException($"Can only attach object that have been created by the owning StateSessionManager");
+					}
+					stateSessionBaseObject.AttachToSession(this);
+				}
+			}
+
+			private void DetachObjects()
+			{
+				foreach (var stateSessionObject in _attachedObjects)
+				{
+					if (!(stateSessionObject is StateSessionBaseObject<TextStateSessionManager.TextStateSession> stateSessionBaseObject))
+					{
+						throw new StateSessionException($"Can only detach object that have been created by the owning StateSessionManager");
+					}
+					stateSessionBaseObject.DetachFromSession(this);
+				}
+				_attachedObjects = new IStateSessionObject[0];
+			}
+
+			public abstract long Count(string idPrefix);
 
 			protected abstract bool Contains(string id);
 
@@ -78,7 +110,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				if (disposing)
 				{
-
+					DetachObjects();
 				}
 			}
 
@@ -89,7 +121,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task<bool> Contains(string schema, string key, CancellationToken cancellationToken = default(CancellationToken))
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					lock (_lock)
@@ -112,8 +144,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix, int maxNumResults = 100000, ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
-				var schemaPrefix = _manager.GetSchemaKey(schema);
-				var schemaKeyPrefix = _manager.GetSchemaKey(schema, GetEscapedKey(keyPrefix));
+				var schemaPrefix = _managerInternals.GetSchemaKey(schema);
+				var schemaKeyPrefix = _managerInternals.GetSchemaKey(schema, GetEscapedKey(keyPrefix));
 				var result = Find(schemaKeyPrefix, null, maxNumResults, continuationToken, cancellationToken);
 
 				return
@@ -126,7 +158,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key, CancellationToken cancellationToken = default(CancellationToken))
 			{
-				var schemaKeyPrefix = _manager.GetSchemaKey();
+				var schemaKeyPrefix = _managerInternals.GetSchemaKey();
 				return Task.FromResult(
 					Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
 						.Items
@@ -137,7 +169,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					T value;
@@ -162,7 +194,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					T value;
@@ -187,12 +219,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					lock (_lock)
 					{
-						var wrapper = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
+						var wrapper = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 
 						if (value == null)
@@ -218,13 +250,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metaData, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					lock (_lock)
 					{
 
-						var wrapper = _manager.CallGenericMethod(nameof(_manager.BuildWrapperGeneric), new Type[] {valueType}, metaData, id, schema, key, value);
+						var wrapper = _managerInternals.CallGenericMethod(nameof(IStateSessionManagerInternals.BuildWrapperGeneric), new Type[] {valueType}, metaData, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 
 						if (value == null)
@@ -255,7 +287,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			
 			public Task RemoveAsync(string schema, string key, CancellationToken cancellationToken = default(CancellationToken))
 			{
-				var id = _manager.GetSchemaStateKey(schema, GetEscapedKey(key));
+				var id = _managerInternals.GetSchemaStateKey(schema, GetEscapedKey(key));
 				try
 				{
 					lock (_lock)
@@ -280,7 +312,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			private Task<QueueInfo> GetOrAddQueueInfo(string schema)
 			{
-				var id = _manager.GetSchemaStateQueueInfoKey(schema);
+				var id = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				try
 				{
 					lock (_lock)
@@ -312,14 +344,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			private Task<QueueInfo> SetQueueInfo(string schema, QueueInfo value)
 			{
-				var id = _manager.GetSchemaStateQueueInfoKey(schema);
+				var id = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var key = StateSessionHelper.ReliableStateQueueInfoName;
 				try
 				{
 					lock (_lock)
 					{
 						var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-						var document = _manager.BuildWrapperGeneric(metadata, id, schema, key, value);
+						var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
 						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 						Write(id, stringValue);
 					}
@@ -333,7 +365,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public async Task EnqueueAsync<T>(string schema, T value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var stateKeyQueueInfo = _manager.GetSchemaStateQueueInfoKey(schema);
+				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
 				try
 				{
@@ -343,11 +375,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						head++;
 						stateQueueInfo.HeadKey = head;
 
-						var id = _manager.GetSchemaQueueStateKey(schema, head);
+						var id = _managerInternals.GetSchemaQueueStateKey(schema, head);
 
 						Console.WriteLine($"Enqueued {value} t:{stateQueueInfo.TailKey} h:{stateQueueInfo.HeadKey}");
 
-						var document = _manager.BuildWrapperGeneric(metadata, id, schema, head.ToString(), value);
+						var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, head.ToString(), value);
 						var stringValue = JsonConvert.SerializeObject(document, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 						Write(id, stringValue);
 					}
@@ -361,7 +393,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public async Task<ConditionalValue<T>> DequeueAsync<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var stateKeyQueueInfo = _manager.GetSchemaStateQueueInfoKey(schema);
+				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
 				try
 				{
@@ -378,7 +410,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					T value;
 					lock (_lock)
 					{
-						var id = _manager.GetSchemaQueueStateKey(schema, tail);
+						var id = _managerInternals.GetSchemaQueueStateKey(schema, tail);
 
 						if (!Contains(id))
 						{
@@ -410,7 +442,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public async Task<ConditionalValue<T>> PeekAsync<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
 			{
-				var stateKeyQueueInfo = _manager.GetSchemaStateQueueInfoKey(schema);
+				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
 				try
 				{
@@ -424,7 +456,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 
 					T value;
-					var id = _manager.GetSchemaQueueStateKey(schema, tail);
+					var id = _managerInternals.GetSchemaQueueStateKey(schema, tail);
 					lock (_lock)
 					{
 						if (!Contains(id))
@@ -444,6 +476,21 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				{
 					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed", ex);
 				}
+			}
+			public Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken)
+			{
+				var schemaPrefix = _managerInternals.GetSchemaKey(schema);
+				var result = Count(schemaPrefix);
+
+				return Task.FromResult(result);
+			}
+
+			public Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken)
+			{
+				var schemaPrefix = _managerInternals.GetSchemaQueueStateKeyPrefix(schema);
+				var result = Count(schemaPrefix);
+
+				return Task.FromResult(result);
 			}
 
 			public Task CommitAsync()

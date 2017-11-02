@@ -23,9 +23,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
 		{
-			return new InMemoryStateSession(this);
+			return new InMemoryStateSession(this, stateSessionObjects);
 		}
 
 
@@ -34,7 +34,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			private readonly InMemoryStateSessionManager _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManager manager) : base(manager)
+				InMemoryStateSessionManager manager, 
+				IStateSessionObject[] stateSessionObjects) 
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 			}
@@ -47,6 +49,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				return base.GetEscapedKey(id);
 			}
 
+			public override long Count(string idPrefix)
+			{
+				var items = Storage.Keys.Where(item => item.StartsWith(idPrefix));
+				var resultCount = items.LongCount();
+				return resultCount;
+			}
 			protected override bool Contains(string id)
 			{
 				return Storage.ContainsKey(id);

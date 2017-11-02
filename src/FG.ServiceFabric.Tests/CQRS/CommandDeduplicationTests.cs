@@ -18,17 +18,16 @@ namespace FG.ServiceFabric.Tests.CQRS
     [TestFixture()]
     public class IdempotentCommandHandlingTests
     {
-	    private string _applicationName;
+	    private MockFabricApplication _application;
 		private MockFabricRuntime _fabricRuntime;
         private AddCountCommand _command;
 
         [SetUp]
         public void Setup()
         {
-	        _applicationName = "Overlord";
 			_fabricRuntime = new MockFabricRuntime();
-            _fabricRuntime.SetupActor(
-	            _applicationName,
+	        _application = _fabricRuntime.RegisterApplication("Overlord");
+	        _application.SetupActor(
 				(service, actorId) => new TestActor(service, actorId),
                 serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(1));
             _command = new AddCountCommand();

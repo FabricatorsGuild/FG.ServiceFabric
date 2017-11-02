@@ -22,6 +22,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 	{
 		private string ApplicationName => @"Overlord";
 		private MockFabricRuntime _fabricRuntime;
+		private MockFabricApplication _fabricApplication;
 		private MockServiceDefinition _actorDemoServiceDefinition;
 
 		[SetUp]
@@ -30,10 +31,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 #pragma warning restore 1998
 		{
 			_fabricRuntime = new MockFabricRuntime();
+			_fabricApplication = _fabricRuntime.RegisterApplication(ApplicationName);
 
 			 _actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
-			_fabricRuntime.SetupActor(
-				this.ApplicationName,
+			_fabricApplication.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),
@@ -90,7 +91,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		[Test]
 		public async Task Should_be_able_to_remove_actor_from_ActorService()
 		{
-			var serviceUri = _fabricRuntime.GetApplicationUriBuilder("Overlord").Build("ActorDemoActorService").ToUri();
+			var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 			var nameCount = 100;
 			foreach (var name in new []{"first", "second", "third"})

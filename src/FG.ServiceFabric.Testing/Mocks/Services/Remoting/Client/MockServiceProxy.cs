@@ -89,6 +89,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 
 		private class InterceptorSelector : IInterceptorSelector
 		{
+			[System.Diagnostics.DebuggerStepThrough]
 			public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
 			{
 				if (method.DeclaringType == typeof(IActorProxy))
@@ -108,6 +109,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 				_serviceProxyManager = serviceProxyManager;
 			}
 
+			[System.Diagnostics.DebuggerStepThrough]
 			public void Intercept(IInvocation invocation)
 			{
 				_serviceProxyManager?.BeforeMethod(invocation.Proxy as IService, invocation.Method);

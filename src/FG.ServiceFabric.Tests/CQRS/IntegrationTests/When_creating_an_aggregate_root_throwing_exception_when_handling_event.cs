@@ -14,8 +14,8 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
     {
         protected override void SetupRuntime()
         {
-            ForTestEventStoredActor.Setup(FabricRuntime, this.ApplicationName);
-            ForTestIndexActor.Setup(FabricRuntime, this.ApplicationName);
+            ForTestEventStoredActor.Setup(_fabricApplication);
+            ForTestIndexActor.Setup(_fabricApplication);
             base.SetupRuntime();
         }
 
