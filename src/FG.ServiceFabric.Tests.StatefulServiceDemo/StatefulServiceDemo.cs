@@ -197,6 +197,8 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			Task<bool> Peek();
 
 			Task<long> GetQueueLength();
+
+			Task<long[]> EnumerateAll();
 		}
 
 		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
@@ -281,6 +283,27 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 					var value = await myQueue.GetCountAsync(cancellationToken);
 
 					return value;
+				}
+			}
+
+			public async Task<long[]> EnumerateAll()
+			{
+				var cancellationToken = CancellationToken.None;
+
+				var results = new List<long>();
+				var myQueue = await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession(myQueue))
+				{
+					var asyncEnumerable = await myQueue.CreateEnumerableAsync();
+					var asyncEnumerator = asyncEnumerable.GetAsyncEnumerator();
+
+					while (await asyncEnumerator.MoveNextAsync(cancellationToken))
+					{
+						results.Add(asyncEnumerator.Current);
+					}
+
+					return results.ToArray();
 				}
 			}
 		}

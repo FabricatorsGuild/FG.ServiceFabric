@@ -103,11 +103,22 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			private TStateSession _session;
 			private readonly string _schema;
 
+			private readonly string _queueInfoSchemaKey;
+			private readonly string _queueSchemaKeyPrefix;
+			private ConditionalValue <QueueInfo> _queueInfo;
+			private long _currentIndex;
+
 			public StateSessionBaseQueueEnumerator(IStateSessionManagerInternals manager, TStateSession session, string schema)
 			{
 				_manager = manager;
 				_session = session;
 				_schema = schema;
+
+				_queueInfoSchemaKey = _manager.GetQueueInfoStateKey();
+				_queueInfo = new ConditionalValue<QueueInfo>(false, null);
+
+				_queueSchemaKeyPrefix = _manager.GetSchemaQueueStateKeyPrefix(_schema);
+				Reset();
 			}
 
 			public void Dispose()
@@ -117,24 +128,43 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
 			{
-				var schemaKeyPrefix = _manager.GetSchemaQueueStateKeyPrefix(_schema);
-				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, schemaKeyPrefix, 1, CurrentKey != null ? new ContinuationToken(CurrentKey) : null, cancellationToken);
-				var currentKey = findNext.Items.FirstOrDefault();
-				if(currentKey != null)
+				if (!_queueInfo.HasValue)
 				{
-					CurrentKey = currentKey;
-					Current = await _session.GetValueAsync<TValueType>(_schema, currentKey, cancellationToken);
-					return true;
+					_queueInfo = await _session.TryGetValueAsync<QueueInfo>(_schema, _queueInfoSchemaKey, cancellationToken);
+					if (!_queueInfo.HasValue)
+					{
+						Current = default(TValueType);
+						return false;
+					}
 				}
-				else
+
+				if (_currentIndex < 0L)
 				{
-					CurrentKey = null;
+					_currentIndex = _queueInfo.Value.TailKey;
+				}
+
+				if (_currentIndex > _queueInfo.Value.HeadKey)
+				{
 					Current = default(TValueType);
 					return false;
 				}
+
+				var currentKey = _manager.GetSchemaQueueStateKey(_schema, _currentIndex).RemoveFromStart(_queueSchemaKeyPrefix);
+				Current = await _session.GetValueAsync<TValueType>(_schema, currentKey, cancellationToken);
+
+				_currentIndex++;
+				return true;
 			}
+
 			private string CurrentKey { get; set; }
-			public void Reset() { Current = default(TValueType); }
+
+			public void Reset()
+			{
+				_currentIndex = -1L;
+				Current = default(TValueType);
+				CurrentKey = null;
+			}
+
 			public TValueType Current { get; private set; }
 		}
 	}
@@ -223,7 +253,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
 			{
-				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, new ContinuationToken(Current), cancellationToken);
+				var continuationToken = Current.Key != null ? new ContinuationToken(Current.Key) : null;
+
+				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, continuationToken, cancellationToken);
 				var currentKey = findNext.Items.FirstOrDefault();
 				if (currentKey != null)
 				{
@@ -263,10 +295,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		StateWrapper<T> BuildWrapperGeneric<T>(IValueMetadata valueMetadata, string id, string schema, string key, T value);
 
+		string GetQueueInfoStateKey();
+
 		string GetSchemaStateQueueInfoKey(string schema);
 
 		string GetSchemaQueueStateKey(string schema, long index);
-
+		
 		string GetSchemaQueueStateKeyPrefix(string schema);
 
 		IDictionary<string, QueueInfo> OpenQueues { get; }
@@ -370,6 +404,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		{
 			return StateSessionHelper.GetSchemaStateQueueInfoKey(ServiceName, PartitionKey, schema);
 		}
+
+		string IStateSessionManagerInternals.GetQueueInfoStateKey()
+		{
+			return StateSessionHelper.ReliableStateQueueInfoName;
+		}
+
 
 		string IStateSessionManagerInternals.GetSchemaQueueStateKey(string schema, long index)
 		{
@@ -575,7 +615,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 				return new ConditionalValue<T>(false, default(T));
 			}
-
+			
 			protected abstract Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema, string key,
 				CancellationToken cancellationToken = default(CancellationToken));
 

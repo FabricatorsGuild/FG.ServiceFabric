@@ -498,6 +498,204 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
 				}
+
+				[Test]
+				public async Task _should_return_queue_length_0_for_initial_queue()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					var length = await statefulServiceDemo.GetQueueLength();
+					length.Should().Be(0);
+				}
+
+				[Test]
+				public async Task _should_return_queue_length_0_for_emptied_queue()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Empty
+					while (await statefulServiceDemo.Peek())
+					{
+						await statefulServiceDemo.Dequeue(1);
+					}
+
+					var length = await statefulServiceDemo.GetQueueLength();
+					length.Should().Be(0);
+				}
+
+				[Test]
+				public async Task _should_return_queue_length_0_for_queue_with_multiple_enqueues_and_dequeues_until_drained()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Empty
+					while (await statefulServiceDemo.Peek())
+					{
+						await statefulServiceDemo.Dequeue(1);
+					}
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(50);
+
+					await statefulServiceDemo.Dequeue(20);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(30);
+
+					// Empty
+					while (await statefulServiceDemo.Peek())
+					{
+						await statefulServiceDemo.Dequeue(1);
+					}
+
+
+					var length = await statefulServiceDemo.GetQueueLength();
+					length.Should().Be(0);
+				}
+
+
+				[Test]
+				public async Task _should_return_queue_length_for_enqueued_items()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					var length = await statefulServiceDemo.GetQueueLength();
+					length.Should().Be(5);
+				}
+
+
+				[Test]
+				public async Task _should_return_queue_length_for_reamaining_enqueued_items_with_multiple_enqueues_and_dequeues()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3);
+
+
+					var length = await statefulServiceDemo.GetQueueLength();
+					length.Should().Be(6);
+				}
+
+				[Test]
+				public async Task _should_be_able_to_enumerate_all_enqueued_items()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Enumerate all
+					var all = await statefulServiceDemo.EnumerateAll();
+
+					all.Should().Equal(new long[] { 1, 2, 3, 4, 5 });
+				}
+
+				[Test]
+				public async Task _should_not_enumerate_anything_after_enqueued_items_have_been_dequeued()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(5);
+
+					// Enumerate all
+					var all = await statefulServiceDemo.EnumerateAll();
+
+					all.Should().Equal(new long[] { });
+				}
+
+				[Test]
+				public async Task _should_be_able_to_enumerate_all_enqueued_items_after_last_items_have_been_dequeued()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5); // 1 2 3 4 5
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3); // _ _ _ 4 5				
+
+					// Enumerate all
+					var all = await statefulServiceDemo.EnumerateAll();
+
+					all.Should().Equal(new long[] { 4, 5 });
+				}
+
+				[Test]
+				public async Task _should_be_able_to_enumerate_all_enqueued_items_after_multiple_enqueues_and_dequeues()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5); // 1 2 3 4 5
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 1, 2, 3, 4, 5 });
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3); // _ _ _ 4 5
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5 });
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5); // _ _ _ 4 5 6 7 8 9 10
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5, 6, 7, 8, 9, 10 });
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(2); // _ _ _ _ _ 6 7 8 9 10
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10 });
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5); // _ _ _ _ _ 6 7 8 9 10 11 12 13 14 15
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Dequeue(3); // _ _ _ _ _ _ _ _ 9 10 11 12 13 14 15
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
+
+					// Enumerate all
+					var all = await statefulServiceDemo.EnumerateAll();
+
+					all.Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
+				}
 			}
 
 

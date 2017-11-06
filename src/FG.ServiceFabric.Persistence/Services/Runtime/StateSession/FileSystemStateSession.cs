@@ -145,11 +145,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					if (fileName.CompareTo(nextMarker) > 0)
 					{
 						results.Add(fileName);
-						if (resultCount > maxNumResults)
+						resultCount++;
+						if (resultCount >= maxNumResults)
 						{
 							return new FindByKeyPrefixResult() {ContinuationToken = new ContinuationToken(fileName), Items = results};
 						}
-						resultCount++;
 					}
 				}
 				return new FindByKeyPrefixResult() {ContinuationToken = null, Items = results};

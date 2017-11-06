@@ -67,20 +67,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var results = new List<string>();
 				var nextMarker = continuationToken?.Marker ?? "";
-				var items = Storage.Keys.OrderBy(f => f);
+				var keys = Storage.Keys.OrderBy(f => f);
 				var resultCount = 0;
-				foreach (var item in items)
+				foreach (var nextKey in keys)
 				{
-					if (item.CompareTo(nextMarker) > 0)
+					if (nextKey.CompareTo(nextMarker) > 0)
 					{
-						if (item.StartsWith(idPrefix))
+						if (nextKey.StartsWith(idPrefix))
 						{
-							results.Add(item);
-							if (resultCount > maxNumResults)
-							{
-								return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(item), Items = results };
-							}
+							results.Add(nextKey);
 							resultCount++;
+							if (resultCount >= maxNumResults)
+							{
+								return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(nextKey), Items = results };
+							}
 						}
 					}
 				}
