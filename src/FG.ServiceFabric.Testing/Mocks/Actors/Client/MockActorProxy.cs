@@ -52,9 +52,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 		public object Proxy { get; }
 
-		public ActorId ActorId { get; }
-		public IActorServicePartitionClient ActorServicePartitionClient { get; }
-		public Microsoft.ServiceFabric.Actors.Remoting.V2.Client.IActorServicePartitionClient ActorServicePartitionClientV2 { get; }
+		public new ActorId ActorId { get; }
+		public new IActorServicePartitionClient ActorServicePartitionClient { get; }
+		public new Microsoft.ServiceFabric.Actors.Remoting.V2.Client.IActorServicePartitionClient ActorServicePartitionClientV2 { get; }
 
 		private class MockActorServicePartitionClient : IActorServicePartitionClient
 		{

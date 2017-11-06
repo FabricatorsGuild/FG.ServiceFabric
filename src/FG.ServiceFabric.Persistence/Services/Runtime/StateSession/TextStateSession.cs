@@ -256,7 +256,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					lock (_lock)
 					{
 
-						var wrapper = _managerInternals.CallGenericMethod(nameof(IStateSessionManagerInternals.BuildWrapperGeneric), new Type[] {valueType}, metaData, id, schema, key, value);
+						var wrapper = _managerInternals.BuildWrapper(metaData, id, schema, key, valueType, value);
 						var stringValue = JsonConvert.SerializeObject(wrapper, new JsonSerializerSettings() {Formatting = Formatting.Indented, TypeNameHandling = TypeNameHandling.Auto});
 
 						if (value == null)

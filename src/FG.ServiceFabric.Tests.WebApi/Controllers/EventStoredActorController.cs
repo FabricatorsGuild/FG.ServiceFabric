@@ -39,13 +39,13 @@ namespace FG.ServiceFabric.Tests.WebApi.Controllers
             await proxy.CreateAsync(new CreateCommand {SomeProperty = value.Name});
         }
 
-        [HttpPut("{id}")]
-        public async void Put(Guid id, [FromBody] UICommand value)
-        {
-        }
+		[HttpPut("{id}")]
+		public void Put(Guid id, [FromBody] UICommand value)
+		{
+		}
 
-        // ReSharper disable once InconsistentNaming
-        public class UICommand
+		// ReSharper disable once InconsistentNaming
+		public class UICommand
         {
             public string Name { get; set; }
         }

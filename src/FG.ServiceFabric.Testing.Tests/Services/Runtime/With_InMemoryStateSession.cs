@@ -18,6 +18,7 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
+	// ReSharper disable InconsistentNaming
 	namespace With_StateSessionManager
 	{
 		namespace and_InMemoryStateSession
@@ -55,7 +56,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
-				public async Task _should_persist_state_stored()
+				public void _should_persist_state_stored()
 				{
 					State.Should().HaveCount(2);
 				}
@@ -73,7 +74,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
-				public async Task _should_persist_state_stored()
+				public void _should_persist_state_stored()
 				{
 					State.Should().HaveCount(4);
 				}
@@ -92,7 +93,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
-				public async Task _should_persist_state_stored()
+				public void _should_persist_state_stored()
 				{
 					State.Should().HaveCount(2);
 				}
@@ -317,4 +318,5 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 		}
 	}
+	// ReSharper restore InconsistentNaming
 }

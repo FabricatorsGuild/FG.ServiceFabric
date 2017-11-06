@@ -209,7 +209,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				_stateSessionManager = stateSessionManager;
 			}
 
+#pragma warning disable 1998
 			protected override async Task RunAsync(CancellationToken cancellationToken)
+#pragma warning restore 1998
 			{
 				OnRunAsyncLoop(0);
 			}

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Fabric;
 using System.Threading;
-using System.Threading.Tasks;
-using Application;
-using FG.ServiceFabric.Fabric;
-using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Tests.Persistence;
 using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Tests.StatefulServiceDemo

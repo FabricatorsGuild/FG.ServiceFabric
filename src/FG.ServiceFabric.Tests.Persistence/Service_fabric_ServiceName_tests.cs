@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
-using FG.ServiceFabric.Testing.Mocks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -24,7 +23,7 @@ namespace FG.ServiceFabric.Tests.Persistence
 		}
 
 
-	}	
+	}
 
 	// ReSharper restore InconsistentNaming
 }

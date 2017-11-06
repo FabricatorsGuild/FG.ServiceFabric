@@ -197,7 +197,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 							this._servicePartition.ReportFault(FaultType.Transient);
 						}
 					}
-					catch (Exception ex)
+					catch (Exception)
 					{
 						// Failure to get operation stream usually mean the replica
 						// is about to close, abort or change role to None.

@@ -115,9 +115,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			return Task.FromResult(true);
 		}
 
-		protected T GetState<T>(string key)
+		protected T2 GetState<T2>(string key)
 		{
-			return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(State[key]);
+			return Newtonsoft.Json.JsonConvert.DeserializeObject<T2>(State[key]);
 		}
 
 		public abstract IDictionary<string, string> State { get; }

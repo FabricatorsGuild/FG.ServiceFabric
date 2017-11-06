@@ -23,8 +23,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 	internal class MockActorServiceInstance : MockServiceInstance
 	{
-		public MockActorServiceInstanceStatus Status { get; set; }
-
 		public IActorStateProvider ActorStateProvider { get; private set; }
 
 		public IDictionary<ActorId, Actor> Actors { get; private set; }

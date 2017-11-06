@@ -198,7 +198,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
-				public async Task _should_persist_state_stored()
+				public void _should_persist_state_stored()
 				{
 					State.Should().HaveCount(2);
 				}
@@ -217,7 +217,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 
 				[Test]
-				public async Task _should_persist_state_stored()
+				public void _should_persist_state_stored()
 				{
 					State.Should().HaveCount(4);
 				}

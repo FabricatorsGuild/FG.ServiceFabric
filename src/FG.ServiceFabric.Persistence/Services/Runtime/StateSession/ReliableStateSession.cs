@@ -387,7 +387,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
 				return FindByKeyPrefixInternalAsync(schema, keyPrefix, maxNumResults,
+					#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 					reliableDictionaryFactory: async (stateSessionManager, schema2) =>
+					#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 					{
 						_sessionManager.UpdateReliableStateType(schema, typeof(T));
 						var reliableDictionary2 = GetDictionary<T>(schema);
@@ -403,7 +405,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var result = new List<string>();
 				var stateEnumerator = _sessionManager._stateManager.GetAsyncEnumerator();
-				var type = default(Type);
 				while (await stateEnumerator.MoveNextAsync(cancellationToken))
 				{
 					var currentState = stateEnumerator.Current;

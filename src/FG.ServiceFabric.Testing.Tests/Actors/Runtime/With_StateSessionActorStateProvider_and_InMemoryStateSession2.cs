@@ -81,9 +81,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					return Task.FromResult(true);
 				}
 
-				protected T GetState<T>(string key)
+				protected T2 GetState<T2>(string key)
 				{
-					return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(State[key]);
+					return Newtonsoft.Json.JsonConvert.DeserializeObject<T2>(State[key]);
 				}
 
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
@@ -238,7 +238,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 				protected override async Task SetupActor()
 				{
-					for (int j = 0; j < 100; j++)
+					for (var j = 0; j < 100; j++)
 					{
 						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
 						var i = await actorProxy.GetCountAsync();						
@@ -250,7 +250,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					var partitions = new List<Guid>();
 					_partitionKeys = new List<long>();
-					for (int j = 0; j < 100; j++)
+					for (var j = 0; j < 100; j++)
 					{
 						var partitionKey = new ActorId($"testivus-{j}").GetPartitionKey();
 						var partition = await FabricRuntime.PartitionEnumerationManager.GetPartition(serviceName, partitionKey);
@@ -264,9 +264,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				}
 
 				[Test]
-				public async Task _should_store_state_for_all_actors()
+				public void _should_store_state_for_all_actors()
 				{
-					for (int j = 0; j < 100; j++)
+					for (var j = 0; j < 100; j++)
 					{
 						var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId($"testivus-{j}"));
 						var actorIdKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
@@ -383,8 +383,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				}
 
 				[Test]
-				public async Task _should_store_reminder_state()
-				{					
+				public void _should_store_reminder_state()
+				{
 					State.Should().HaveCount(30);
 
 					State.Where(i => i.Key.Contains(StateSessionHelper.ActorIdStateSchemaName)).Should().HaveCount(10);

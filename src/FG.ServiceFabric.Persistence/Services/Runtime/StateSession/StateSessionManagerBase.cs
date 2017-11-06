@@ -346,8 +346,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		StateWrapper IStateSessionManagerInternals.BuildWrapper(IValueMetadata metadata, string id, string schema, string key, Type valueType, object value)
 		{
-			return (StateWrapper) this.CallGenericMethod(nameof(IStateSessionManagerInternals.BuildWrapperGeneric), new Type[] {valueType},
-			                                             _managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
+			return (StateWrapper)this.CallGenericMethod($"{typeof(IStateSessionManagerInternals).FullName}.{nameof(IStateSessionManagerInternals.BuildWrapperGeneric)}", new Type[] { valueType },
+				_managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id, schema, key, value);
 		}
 
 		StateWrapper<T> IStateSessionManagerInternals.BuildWrapperGeneric<T>(IValueMetadata valueMetadata, string id, string schema, string key, T value)

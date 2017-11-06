@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using FG.Common.Utils;
 using FG.ServiceFabric.Services.Remoting.Runtime.Client;
-using FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Services.Remoting;

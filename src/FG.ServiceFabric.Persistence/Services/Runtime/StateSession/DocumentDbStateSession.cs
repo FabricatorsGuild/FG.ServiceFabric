@@ -262,7 +262,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var id = _managerInternals.GetSchemaStateKey(schema, key);
 				try
 				{
-					var wrapper = _managerInternals.CallGenericMethod(nameof(_managerInternals.BuildWrapperGeneric), new Type[] { valueType }, metadata, id, schema, key, value);
+					var wrapper = _managerInternals.BuildWrapper(metadata, id, schema, key, valueType, value);
 					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), wrapper,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 				}
