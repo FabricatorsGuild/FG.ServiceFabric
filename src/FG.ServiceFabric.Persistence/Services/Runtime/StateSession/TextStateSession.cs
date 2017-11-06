@@ -485,12 +485,42 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				return Task.FromResult(result);
 			}
 
-			public Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken)
+			public async Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken)
 			{
-				var schemaPrefix = _managerInternals.GetSchemaQueueStateKeyPrefix(schema);
-				var result = Count(schemaPrefix);
+				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
+				var stateQueueInfo = await GetOrAddQueueInfo(schema);
+				try
+				{
+					var tail = stateQueueInfo.TailKey;
+					var head = stateQueueInfo.HeadKey;
 
-				return Task.FromResult(result);
+					if ((tail - head) == 1)
+					{
+						return 0;
+					}
+
+
+					T value;
+					var id = _managerInternals.GetSchemaQueueStateKey(schema, tail);
+					lock (_lock)
+					{
+						if (!Contains(id))
+						{
+							throw new KeyNotFoundException($"State with {id} does not exist");
+						}
+
+						var stringValue = Read(id);
+
+						var response = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+						value = response.State;
+					}
+
+					return head - tail + 1;
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed", ex);
+				}
 			}
 
 			public Task CommitAsync()

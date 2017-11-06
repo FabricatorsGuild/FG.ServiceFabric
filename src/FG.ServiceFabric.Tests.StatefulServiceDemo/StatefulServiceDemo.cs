@@ -195,6 +195,8 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			Task Enqueue(int count);
 			Task<long[]> Dequeue(int count);
 			Task<bool> Peek();
+
+			Task<long> GetQueueLength();
 		}
 
 		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
@@ -266,7 +268,21 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 					return value.HasValue;
 				}
-			}			
+			}
+
+			public async Task<long> GetQueueLength()
+			{
+				var cancellationToken = CancellationToken.None;
+
+				var myQueue = await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession(myQueue))
+				{
+					var value = await myQueue.GetCountAsync(cancellationToken);
+
+					return value;
+				}
+			}
 		}
 	}
 }
