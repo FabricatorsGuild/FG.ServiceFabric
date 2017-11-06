@@ -113,8 +113,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			public void Intercept(IInvocation invocation)
 			{
 				_serviceProxyManager?.BeforeMethod(invocation.Proxy as IService, invocation.Method);
-				invocation.Proceed();
+				RunInvocation(invocation);
 				_serviceProxyManager?.AfterMethod(invocation.Proxy as IService, invocation.Method);
+			}
+
+			public void RunInvocation(IInvocation invocation)
+			{
+				invocation.Proceed();
 			}
 		}
 
