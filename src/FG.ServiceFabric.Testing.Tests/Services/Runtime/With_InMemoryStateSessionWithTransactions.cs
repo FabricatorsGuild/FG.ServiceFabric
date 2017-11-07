@@ -223,6 +223,141 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
+
+
+			public class Service_with_simple_dictionary : TestBaseInMemoryStateSessionManagerWithTransaction<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo>
+			{
+
+				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
+
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				{
+					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context, stateSessionManager);
+					return service;
+				}
+
+				[Test]
+				public async Task _should_persist_added_item()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+
+					// items and queue info state
+					State.Should().HaveCount(1);
+				}
+
+				[Test]
+				public async Task _should_persist_added_items()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					// items and queue info state
+					State.Should().HaveCount(5);
+				}
+
+				[Test]
+				public async Task _should_persist_added_item_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+						{new KeyValuePair<string, string>("a", "A")});
+				}
+
+				[Test]
+				public async Task _should_persist_added_items_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+					{
+						new KeyValuePair<string, string>("a", "A"),
+						new KeyValuePair<string, string>("b", "B"),
+						new KeyValuePair<string, string>("c", "C"),
+						new KeyValuePair<string, string>("d", "D"),
+						new KeyValuePair<string, string>("e", "E"),
+					});
+				}
+
+				[Test]
+				public async Task _should_persist_added_and_removed_items_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					await statefulServiceDemo.Remove("b");
+					await statefulServiceDemo.Remove("d");
+
+					await statefulServiceDemo.Add("f", "F");
+					await statefulServiceDemo.Add("g", "G");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+					{
+						new KeyValuePair<string, string>("a", "A"),
+						new KeyValuePair<string, string>("c", "C"),
+						new KeyValuePair<string, string>("e", "E"),
+						new KeyValuePair<string, string>("f", "F"),
+						new KeyValuePair<string, string>("g", "G"),
+					});
+				}
+			}
+
+
+
+
 			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManagerWithTransaction<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
 

@@ -239,6 +239,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		{
 			private IStateSession _session;
 			private readonly string _schema;
+			private string _continuationKey;
 
 			public StateSessionBaseDictionaryEnumerator(IStateSession session, string schema)
 			{
@@ -253,14 +254,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			public async Task<bool> MoveNextAsync(CancellationToken cancellationToken)
 			{
-				var continuationToken = Current.Key != null ? new ContinuationToken(Current.Key) : null;
+				var continuationToken = Current.Key != null ? new ContinuationToken(_continuationKey) : null;
 
 				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, continuationToken, cancellationToken);
-				var currentKey = findNext.Items.FirstOrDefault();
-				if (currentKey != null)
+				var nextKey = findNext.Items.FirstOrDefault();
+				if (nextKey != null)
 				{
-					var value = await _session.GetValueAsync<TValueType>(_schema, currentKey, cancellationToken);
-					Current = new KeyValuePair<string, TValueType>(currentKey, value);
+					var value = await _session.GetValueAsync<TValueType>(_schema, nextKey, cancellationToken);
+					Current = new KeyValuePair<string, TValueType>(nextKey, value);
+					_continuationKey = findNext.ContinuationToken.Marker as string ?? "";
 					return true;
 				}
 				else
@@ -269,7 +271,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					return false;
 				}
 			}
-			public void Reset() { Current = default(KeyValuePair<string, TValueType>); }
+
+			public void Reset()
+			{
+				Current = default(KeyValuePair<string, TValueType>);
+				_continuationKey = null;
+			}
 			public KeyValuePair<string, TValueType> Current { get; private set; }
 		}
 	}

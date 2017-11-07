@@ -88,11 +88,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						if (item.StartsWith(idPrefix) && ((key == null) || item.Contains(key)))
 						{
 							results.Add(item);
-							if (resultCount > maxNumResults)
+							resultCount++;
+							if (resultCount >= maxNumResults)
 							{
 								return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(item), Items = results };
 							}
-							resultCount++;
 						}
 					}
 				}

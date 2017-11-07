@@ -308,4 +308,80 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			}
 		}
 	}
+
+	namespace With_simple_dictionary
+	{
+		public interface IStatefulServiceDemo : IService
+		{
+			Task Add(string key, string value);
+			Task Remove(string key);
+			Task<KeyValuePair<string, string>[]> EnumerateAll();
+		}
+		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
+		{
+			private readonly IStateSessionManager _stateSessionManager;
+
+			private long _internalCounter = 1L;
+
+			public StatefulServiceDemo(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				: base(context, stateSessionManager)
+			{
+				_stateSessionManager = stateSessionManager;
+			}
+
+#pragma warning disable 1998
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+#pragma warning restore 1998
+			{
+				OnRunAsyncLoop(0);
+			}
+
+			public async Task Add(string key, string value)
+			{
+				var cancellationToken = CancellationToken.None;
+
+				var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession(myDict))
+				{
+					await myDict.SetValueAsync(key, value, cancellationToken);
+					await session.CommitAsync();
+				}
+			}
+
+			public async Task Remove(string key)
+			{
+				var cancellationToken = CancellationToken.None;
+
+				var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession(myDict))
+				{
+					await myDict.RemoveAsync(key, cancellationToken);
+					await session.CommitAsync();
+				}
+			}
+
+			public async Task<KeyValuePair<string, string>[]> EnumerateAll()
+			{
+				var cancellationToken = CancellationToken.None;
+
+				var results = new List<KeyValuePair<string, string>>();
+				var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession(myDict))
+				{
+					var asyncEnumerable = await myDict.CreateEnumerableAsync();
+					var asyncEnumerator = asyncEnumerable.GetAsyncEnumerator();
+
+					while (await asyncEnumerator.MoveNextAsync(cancellationToken))
+					{
+						results.Add(asyncEnumerator.Current);
+					}
+
+					return results.ToArray();
+				}
+			}
+		}
+	}
 }
