@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Reflection;
+using FG.ServiceFabric.Diagnostics;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 {
@@ -11,8 +15,32 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
         private readonly object _lock = new object();
 
         private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ServiceMethodDispatcherMap = new ConcurrentDictionary<Type, MethodDispatcherBase>();
+	    private IServiceProxyFactory _innerProxyFactory;
+	    private static volatile Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
 
-        protected MethodDispatcherBase GetOrDiscoverServiceMethodDispatcher(Type serviceInterfaceType)
+	    private IServiceClientLogger Logger { get; set; }
+
+	    static ServiceProxyFactoryBase()
+	    {
+		    SetInnerFactory(null);
+	    }
+
+		protected ServiceProxyFactoryBase(IServiceClientLogger logger)
+	    {
+		    Logger = logger;
+	    }
+
+	    internal static void SetInnerFactory(Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> innerFactory)
+	    {
+		    if (innerFactory == null)
+		    {
+			    innerFactory = (serviceProxyFactory, serviceInterfaceType) => new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
+				                   client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
+		    }
+		    _serviceProxyFactoryInnerFactory = innerFactory;
+	    }
+
+		protected MethodDispatcherBase GetOrDiscoverServiceMethodDispatcher(Type serviceInterfaceType)
         {
             if (serviceInterfaceType == null) return null;
 
@@ -56,5 +84,34 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 				contextWrapper.CorrelationId = Guid.NewGuid().ToString();
             }
         }
-    }
+
+
+	    protected IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
+	    {
+		    if (_innerProxyFactory != null)
+		    {
+			    return _innerProxyFactory;
+		    }
+
+		    lock (_lock)
+		    {
+			    _innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
+
+			    return _innerProxyFactory;
+		    }
+	    }
+
+	    private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
+	    {
+		    var serviceMethodDispatcher = GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
+
+		    var contextWrapper = ServiceRequestContextWrapper.Current;
+		    return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
+			    serviceInterfaceType,
+			    serviceRemotingCallbackClient,
+			    Logger,
+			    contextWrapper.CorrelationId,
+			    serviceMethodDispatcher);
+	    }
+	}
 }

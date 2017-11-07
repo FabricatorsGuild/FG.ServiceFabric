@@ -6,6 +6,7 @@ using FG.ServiceFabric.Diagnostics;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using FG.ServiceFabric.Services.Remoting.FabricTransport.Client;
 using FG.Common.Utils;
+using FG.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
@@ -16,52 +17,28 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
 {
     public class FabricTransportActorRemotingClient : FabricTransportServiceRemotingClient
     {
-	    internal IServiceRemotingClient InnerClient
-	    {
-		    get { return base.InnerClient; }
-	    }
+	    internal IServiceRemotingClient InnerClient => base.InnerClient;
 
 	    private readonly IActorClientLogger _logger;
-        private readonly MethodDispatcherBase _actorMethodDispatcher;
-        private static readonly ConcurrentDictionary<long, string> ActorMethodMap = new ConcurrentDictionary<long, string>();
+		private static readonly ConcurrentDictionary<long, string> ActorMethodMap = new ConcurrentDictionary<long, string>();
 
         private string GetActorMethodName(ActorMessageHeaders actorMessageHeaders)
         {
             if (actorMessageHeaders == null) return null;
-            try
-            {
-                var methodName = "-";
-                var lookup = HashUtil.Combine(actorMessageHeaders.InterfaceId, actorMessageHeaders.MethodId);
 
-                if (ActorMethodMap.ContainsKey(lookup))
-                {
-                    methodName = ActorMethodMap[lookup];
-                    return methodName;
-                }
-
-                methodName = _actorMethodDispatcher.GetMethodDispatcherMapName(
-                    actorMessageHeaders.InterfaceId, actorMessageHeaders.MethodId);
-                ActorMethodMap[lookup] = methodName;
-                return methodName;
-            }
-            catch (Exception)
-            {
-                
-                // ignored
-                //_logger?.FailedToGetActorMethodName(actorMessageHeaders, ex);
-            }
-            return null;
+	        return base.GetServiceMethodName(actorMessageHeaders.InterfaceId, actorMessageHeaders.MethodId);
         }
         
         public FabricTransportActorRemotingClient(IServiceRemotingClient innerClient, Uri serviceUri, IActorClientLogger logger, 
-            MethodDispatcherBase actorMethodDispatcher, MethodDispatcherBase serviceMethodDispatcher)
-            : base(innerClient, serviceUri, logger, serviceMethodDispatcher)
+            MethodDispatcherBase[] serviceMethodDispatchers)
+            : base(innerClient, serviceUri, logger, serviceMethodDispatchers)
         {
             _logger = logger;
-            _actorMethodDispatcher = actorMethodDispatcher;
-        }
+         //   _actorMethodDispatcher = actorMethodDispatcher;
+	        //_actorServiceMethodDispatcher = ActorProxyFactory.GetOrDiscoverActorMethodDispatcher(typeof(Microsoft.ServiceFabric.Actors.IActorService));
+		}
 
-        ~FabricTransportActorRemotingClient()
+		~FabricTransportActorRemotingClient()
         {
             if (this.InnerClient == null) return;
             // ReSharper disable once SuspiciousTypeConversion.Global

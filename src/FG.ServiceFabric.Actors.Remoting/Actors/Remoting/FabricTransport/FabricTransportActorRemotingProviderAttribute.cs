@@ -60,7 +60,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
                 callbackClient,
                 (IServicePartitionResolver)null,
                 exceptionHandlers,
-                traceId: (string)null), null, null, null);
+                traceId: (string)null), null, null);
         }
 
         public override IServiceRemotingListener CreateServiceRemotingListener(ActorService actorService)

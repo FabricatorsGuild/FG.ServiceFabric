@@ -20,27 +20,35 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         protected readonly Uri ServiceUri;
 	    private readonly IServiceClientLogger _logger;
 
-        private readonly MethodDispatcherBase _serviceMethodDispatcher;
-        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();		
+        private readonly MethodDispatcherBase[] _serviceMethodDispatchers;
+        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
 
-        private string GetServiceMethodName(ServiceRemotingMessageHeaders messageHeaders)
+	    private string GetServiceMethodName(ServiceRemotingMessageHeaders messageHeaders)
+	    {
+		    if (messageHeaders == null) return null;
+
+		    return GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
+	    }
+
+	    protected string GetServiceMethodName(int interfaceId, int methodId)
         {
-            if (messageHeaders == null) return null;
-
             try
             {
                 var methodName = "-";
-                var lookup = HashUtil.Combine(messageHeaders.InterfaceId, messageHeaders.MethodId);
+                var lookup = HashUtil.Combine(interfaceId, methodId);
                 if (ServiceMethodMap.ContainsKey(lookup))
                 {
                     methodName = ServiceMethodMap[lookup];
                     return methodName;
                 }
 
-                methodName = _serviceMethodDispatcher.GetMethodDispatcherMapName(
-                    messageHeaders.InterfaceId, messageHeaders.MethodId);
-                ServiceMethodMap[lookup] = methodName;
-                return methodName;
+	            foreach(var serviceMethodDispatcher in _serviceMethodDispatchers)
+	            {
+					methodName = serviceMethodDispatcher.GetMethodDispatcherMapName(interfaceId, methodId);
+		            if (methodName == null) continue;
+		            ServiceMethodMap[lookup] = methodName;
+		            return methodName;
+	            }				
             }
             catch (Exception)
             {
@@ -51,12 +59,12 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
         }
 
         public FabricTransportServiceRemotingClient(IServiceRemotingClient innerClient, Uri serviceUri, IServiceClientLogger logger,
-            MethodDispatcherBase serviceMethodDispatcher)
+            MethodDispatcherBase[] serviceMethodDispatchers)
         {
             InnerClient = innerClient;
             ServiceUri = serviceUri;
             _logger = logger;
-            _serviceMethodDispatcher = serviceMethodDispatcher;
+            _serviceMethodDispatchers = serviceMethodDispatchers;
         }
 
         ~FabricTransportServiceRemotingClient()

@@ -41,7 +41,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 				listenerName, 
 				retrySettings, 
 				cancellationToken);
-            return new FabricTransportServiceRemotingClient(client, serviceUri, _logger, _serviceMethodDispatcher);
+            return new FabricTransportServiceRemotingClient(client, serviceUri, _logger, new[]{ _serviceMethodDispatcher});
         }
 
         public async Task<IServiceRemotingClient> GetClientAsync(ResolvedServicePartition previousRsp, TargetReplicaSelector targetReplicaSelector, string listenerName, OperationRetrySettings retrySettings,
@@ -53,7 +53,7 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 				listenerName, 
 				retrySettings, 
 				cancellationToken);
-            return new FabricTransportServiceRemotingClient(client, previousRsp.ServiceName, _logger, _serviceMethodDispatcher);
+            return new FabricTransportServiceRemotingClient(client, previousRsp.ServiceName, _logger, new []{_serviceMethodDispatcher});
         }
 
         public Task<OperationRetryControl> ReportOperationExceptionAsync(IServiceRemotingClient client, ExceptionInformation exceptionInformation, OperationRetrySettings retrySettings,

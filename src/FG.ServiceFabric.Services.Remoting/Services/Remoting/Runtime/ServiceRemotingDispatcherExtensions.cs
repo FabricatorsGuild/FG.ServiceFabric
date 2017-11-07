@@ -30,8 +30,11 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
         
         public static string GetMethodDispatcherMapName(this Microsoft.ServiceFabric.Services.Remoting.Builder.MethodDispatcherBase that, int interfaceId, int methodId)
         {
-            Debug.Assert(that.InterfaceId != interfaceId);
-            return that.GetMethodName(methodId);
+	        if(that.InterfaceId == interfaceId)
+	        {
+		        return that.GetMethodName(methodId);
+	        }
+	        return null;
         }
     }
 }

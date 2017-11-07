@@ -14,59 +14,7 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 {
     public class ServiceProxyFactory : ServiceProxyFactoryBase, IServiceProxyFactory
     {
-        private readonly object _lock = new object();
-		private IServiceProxyFactory _innerProxyFactory;
-		private static volatile Func<ServiceProxyFactory, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
-
-		static ServiceProxyFactory()
-	    {
-		    SetInnerFactory(null);
-	    }
-
-	    internal static void SetInnerFactory(Func<ServiceProxyFactory, Type, IServiceProxyFactory> innerFactory)
-	    {
-		    if (innerFactory == null)
-		    {
-			    innerFactory = (serviceProxyFactory, serviceInterfaceType) => new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
-					client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
-		    }
-		    _serviceProxyFactoryInnerFactory = innerFactory;
-	    }
-
-		private IServiceClientLogger Logger { get; set; }
-
-        public ServiceProxyFactory(IServiceClientLogger logger)
-        {
-            Logger = logger;
-        }
-
-        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
-        {
-            var serviceMethodDispatcher = base.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
-
-	        var contextWrapper = ServiceRequestContextWrapper.Current;
-            return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
-                 serviceInterfaceType,
-                serviceRemotingCallbackClient,
-                Logger,
-				contextWrapper.CorrelationId,
-                serviceMethodDispatcher);
-        }
-
-        private IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
-        {
-	        if (_innerProxyFactory != null)
-	        {
-		        return _innerProxyFactory;
-	        }
-
-            lock (_lock)
-            {
-				_innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
-
-                return _innerProxyFactory;
-            }
-        }
+	    public ServiceProxyFactory(IServiceClientLogger logger) : base(logger) { }	
 
         public TServiceInterface CreateServiceProxy<TServiceInterface>(
             Uri serviceUri, 
