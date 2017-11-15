@@ -11,7 +11,8 @@
     <AssemblyName>FG.ServiceFabric.Testing</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -80,6 +81,10 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
+      <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
+      <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
       <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
@@ -183,6 +188,9 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Mocks\Fabric\MockPartitionEnumerationManager.cs" />
     <Compile Include="Mocks\MockCodePackageActivationContext.cs" />
     <Compile Include="Mocks\MockFabricRuntime.cs" />
+    <Compile Include="Mocks\MockFabricRuntimeIntegratedSetupBase.cs" />
+    <Compile Include="Mocks\MockFabricSetupException.cs" />
+    <Compile Include="Mocks\MockServiceRuntimeException.cs" />
     <Compile Include="Mocks\MockServiceRuntimeRegistration.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\IMockableServiceRegistration.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\IMockServiceProxyManager.cs" />
