@@ -34,8 +34,6 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
             : base(innerClient, serviceUri, logger, serviceMethodDispatchers)
         {
             _logger = logger;
-         //   _actorMethodDispatcher = actorMethodDispatcher;
-	        //_actorServiceMethodDispatcher = ActorProxyFactory.GetOrDiscoverActorMethodDispatcher(typeof(Microsoft.ServiceFabric.Actors.IActorService));
 		}
 
 		~FabricTransportActorRemotingClient()
