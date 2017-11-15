@@ -30,45 +30,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IEnumerable<string>> GetActors(string service, string partition);
 		Task<IEnumerable<string>> GetActorReminders(string service, string partition, string actor);
 	}
-
-	internal class DocumentDbStateSessionBaseObject : IStateSessionObject
-	{
-		protected readonly DocumentDbStateSessionManager _stateSessionManager;
-		protected readonly string _schema;
-		protected DocumentDbStateSessionManager.DocumentDbStateSession _session;
-
-		public DocumentDbStateSessionBaseObject(DocumentDbStateSessionManager stateSessionManager, string schema)
-		{
-			_stateSessionManager = stateSessionManager;
-			_schema = schema;
-		}
-
-		internal void AttachToSession(DocumentDbStateSessionManager.DocumentDbStateSession session)
-		{
-			if (_session != null && _session.Equals(session))
-			{
-				throw new StateSessionException($"Cannot attach StateSessionBaseDictionary to session {session.GetHashCode()}, it is already attached to session {_session.GetHashCode()}");
-			}
-			_session = session;
-		}
-
-		internal void DetachFromSession(DocumentDbStateSessionManager.DocumentDbStateSession session)
-		{
-			if (_session == null || !_session.Equals(session))
-			{
-				throw new StateSessionException($"Cannot detach StateSessionBaseDictionary from session {session.GetHashCode()}, it is not attached to this session {_session?.GetHashCode()}");
-			}
-			_session = null;
-		}
-
-		protected void CheckSession()
-		{
-			if (_session == null)
-			{
-				throw new StateSessionException($"Cannot call methods on a StateSessionDictionary without a StateSession, call StateSessionManager.CreateSession() with this dictionary as an argument");
-			}
-		}
-	}
 	
 	public class DocumentDbStateSessionManager : StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession> , IStateSessionManager, IStateQuerySessionManager
 	{
@@ -125,15 +86,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					endpointUri: new Uri(_manager._endpointUri),
 					primaryKey: _manager._collectionPrimaryKey,
 					connectionPolicySetting: _manager._connectionPolicySetting).GetAwaiter().GetResult();
-				_attachedObjects = stateSessionObjects;
-				AttachObjects(_attachedObjects);
+				
+				AttachObjects(stateSessionObjects);
 			}
 
 			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
 			{
+				_attachedObjects = stateSessionObjects;
 				foreach (var stateSessionObject in _attachedObjects)
 				{
-					if (!(stateSessionObject is DocumentDbStateSessionBaseObject stateSessionBaseObject))
+					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
 					{
 						throw new StateSessionException($"Can only attach object that have been created by the owning StateSessionManager");
 					}
@@ -145,7 +107,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				foreach (var stateSessionObject in _attachedObjects)
 				{
-					if (!(stateSessionObject is DocumentDbStateSessionBaseObject stateSessionBaseObject))
+					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
 					{
 						throw new StateSessionException($"Can only detach object that have been created by the owning StateSessionManager");
 					}

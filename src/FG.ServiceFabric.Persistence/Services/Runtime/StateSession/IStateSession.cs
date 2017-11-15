@@ -22,7 +22,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken));
 		Task<IAsyncEnumerable<T>> CreateEnumerableAsync();
 		Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));
-	}
+	}	
 
 	public interface IStateSessionDictionary<T> : IStateSessionObject
 	{
