@@ -11,8 +11,7 @@
     <AssemblyName>FG.ServiceFabric.Persistence</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <NuGetPackageImportStamp></NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -51,6 +50,40 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
+      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
+      <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Azure.Documents.Client, Version=1.18.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.18.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
@@ -92,8 +125,6 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.dll</HintPath>
       <Private>True</Private>
@@ -108,30 +139,25 @@
       <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Strings.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
-    <Compile Include="Actors\Runtime\StateSession\ActorStateWrapper.cs" />
+    <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
+    <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
+    <Compile Include="Actors\Runtime\ExternalState.cs" />
     <Compile Include="Actors\Runtime\IActorValueMetadata.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCollection.cs" />
-    <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
-    <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
+    <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderState.cs" />
     <Compile Include="Actors\Runtime\SessionStateActorStateProviderException.cs" />
-    <Compile Include="Actors\Runtime\StateSessionActorStateProvider.IStateProvider.cs" />
-    <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\StateSession\ActorStateWrapper.cs" />
     <Compile Include="Actors\Runtime\StateSession\Metadata\ActorStateMetadata.cs" />
+    <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\StateSessionActorStateProvider.IStateProvider.cs" />
+    <None Include="app.config" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbSettingsProvider.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
@@ -143,57 +169,29 @@
     <Compile Include="DocumentDb\IStateMetadata.cs" />
     <Compile Include="DocumentDb\StateMetadata.cs" />
     <Compile Include="DocumentDb\Testing\InMemoryStateWriter.cs" />
-    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
-    <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
-    <Compile Include="Actors\Runtime\ExternalState.cs" />
-    <Compile Include="Services\Runtime\StateSession\InMemoryStateSessionManagerWithTransaction.cs" />
-    <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
-    <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Runtime\StateSession\FileSystemStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\InMemoryStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\ReliableStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
-    <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
-    <Compile Include="Services\Runtime\StateSession\TextStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\TextStateSessionManagerWithTransaction.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
     <None Include="FG.ServiceFabric.Persistence.nuspec">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\InMemoryStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\InMemoryStateSessionManagerWithTransaction.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
+    <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
+    <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
+    <Compile Include="Services\Runtime\StateSession\ReliableStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />
+    <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
+    <Compile Include="Services\Runtime\StateSession\TextStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\TextStateSessionManagerWithTransaction.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
-      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
-      <Name>FG.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
-      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
-      <Name>FG.ServiceFabric.Extensions</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
-  </Target>
-  <PropertyGroup>
-    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
-$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
-  </PropertyGroup>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />
 </Project>

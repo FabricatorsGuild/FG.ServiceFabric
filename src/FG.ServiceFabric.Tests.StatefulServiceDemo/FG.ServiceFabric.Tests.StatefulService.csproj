@@ -40,6 +40,26 @@
     <IsServiceFabricServiceProject>true</IsServiceFabricServiceProject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
+      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
+      <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
+      <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
+      <Name>FG.ServiceFabric.Persistence</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj">
+      <Project>{c3b564e2-fbb9-47b2-b820-4cc63bf66ae2}</Project>
+      <Name>FG.ServiceFabric.Tests.Persistence</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Microsoft.ServiceFabric.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.219\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
     </Reference>
@@ -71,8 +91,6 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.219\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
     <Reference Include="System.Fabric, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.dll</HintPath>
       <Private>True</Private>
@@ -87,34 +105,16 @@
       <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Strings.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StatefulServiceDemo.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="ServiceEventSource.cs" />
-  </ItemGroup>
-  <ItemGroup>
+    <None Include="App.config" />
     <None Include="PackageRoot\Config\Settings.xml" />
     <None Include="PackageRoot\ServiceManifest.xml" />
-    <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
-      <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
-      <Name>FG.ServiceFabric.Extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
-      <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
-      <Name>FG.ServiceFabric.Persistence</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj">
-      <Project>{c3b564e2-fbb9-47b2-b820-4cc63bf66ae2}</Project>
-      <Name>FG.ServiceFabric.Tests.Persistence</Name>
-    </ProjectReference>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ServiceEventSource.cs" />
+    <Compile Include="StatefulServiceDemo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
