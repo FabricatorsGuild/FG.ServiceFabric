@@ -9,22 +9,21 @@ using Microsoft.ServiceFabric.Data.Notifications;
 
 namespace FG.ServiceFabric.Services.Runtime
 {
-	public abstract class WrappedStateManagerReplica<TReliableDictionary, TReliableQueue> : IReliableStateManager, IReliableStateManagerReplica
+	public abstract class WrappedStateManagerReplica<TReliableDictionary, TReliableQueue> : IReliableStateManager,
+		IReliableStateManagerReplica
 		where TReliableDictionary : IReliableState
 		where TReliableQueue : IReliableState
 	{
 		private readonly IReliableStateManagerReplica _innerStateManagerReplica;
 
-		protected WrappedStateManagerReplica (IReliableStateManagerReplica innerStateManagerReplica, 
+		protected WrappedStateManagerReplica(IReliableStateManagerReplica innerStateManagerReplica,
 			Func<IReliableState, TReliableDictionary> createReliableDictionary,
-			Func<IReliableState, TReliableQueue> createReliableQueue )
+			Func<IReliableState, TReliableQueue> createReliableQueue)
 		{
 			_innerStateManagerReplica = innerStateManagerReplica;
 			_innerStateManagerReplica.StateManagerChanged += (sender, args) => StateManagerChanged?.Invoke(this, args);
 			_innerStateManagerReplica.TransactionChanged += (sender, args) => TransactionChanged?.Invoke(this, args);
 		}
-
-		protected abstract Task<T> CreateWrappedReliableDictionary<T>(T innerReliableDictionary) where T : IReliableState;
 
 		public virtual IAsyncEnumerator<IReliableState> GetAsyncEnumerator()
 		{
@@ -39,16 +38,6 @@ namespace FG.ServiceFabric.Services.Runtime
 		public virtual ITransaction CreateTransaction()
 		{
 			return _innerStateManagerReplica.CreateTransaction();
-		}
-
-		public async Task<T> GetOrAddWrappedAsync<T>(T inner) where T : IReliableState
-		{
-			if (typeof(T).GetGenericTypeDefinition() == typeof(IReliableDictionary<,>))
-			{
-				return await CreateWrappedReliableDictionary<T>(inner);
-			}
-
-			return inner;
 		}
 
 		public virtual async Task<T> GetOrAddAsync<T>(ITransaction tx, Uri name, TimeSpan timeout) where T : IReliableState
@@ -155,7 +144,8 @@ namespace FG.ServiceFabric.Services.Runtime
 			_innerStateManagerReplica.Initialize(initializationParameters);
 		}
 
-		public virtual Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition, CancellationToken cancellationToken)
+		public virtual Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition,
+			CancellationToken cancellationToken)
 		{
 			return _innerStateManagerReplica.OpenAsync(openMode, partition, cancellationToken);
 		}
@@ -180,9 +170,10 @@ namespace FG.ServiceFabric.Services.Runtime
 			return _innerStateManagerReplica.BackupAsync(backupCallback);
 		}
 
-		public virtual Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken, Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
+		public virtual Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken,
+			Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
 		{
-			return _innerStateManagerReplica.BackupAsync(option, timeout, cancellationToken, backupCallback); 
+			return _innerStateManagerReplica.BackupAsync(option, timeout, cancellationToken, backupCallback);
 		}
 
 		public virtual Task RestoreAsync(string backupFolderPath)
@@ -190,7 +181,8 @@ namespace FG.ServiceFabric.Services.Runtime
 			return _innerStateManagerReplica.RestoreAsync(backupFolderPath);
 		}
 
-		public virtual Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy, CancellationToken cancellationToken)
+		public virtual Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy,
+			CancellationToken cancellationToken)
 		{
 			return _innerStateManagerReplica.RestoreAsync(backupFolderPath, restorePolicy, cancellationToken);
 		}
@@ -198,6 +190,18 @@ namespace FG.ServiceFabric.Services.Runtime
 		public virtual Func<CancellationToken, Task<bool>> OnDataLossAsync
 		{
 			set { _innerStateManagerReplica.OnDataLossAsync = value; }
+		}
+
+		protected abstract Task<T> CreateWrappedReliableDictionary<T>(T innerReliableDictionary) where T : IReliableState;
+
+		public async Task<T> GetOrAddWrappedAsync<T>(T inner) where T : IReliableState
+		{
+			if (typeof(T).GetGenericTypeDefinition() == typeof(IReliableDictionary<,>))
+			{
+				return await CreateWrappedReliableDictionary<T>(inner);
+			}
+
+			return inner;
 		}
 	}
 }

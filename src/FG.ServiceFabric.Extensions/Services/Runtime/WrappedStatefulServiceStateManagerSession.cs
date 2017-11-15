@@ -33,6 +33,7 @@ namespace FG.ServiceFabric.Services.Runtime
 		}
 
 		public event EventHandler<SessionCommittedEventArgs> SessionCommitted;
+
 		public virtual Task SetAsync<T>(string schema, string storageKey, T value)
 		{
 			return _innerSession.SetAsync(schema, storageKey, value);

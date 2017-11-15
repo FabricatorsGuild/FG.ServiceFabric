@@ -22,36 +22,52 @@ using Microsoft.ServiceFabric.Services.Remoting.Client;
 namespace FG.ServiceFabric.Testing.Mocks
 {
 	public class MockFabricRuntime
-    {
-        private readonly MockServiceProxyFactory _serviceProxyFactory;
-        private readonly MockActorProxyFactory _actorProxyFactory;
+	{
+		private readonly List<MockServiceInstance> _activeInstances;
+		private readonly MockActorProxyFactory _actorProxyFactory;
+		private readonly List<MockFabricApplication> _applications;
 		private readonly MockPartitionEnumerationManager _partitionEnumerationManager;
-	    private readonly List<MockFabricApplication> _applications;
-	    private readonly List<MockServiceInstance> _activeInstances;
+		private readonly MockServiceProxyFactory _serviceProxyFactory;
+
+		public MockFabricRuntime()
+		{
+			var serviceProxyFactory = new MockServiceProxyFactory(this);
+			var actorProxyFactory = new MockActorProxyFactory(this);
+
+			_serviceProxyFactory = serviceProxyFactory;
+			_actorProxyFactory = actorProxyFactory;
+
+			FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory.SetInnerFactory((factory, serviceType) =>
+				_serviceProxyFactory);
+			FG.ServiceFabric.Actors.Client.ActorProxyFactory.SetInnerFactory((factory, serviceType, actorType) =>
+				_actorProxyFactory);
+
+			_partitionEnumerationManager = new MockPartitionEnumerationManager(this);
+
+			_applications = new List<MockFabricApplication>();
+			_activeInstances = new List<MockServiceInstance>();
+
+			CancellationTokenSource = new CancellationTokenSource();
+			CancellationToken = CancellationTokenSource.Token;
+		}
 
 		public CancellationToken CancellationToken { get; private set; }
-	    public CancellationTokenSource CancellationTokenSource { get; private set; }
-
-		private static class FabricRuntimeContextKeys
-		{
-			public const string CurrentMockFabricRuntime = "mockFabricRuntime";
-		}
+		public CancellationTokenSource CancellationTokenSource { get; private set; }
 
 		public static MockFabricRuntime Current
 		{
-			get => (MockFabricRuntime)FabricRuntimeContextWrapper.Current?[FabricRuntimeContextKeys.CurrentMockFabricRuntime];
+			get => (MockFabricRuntime) FabricRuntimeContextWrapper.Current?[FabricRuntimeContextKeys.CurrentMockFabricRuntime];
 			set => FabricRuntimeContextWrapper.Current[FabricRuntimeContextKeys.CurrentMockFabricRuntime] = value;
 		}
 
 
+		public bool DisableMethodCallOutput { get; set; }
 
-	    public bool DisableMethodCallOutput { get; set; }
-		
-	    internal IEnumerable<MockServiceInstance> Instances => _activeInstances;
+		internal IEnumerable<MockServiceInstance> Instances => _activeInstances;
 
 		public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory;
-        public IActorProxyFactory ActorProxyFactory => _actorProxyFactory;
-	    public IPartitionEnumerationManager PartitionEnumerationManager => _partitionEnumerationManager;
+		public IActorProxyFactory ActorProxyFactory => _actorProxyFactory;
+		public IPartitionEnumerationManager PartitionEnumerationManager => _partitionEnumerationManager;
 
 		internal ICodePackageActivationContext GetCodePackageContext(string applicationName)
 		{
@@ -69,18 +85,28 @@ namespace FG.ServiceFabric.Testing.Mocks
 			);
 		}
 
-	    internal ApplicationUriBuilder GetApplicationUriBuilder(string applicationName)
+		internal ApplicationUriBuilder GetApplicationUriBuilder(string applicationName)
 		{
 			return new ApplicationUriBuilder(GetCodePackageContext(applicationName));
 		}
 
-		internal void RegisterInstances(IEnumerable<MockServiceInstance> instances) { _activeInstances.AddRange(instances); }
+		internal void RegisterInstances(IEnumerable<MockServiceInstance> instances)
+		{
+			_activeInstances.AddRange(instances);
+		}
 
-		public IEnumerable<IMockServiceInstance> GetInstances() { return _activeInstances.Select(i => i as IMockServiceInstance).ToArray(); }
+		public IEnumerable<IMockServiceInstance> GetInstances()
+		{
+			return _activeInstances.Select(i => i as IMockServiceInstance).ToArray();
+		}
 
-		internal NodeContext BuildNodeContext() { return new NodeContext("NODE_1", new NodeId(1L, 5L), 1L, "NODE_TYPE_1", "10.0.0.1"); }
+		internal NodeContext BuildNodeContext()
+		{
+			return new NodeContext("NODE_1", new NodeId(1L, 5L), 1L, "NODE_TYPE_1", "10.0.0.1");
+		}
 
-		public StatefulServiceContext BuildStatefulServiceContext(string applicationName, string serviceName, ServicePartitionInformation partitionInformation, long replicaId)
+		public StatefulServiceContext BuildStatefulServiceContext(string applicationName, string serviceName,
+			ServicePartitionInformation partitionInformation, long replicaId)
 		{
 			return new StatefulServiceContext(
 				new NodeContext(
@@ -97,6 +123,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 				replicaId: replicaId
 			);
 		}
+
 		public StatelessServiceContext BuildStatelessServiceContext(string applicationName, string serviceName)
 		{
 			return new StatelessServiceContext(
@@ -115,56 +142,45 @@ namespace FG.ServiceFabric.Testing.Mocks
 			);
 		}
 
-		public MockFabricRuntime()
+		public MockFabricApplication GetApplication(string applicationInstanceName)
 		{
-			var serviceProxyFactory = new MockServiceProxyFactory(this);
-			var actorProxyFactory = new MockActorProxyFactory(this);
+			var existingApplication = _applications.FirstOrDefault(a =>
+				a.ApplicationInstanceName.Equals(applicationInstanceName, StringComparison.InvariantCulture));
+			if (existingApplication == null)
+			{
+				throw new ArgumentException(
+					$"An application with name {applicationInstanceName} could not be found this runtime, register one with {nameof(RegisterApplication)}");
+			}
 
-			_serviceProxyFactory = serviceProxyFactory;
-			_actorProxyFactory = actorProxyFactory;
-
-			FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory.SetInnerFactory((factory, serviceType) => _serviceProxyFactory);
-			FG.ServiceFabric.Actors.Client.ActorProxyFactory.SetInnerFactory((factory, serviceType, actorType) => _actorProxyFactory);
-
-			_partitionEnumerationManager = new MockPartitionEnumerationManager(this);
-
-			_applications = new List<MockFabricApplication>();
-			_activeInstances = new List<MockServiceInstance>();
-
-			CancellationTokenSource = new CancellationTokenSource();
-			CancellationToken = CancellationTokenSource.Token;
+			return existingApplication;
 		}
 
-	    public MockFabricApplication GetApplication(string applicationInstanceName)
-	    {
-			var existingApplication = _applications.FirstOrDefault(a => a.ApplicationInstanceName.Equals(applicationInstanceName, StringComparison.InvariantCulture));
-		    if (existingApplication == null)
-		    {
-			    throw new ArgumentException($"An application with name {applicationInstanceName} could not be found this runtime, register one with {nameof(RegisterApplication)}");
-		    }
+		public MockFabricApplication RegisterApplication(string applicationInstanceName)
+		{
+			var existingApplication = _applications.FirstOrDefault(a =>
+				a.ApplicationInstanceName.Equals(applicationInstanceName, StringComparison.InvariantCulture));
+			if (existingApplication != null)
+			{
+				throw new ArgumentException(
+					$"An application with name {applicationInstanceName} is already registered in this runtime");
+			}
 
-		    return existingApplication;
-	    }
+			var mockFabricApplication = new MockFabricApplication(this, applicationInstanceName);
 
-	    public MockFabricApplication RegisterApplication(string applicationInstanceName)
-	    {
-		    var existingApplication = _applications.FirstOrDefault(a => a.ApplicationInstanceName.Equals(applicationInstanceName, StringComparison.InvariantCulture));
-		    if (existingApplication != null)
-		    {
-			    throw new ArgumentException($"An application with name {applicationInstanceName} is already registered in this runtime");
-		    }
-			
-		    var mockFabricApplication = new MockFabricApplication(this, applicationInstanceName);
+			_applications.Add(mockFabricApplication);
+			return mockFabricApplication;
+		}
 
-		    _applications.Add(mockFabricApplication);
-		    return mockFabricApplication;
-	    }
+		private static class FabricRuntimeContextKeys
+		{
+			public const string CurrentMockFabricRuntime = "mockFabricRuntime";
+		}
 	}
 
 	public class MockFabricApplication
 	{
-		private readonly MockFabricRuntime _mockFabricRuntime;
 		private readonly string _applicationInstanceName;
+		private readonly MockFabricRuntime _mockFabricRuntime;
 		private ApplicationUriBuilder _applicationUriBuilder;
 		public ICodePackageActivationContext _codePackageActivationContext;
 
@@ -193,9 +209,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 		{
 			var serviceType = typeof(TServiceImplementation);
 			var serviceInterfaceTypes = typeof(TServiceImplementation).IsInterface
-											? new Type[] { typeof(TServiceImplementation) }
-											: typeof(TServiceImplementation)
-												.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {typeof(TServiceImplementation)}
+				: typeof(TServiceImplementation)
+					.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -220,15 +236,16 @@ namespace FG.ServiceFabric.Testing.Mocks
 		public void SetupService
 		(
 			Type serviceType,
-			Func<StatefulServiceContext, IReliableStateManagerReplica2, Microsoft.ServiceFabric.Services.Runtime.StatefulServiceBase> createService,
+			Func<StatefulServiceContext, IReliableStateManagerReplica2,
+				Microsoft.ServiceFabric.Services.Runtime.StatefulServiceBase> createService,
 			CreateStateManager createStateManager = null,
 			MockServiceDefinition serviceDefinition = null
 		)
 		{
 			var serviceInterfaceTypes = serviceType.IsInterface
-											? new Type[] { serviceType }
-											: serviceType
-												.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {serviceType}
+				: serviceType
+					.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -258,9 +275,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 		)
 		{
 			var serviceInterfaceTypes = serviceType.IsInterface
-											? new Type[] { serviceType }
-											: serviceType
-												.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {serviceType}
+				: serviceType
+					.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 			var serviceName = serviceType.Name;
@@ -289,9 +306,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 		{
 			var serviceType = typeof(TServiceImplementation);
 			var serviceInterfaceTypes = typeof(TServiceImplementation).IsInterface
-											? new Type[] { typeof(TServiceImplementation) }
-											: typeof(TServiceImplementation)
-												.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {typeof(TServiceImplementation)}
+				: typeof(TServiceImplementation)
+					.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 			var serviceName = serviceType.Name;
@@ -318,17 +335,18 @@ namespace FG.ServiceFabric.Testing.Mocks
 			CreateActorStateManager createActorStateManager = null,
 			CreateActorStateProvider createActorStateProvider = null,
 			MockServiceDefinition serviceDefinition = null
-			)
+		)
 			where TActorImplementation : class, IActor
 			where TActorService : ActorService
 		{
 			var actorInterface = typeof(TActorImplementation).IsInterface
-									 ? typeof(TActorImplementation)
-									 : typeof(TActorImplementation).GetInterfaces().FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
+				? typeof(TActorImplementation)
+				: typeof(TActorImplementation).GetInterfaces()
+					.FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
 
 			var serviceInterfaceTypes = typeof(TActorService).IsInterface
-											? new Type[] { typeof(TActorService) }
-											: typeof(TActorService).GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {typeof(TActorService)}
+				: typeof(TActorService).GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -352,7 +370,8 @@ namespace FG.ServiceFabric.Testing.Mocks
 				interfaceType: actorInterface,
 				implementationType: typeof(TActorImplementation),
 				createActorService: createActorService,
-				activator: (Func<ActorService, ActorId, TActorImplementation>)((actorService, actorId) => activator((TActorService)actorService, actorId)),
+				activator: (Func<ActorService, ActorId, TActorImplementation>) ((actorService, actorId) =>
+					activator((TActorService) actorService, actorId)),
 				createActorStateManager: createActorStateManager,
 				createActorStateProvider: createActorStateProvider);
 
@@ -368,8 +387,9 @@ namespace FG.ServiceFabric.Testing.Mocks
 			where TActorImplementation : class, IActor
 		{
 			var actorInterface = typeof(TActorImplementation).IsInterface
-									 ? typeof(TActorImplementation)
-									 : typeof(TActorImplementation).GetInterfaces().FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
+				? typeof(TActorImplementation)
+				: typeof(TActorImplementation).GetInterfaces()
+					.FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -403,19 +423,20 @@ namespace FG.ServiceFabric.Testing.Mocks
 			Type actorImplementationType,
 			Type actorServiceImplementationType,
 			Func<ActorService, ActorId, object> activator,
-			Func<StatefulServiceContext, ActorTypeInformation, IActorStateProvider, Func<ActorBase, IActorStateProvider, IActorStateManager>, ActorService> createActorService = null,
+			Func<StatefulServiceContext, ActorTypeInformation, IActorStateProvider,
+				Func<ActorBase, IActorStateProvider, IActorStateManager>, ActorService> createActorService = null,
 			CreateActorStateManager createActorStateManager = null,
 			CreateActorStateProvider createActorStateProvider = null,
 			MockServiceDefinition serviceDefinition = null)
 		{
 			var actorInterface = actorImplementationType.IsInterface
-									 ? actorImplementationType
-									 : actorImplementationType.GetInterfaces().FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
+				? actorImplementationType
+				: actorImplementationType.GetInterfaces().FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
 
 			var serviceInterfaceTypes = actorServiceImplementationType.IsInterface
-											? new Type[] { actorServiceImplementationType }
-											: actorServiceImplementationType
-												.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+				? new Type[] {actorServiceImplementationType}
+				: actorServiceImplementationType
+					.GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
 			serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -439,7 +460,8 @@ namespace FG.ServiceFabric.Testing.Mocks
 				serviceRegistration,
 				interfaceType: actorInterface,
 				implementationType: actorImplementationType,
-				createActorService: (context, information, provider, factory) => createActorService?.Invoke(context, information, provider, factory),
+				createActorService: (context, information, provider, factory) =>
+					createActorService?.Invoke(context, information, provider, factory),
 				activator: activator,
 				createActorStateManager: createActorStateManager,
 				createActorStateProvider: createActorStateProvider);

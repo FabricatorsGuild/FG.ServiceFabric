@@ -27,34 +27,42 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			IMockActorProxyManager actorProxyManager)
 		{
 			ActorId = actorId;
-			ActorServicePartitionClient = new MockActorServicePartitionClient(actorId, serviceUri, partitionKey, replicaSelector, listenerName, factory);
+			ActorServicePartitionClient =
+				new MockActorServicePartitionClient(actorId, serviceUri, partitionKey, replicaSelector, listenerName, factory);
 
 			Proxy = CreateDynamicProxy(target, actorInterfaceType, actorProxyManager);
 		}
 
-		private object CreateDynamicProxy(object target, Type actorInterfaceType, IMockActorProxyManager actorManager) 
-		{
-			var generator = new ProxyGenerator(new PersistentProxyBuilder());
-			var selector = new InterceptorSelector();
-			var actorInterceptor = new ActorInterceptor(actorManager);
-			var actorProxyInterceptor = new ActorProxyInterceptor(this);
-			var options = new ProxyGenerationOptions() { Selector = selector };
-			var proxy = generator.CreateInterfaceProxyWithTarget(
-				actorInterfaceType, 
-				new Type[] { typeof(IActorProxy) }, 
-				target, 
-				options, 
-				actorInterceptor, 
-				actorProxyInterceptor);
-			return proxy;
-		}
-		
 
 		public object Proxy { get; }
 
 		public new ActorId ActorId { get; }
 		public new IActorServicePartitionClient ActorServicePartitionClient { get; }
-		public new Microsoft.ServiceFabric.Actors.Remoting.V2.Client.IActorServicePartitionClient ActorServicePartitionClientV2 { get; }
+
+		public new Microsoft.ServiceFabric.Actors.Remoting.V2.Client.IActorServicePartitionClient
+			ActorServicePartitionClientV2 { get; }
+
+		private object CreateDynamicProxy(object target, Type actorInterfaceType, IMockActorProxyManager actorManager)
+		{
+			var generator = new ProxyGenerator(new PersistentProxyBuilder());
+			var selector = new InterceptorSelector();
+			var actorInterceptor = new ActorInterceptor(actorManager);
+			var actorProxyInterceptor = new ActorProxyInterceptor(this);
+			var options = new ProxyGenerationOptions() {Selector = selector};
+			var proxy = generator.CreateInterfaceProxyWithTarget(
+				actorInterfaceType,
+				new Type[] {typeof(IActorProxy)},
+				target,
+				options,
+				actorInterceptor,
+				actorProxyInterceptor);
+			return proxy;
+		}
+
+		protected override object GetReturnValue(int interfaceId, int methodId, object responseBody)
+		{
+			throw new NotImplementedException();
+		}
 
 		private class MockActorServicePartitionClient : IActorServicePartitionClient
 		{
@@ -129,11 +137,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			{
 				invocation.ReturnValue = invocation.Method.Invoke(_actorProxy, invocation.Arguments);
 			}
-		}
-
-		protected override object GetReturnValue(int interfaceId, int methodId, object responseBody)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

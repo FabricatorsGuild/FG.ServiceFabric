@@ -5,10 +5,11 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 {
 	internal class ActorReminderState : IActorReminderState
 	{
-		private readonly ActorReminderData _reminder;
 		private readonly TimeSpan _nextDueTime;
+		private readonly ActorReminderData _reminder;
 
-		public ActorReminderState(ActorReminderData reminder, DateTime currentLogicalTime, ActorReminderCompletedData reminderCompletedData)
+		public ActorReminderState(ActorReminderData reminder, DateTime currentLogicalTime,
+			ActorReminderCompletedData reminderCompletedData)
 		{
 			this._reminder = reminder;
 

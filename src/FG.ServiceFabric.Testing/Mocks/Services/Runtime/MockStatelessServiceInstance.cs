@@ -29,14 +29,16 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 
 
-			var statelessServiceContext = FabricRuntime.BuildStatelessServiceContext(ServiceRegistration.GetApplicationName(), ServiceRegistration.Name);
+			var statelessServiceContext =
+				FabricRuntime.BuildStatelessServiceContext(ServiceRegistration.GetApplicationName(), ServiceRegistration.Name);
 			var serviceFactory = ServiceRegistration.CreateStatelessService ?? GetMockStatelessService;
 			// TODO: consider this further, is it really what should be done???
 
 			var statelessService = serviceFactory(statelessServiceContext);
 			if (statelessService is FG.ServiceFabric.Services.Runtime.StatelessService)
 			{
-				var applicationUriBuilder = new ApplicationUriBuilder(statelessServiceContext.CodePackageActivationContext, statelessServiceContext.CodePackageActivationContext.ApplicationName);
+				var applicationUriBuilder = new ApplicationUriBuilder(statelessServiceContext.CodePackageActivationContext,
+					statelessServiceContext.CodePackageActivationContext.ApplicationName);
 				statelessService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
 				statelessService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
 				statelessService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);

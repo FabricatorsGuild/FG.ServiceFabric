@@ -30,14 +30,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IEnumerable<string>> GetActors(string service, string partition);
 		Task<IEnumerable<string>> GetActorReminders(string service, string partition, string actor);
 	}
-	
-	public class DocumentDbStateSessionManager : StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession> , IStateSessionManager, IStateQuerySessionManager
+
+	public class DocumentDbStateSessionManager :
+		StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession>, IStateSessionManager,
+		IStateQuerySessionManager
 	{
 		private readonly string _collection;
-		private readonly string _databaseName;
-		private readonly string _endpointUri;
 		private readonly string _collectionPrimaryKey;
 		private readonly ConnectionPolicySetting _connectionPolicySetting;
+		private readonly string _databaseName;
+		private readonly string _endpointUri;
 
 		private readonly ICosmosDbClientFactory _factory;
 
@@ -58,23 +60,23 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			_databaseName = settingsProvider.DatabaseName();
 			_endpointUri = settingsProvider.EndpointUri();
 			_collectionPrimaryKey = settingsProvider.PrimaryKey();
-		}	
+		}
 
 		IStateQuerySession IStateQuerySessionManager.CreateSession()
 		{
 			return new DocumentDbStateQuerySession(this);
-		}		
+		}
 
-		protected override DocumentDbStateSession CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager, IStateSessionObject[] stateSessionObjects)
+		protected override DocumentDbStateSession CreateSessionInternal(
+			StateSessionManagerBase<DocumentDbStateSession> manager, IStateSessionObject[] stateSessionObjects)
 		{
 			return new DocumentDbStateSession(this, stateSessionObjects);
 		}
 
 		public sealed class DocumentDbStateSession : IStateSession
 		{
-			private readonly DocumentDbStateSessionManager _manager;
-			private IStateSessionManagerInternals _managerInternals => _manager;
 			private readonly DocumentClient _documentClient;
+			private readonly DocumentDbStateSessionManager _manager;
 			private IEnumerable<IStateSessionObject> _attachedObjects;
 
 			public DocumentDbStateSession(DocumentDbStateSessionManager manager, IStateSessionObject[] stateSessionObjects)
@@ -86,40 +88,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					endpointUri: new Uri(_manager._endpointUri),
 					primaryKey: _manager._collectionPrimaryKey,
 					connectionPolicySetting: _manager._connectionPolicySetting).GetAwaiter().GetResult();
-				
+
 				AttachObjects(stateSessionObjects);
 			}
 
-			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
-			{
-				_attachedObjects = stateSessionObjects;
-				foreach (var stateSessionObject in _attachedObjects)
-				{
-					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
-					{
-						throw new StateSessionException($"Can only attach object that have been created by the owning StateSessionManager");
-					}
-					stateSessionBaseObject.AttachToSession(this);
-				}
-			}
-
-			private void DetachObjects()
-			{
-				foreach (var stateSessionObject in _attachedObjects)
-				{
-					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
-					{
-						throw new StateSessionException($"Can only detach object that have been created by the owning StateSessionManager");
-					}
-					stateSessionBaseObject.DetachFromSession(this);
-				}
-				_attachedObjects = new IStateSessionObject[0];
-			}
-
-			private Uri CreateDocumentUri(string schemaKey)
-			{
-				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
-			}			
+			private IStateSessionManagerInternals _managerInternals => _manager;
 
 			private string DatabaseName => _manager._databaseName;
 			private string DatabaseCollection => _manager._collection;
@@ -133,15 +106,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				GC.SuppressFinalize(this);
 			}
 
-			private void Dispose(bool disposing)
-			{
-				if (disposing)
-				{
-					DetachObjects();
-				}
-			}
-
-			public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var schemaKey = _managerInternals.GetSchemaStateKey(schema, key);
 				try
@@ -175,7 +141,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			public async Task<T> GetValueAsync<T>(string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var schemaKey = _managerInternals.GetSchemaStateKey(schema, key);
 				try
@@ -200,13 +167,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
+			public async Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var id = _managerInternals.GetSchemaStateKey(schema, key);
 				try
 				{
-					var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);					
-					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
+					var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
+					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+						document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 				}
 				catch (DocumentClientException dcex)
@@ -219,13 +188,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
+			public async Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metadata,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var id = _managerInternals.GetSchemaStateKey(schema, key);
 				try
 				{
 					var wrapper = _managerInternals.BuildWrapper(metadata, id, schema, key, valueType, value);
-					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), wrapper,
+					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+						wrapper,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 				}
 				catch (DocumentClientException dcex)
@@ -243,7 +214,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				return RemoveAsync(schema, key, cancellationToken);
 			}
 
-			public async Task RemoveAsync(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			public async Task RemoveAsync(string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var schemaKey = _managerInternals.GetSchemaStateKey(schema, key);
 				try
@@ -261,62 +233,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			private async Task<QueueInfo> GetOrAddQueueInfo(string schema)
-			{
-				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
-				try
-				{
-					var queueInfoResponse = await _documentClient.ReadDocumentAsync<StateWrapper<QueueInfo>>(
-						UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, stateKeyQueueInfo),
-						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
-
-					var stateQueueInfo = queueInfoResponse.Document.State;
-					return stateQueueInfo;
-				}
-				catch (DocumentClientException dcex)
-				{
-					if (dcex.StatusCode == HttpStatusCode.NotFound)
-					{
-						var value = new QueueInfo()
-						{
-							HeadKey = 0L,
-							TailKey = 0L,
-						};
-
-						return await SetQueueInfo(schema, value);
-					}
-					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"EnqueueAsync for {stateKeyQueueInfo} failed", ex);
-				}
-			}
-
-			private async Task<QueueInfo> SetQueueInfo(string schema, QueueInfo value)
-			{
-				var id = _managerInternals.GetSchemaStateQueueInfoKey(schema);
-				var key = StateSessionHelper.ReliableStateQueueInfoName;
-				try
-				{
-					var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
-					var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
-					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
-						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
-
-					return document.State;
-				}
-				catch (DocumentClientException dcex)
-				{
-					throw new StateSessionException($"CreateQueueInfo for {id} failed", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"CreateQueueInfo for {id} failed", ex);
-				}
-			}
-
-			public async Task EnqueueAsync<T>(string schema, T value, IValueMetadata metadata, CancellationToken cancellationToken = new CancellationToken())
+			public async Task EnqueueAsync<T>(string schema, T value, IValueMetadata metadata,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
@@ -329,7 +247,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					var key = head.ToString();
 					var id = _managerInternals.GetSchemaQueueStateKey(schema, head);
 					var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
-					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection), document,
+					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+						document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 					await SetQueueInfo(schema, stateQueueInfo);
 				}
@@ -339,7 +258,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task<ConditionalValue<T>> DequeueAsync<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
+			public async Task<ConditionalValue<T>> DequeueAsync<T>(string schema,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
@@ -380,7 +300,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task<ConditionalValue<T>> PeekAsync<T>(string schema, CancellationToken cancellationToken = new CancellationToken())
+			public async Task<ConditionalValue<T>> PeekAsync<T>(string schema,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
@@ -414,16 +335,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed", ex);
 				}
 			}
+
 			public async Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken)
 			{
 				try
 				{
 					var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
-						                                             UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-						                                             new FeedOptions { MaxDegreeOfParallelism = -1, PartitionKey = new PartitionKey(ServicePartitionKey) })
-					                                             .CountAsync(cancellationToken: cancellationToken);
-					
-					return (long)resultCount;
+							UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+							new FeedOptions {MaxDegreeOfParallelism = -1, PartitionKey = new PartitionKey(ServicePartitionKey)})
+						.CountAsync(cancellationToken: cancellationToken);
+
+					return (long) resultCount;
 				}
 				catch (DocumentClientException dcex)
 				{
@@ -435,7 +357,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken) {
+			public async Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken)
+			{
 				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
 				var stateQueueInfo = await GetOrAddQueueInfo(schema);
 				try
@@ -461,7 +384,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				return Task.FromResult(true);
 			}
 
-			public Task<bool> Contains<T>(string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			public Task<bool> Contains<T>(string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				return Contains(schema, key, cancellationToken);
 			}
@@ -500,15 +424,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix, int maxNumResults = 100000,
+			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
+				int maxNumResults = 100000,
 				ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
-
 				return FindByKeyPrefixAsync(schema, keyPrefix, maxNumResults, continuationToken, cancellationToken);
 			}
 
-			public async Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix, int maxNumResults = 100000,
+			public async Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix,
+				int maxNumResults = 100000,
 				ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
@@ -557,7 +482,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 							if (resultCount > maxNumResults)
 							{
-								var nextContinuationToken = response.ResponseContinuation == null ? null : new ContinuationToken(response.ResponseContinuation);
+								var nextContinuationToken = response.ResponseContinuation == null
+									? null
+									: new ContinuationToken(response.ResponseContinuation);
 								return new FindByKeyPrefixResult() {ContinuationToken = nextContinuationToken, Items = results};
 							}
 						}
@@ -574,7 +501,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			public async Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key, CancellationToken cancellationToken = new CancellationToken())
+			public async Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var results = new List<string>();
 				var resultCount = 0;
@@ -608,12 +536,108 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
+			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
+			{
+				_attachedObjects = stateSessionObjects;
+				foreach (var stateSessionObject in _attachedObjects)
+				{
+					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
+					{
+						throw new StateSessionException(
+							$"Can only attach object that have been created by the owning StateSessionManager");
+					}
+					stateSessionBaseObject.AttachToSession(this);
+				}
+			}
+
+			private void DetachObjects()
+			{
+				foreach (var stateSessionObject in _attachedObjects)
+				{
+					if (!(stateSessionObject is StateSessionBaseObject<DocumentDbStateSession> stateSessionBaseObject))
+					{
+						throw new StateSessionException(
+							$"Can only detach object that have been created by the owning StateSessionManager");
+					}
+					stateSessionBaseObject.DetachFromSession(this);
+				}
+				_attachedObjects = new IStateSessionObject[0];
+			}
+
+			private Uri CreateDocumentUri(string schemaKey)
+			{
+				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
+			}
+
+			private void Dispose(bool disposing)
+			{
+				if (disposing)
+				{
+					DetachObjects();
+				}
+			}
+
+			private async Task<QueueInfo> GetOrAddQueueInfo(string schema)
+			{
+				var stateKeyQueueInfo = _managerInternals.GetSchemaStateQueueInfoKey(schema);
+				try
+				{
+					var queueInfoResponse = await _documentClient.ReadDocumentAsync<StateWrapper<QueueInfo>>(
+						UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, stateKeyQueueInfo),
+						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
+
+					var stateQueueInfo = queueInfoResponse.Document.State;
+					return stateQueueInfo;
+				}
+				catch (DocumentClientException dcex)
+				{
+					if (dcex.StatusCode == HttpStatusCode.NotFound)
+					{
+						var value = new QueueInfo()
+						{
+							HeadKey = 0L,
+							TailKey = 0L,
+						};
+
+						return await SetQueueInfo(schema, value);
+					}
+					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed", dcex);
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"EnqueueAsync for {stateKeyQueueInfo} failed", ex);
+				}
+			}
+
+			private async Task<QueueInfo> SetQueueInfo(string schema, QueueInfo value)
+			{
+				var id = _managerInternals.GetSchemaStateQueueInfoKey(schema);
+				var key = StateSessionHelper.ReliableStateQueueInfoName;
+				try
+				{
+					var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem);
+					var document = _managerInternals.BuildWrapperGeneric(metadata, id, schema, key, value);
+					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+						document,
+						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
+
+					return document.State;
+				}
+				catch (DocumentClientException dcex)
+				{
+					throw new StateSessionException($"CreateQueueInfo for {id} failed", dcex);
+				}
+				catch (Exception ex)
+				{
+					throw new StateSessionException($"CreateQueueInfo for {id} failed", ex);
+				}
+			}
 		}
 
 		public class DocumentDbStateQuerySession : IStateQuerySession
 		{
-			private readonly DocumentDbStateSessionManager _manager;
 			private readonly DocumentClient _documentClient;
+			private readonly DocumentDbStateSessionManager _manager;
 
 			public DocumentDbStateQuerySession(
 				DocumentDbStateSessionManager manager)
@@ -625,12 +649,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					endpointUri: new Uri(_manager._endpointUri),
 					primaryKey: _manager._collectionPrimaryKey,
 					connectionPolicySetting: _manager._connectionPolicySetting).GetAwaiter().GetResult();
-			}
-
-
-			private Uri CreateDocumentUri(string schemaKey)
-			{
-				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
 			}
 
 			private string DatabaseName => _manager._databaseName;
@@ -818,6 +836,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					Debug.WriteLine($"Failed to GetStates {ex.Message}");
 					throw new StateSessionException($"Failed to GetServices {ex.Message}", ex);
 				}
+			}
+
+
+			private Uri CreateDocumentUri(string schemaKey)
+			{
+				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
 			}
 		}
 	}

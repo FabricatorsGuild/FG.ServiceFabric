@@ -15,35 +15,36 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 		}
 	}
 
-    [Serializable]
-    [DataContract]
-    public class StateWrapper<T>
-    {
-	    public StateWrapper()
-	    {		    
-	    }
-		public StateWrapper(string key, T state, IStateMetadata metadata)
-        {
-	        Id = key;
-            State = state;
-            StateName = metadata.StateName;
-            PartitionKey = metadata.PartitionKey.ToString();
-        }
+	[Serializable]
+	[DataContract]
+	public class StateWrapper<T>
+	{
+		public StateWrapper()
+		{
+		}
 
-        [JsonProperty(PropertyName = "id")]
-        [DataMember]
-        public string Id { get; private set; }
+		public StateWrapper(string key, T state, IStateMetadata metadata)
+		{
+			Id = key;
+			State = state;
+			StateName = metadata.StateName;
+			PartitionKey = metadata.PartitionKey.ToString();
+		}
+
+		[JsonProperty(PropertyName = "id")]
+		[DataMember]
+		public string Id { get; private set; }
 
 		[JsonProperty(PropertyName = "partitionKey")]
-        [DataMember]
-        public string PartitionKey { get; private set; }
+		[DataMember]
+		public string PartitionKey { get; private set; }
 
-        [JsonProperty(PropertyName = "stateName")]
-        [DataMember]
-        public string StateName { get; private set; }
-        
-        [JsonProperty(PropertyName = "state")]
-        [DataMember]
-        public T State { get; set; }
-    }
+		[JsonProperty(PropertyName = "stateName")]
+		[DataMember]
+		public string StateName { get; private set; }
+
+		[JsonProperty(PropertyName = "state")]
+		[DataMember]
+		public T State { get; set; }
+	}
 }

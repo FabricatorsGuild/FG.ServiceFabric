@@ -9,7 +9,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 	{
 		public ExternalActorReminderState()
 		{
-
 		}
 
 		public ExternalActorReminderState(ActorId actorId, IActorReminder reminder)
@@ -17,7 +16,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 			ActorId = new ExternalActorIdState(actorId);
 			State = reminder.State;
 			Name = reminder.Name;
-
 		}
 
 		public ExternalActorIdState ActorId { get; set; }
@@ -31,7 +29,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 	{
 		public ExternalActorIdState()
 		{
-			
 		}
 
 		public ExternalActorIdState(ActorId actorId)
@@ -57,6 +54,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 			}
 
 			return null;
-		}		
+		}
 	}
 }

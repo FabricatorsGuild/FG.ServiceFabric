@@ -18,7 +18,9 @@ namespace FG.ServiceFabric.Services.Communication.Tests
 		{
 			var serviceType = typeof(IServiceForUnitTests);
 
-			var dispatcher = typeof(ServiceProxyFactoryBase).CallPrivateStaticMethod<MethodDispatcherBase>("GetServiceMethodInformation", serviceType);
+			var dispatcher =
+				typeof(ServiceProxyFactoryBase).CallPrivateStaticMethod<MethodDispatcherBase>("GetServiceMethodInformation",
+					serviceType);
 
 			dispatcher.Should().NotBeNull();
 		}
@@ -35,7 +37,8 @@ namespace FG.ServiceFabric.Services.Communication.Tests
 		{
 		}
 
-		public ServiceForUnitTests(StatefulServiceContext serviceContext, IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
+		public ServiceForUnitTests(StatefulServiceContext serviceContext,
+			IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
 		{
 		}
 

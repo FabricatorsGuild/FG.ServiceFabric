@@ -10,15 +10,18 @@ namespace FG.ServiceFabric.Fabric.Runtime
 	public static class ServiceRuntimeRegistration
 	{
 		/// <summary>
-		/// Registers a reliable stateless service with Service Fabric runtime.
+		///     Registers a reliable stateless service with Service Fabric runtime.
 		/// </summary>
 		/// <param name="serviceTypeName">The service type name as provied in service manifest.</param>
 		/// <param name="serviceFactory">A factory method to create stateless service objects.</param>
 		/// <param name="timeout">The timeout for the register operation.</param>
-		/// <para>The default timeout for this operation is taken from ServiceFactoryRegistrationTimeout in Hosting section of the cluster manifest. Default value for ServiceFactoryRegistrationTimeout is 120 seconds.</para>
+		/// <para>
+		///     The default timeout for this operation is taken from ServiceFactoryRegistrationTimeout in Hosting section of the
+		///     cluster manifest. Default value for ServiceFactoryRegistrationTimeout is 120 seconds.
+		/// </para>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>
-		/// A task that represents the asynchronous register operation.
+		///     A task that represents the asynchronous register operation.
 		/// </returns>
 		public static Task RegisterServiceAsync(
 			string serviceTypeName,
@@ -27,23 +30,27 @@ namespace FG.ServiceFabric.Fabric.Runtime
 			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var currentServiceRuntimeRegistration = FabricRuntimeContextWrapper.Current?.ServiceRuntimeRegistration;
-			if(currentServiceRuntimeRegistration == null)
+			if (currentServiceRuntimeRegistration == null)
 			{
 				return ServiceRuntime.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
 			}
-			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
+			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout,
+				cancellationToken);
 		}
 
 		/// <summary>
-		/// Registers a reliable stateful service with Service Fabric runtime.
+		///     Registers a reliable stateful service with Service Fabric runtime.
 		/// </summary>
 		/// <param name="serviceTypeName">The service type name as provied in service manifest.</param>
 		/// <param name="serviceFactory">A factory method to create stateful service objects.</param>
 		/// <param name="timeout">The timeout for the register operation.</param>
-		/// <para>The default timeout for this operation is taken from ServiceFactoryRegistrationTimeout in Hosting section of the cluster manifest. Default value for ServiceFactoryRegistrationTimeout is 120 seconds.</para>
+		/// <para>
+		///     The default timeout for this operation is taken from ServiceFactoryRegistrationTimeout in Hosting section of the
+		///     cluster manifest. Default value for ServiceFactoryRegistrationTimeout is 120 seconds.
+		/// </para>
 		/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
 		/// <returns>
-		/// A task that represents the asynchronous register operation.
+		///     A task that represents the asynchronous register operation.
 		/// </returns>
 		public static Task RegisterServiceAsync(
 			string serviceTypeName,
@@ -56,7 +63,8 @@ namespace FG.ServiceFabric.Fabric.Runtime
 			{
 				return ServiceRuntime.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
 			}
-			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
+			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout,
+				cancellationToken);
 		}
 	}
 }

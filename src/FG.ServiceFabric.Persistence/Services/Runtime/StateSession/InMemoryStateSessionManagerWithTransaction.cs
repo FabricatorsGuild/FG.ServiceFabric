@@ -17,14 +17,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			string serviceName,
 			Guid partitionId,
 			string partitionKey,
-			IDictionary<string, string> state = null) : 
+			IDictionary<string, string> state = null) :
 			base(serviceName, partitionId, partitionKey)
 		{
 			_storage = state ?? new ConcurrentDictionary<string, string>();
-
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager,
+			IStateSessionObject[] stateSessionObjects)
 		{
 			return new InMemoryStateSession(this, stateSessionObjects);
 		}
@@ -34,14 +34,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			private readonly InMemoryStateSessionManagerWithTransaction _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManagerWithTransaction manager, 
+				InMemoryStateSessionManagerWithTransaction manager,
 				IStateSessionObject[] stateSessionObjects)
 				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 			}
 
-			private IDictionary<string, string> Storage => _manager._storage;			
+			private IDictionary<string, string> Storage => _manager._storage;
 
 			protected override string Read(string id, bool checkExistsOnly = false)
 			{
@@ -63,7 +63,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				Storage[id] = content;
 			}
 
-			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
+			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
+				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
 				var results = new List<string>();
 				var nextMarker = continuationToken?.Marker ?? "";
@@ -79,13 +80,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							resultCount++;
 							if (resultCount >= maxNumResults)
 							{
-								return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(nextKey), Items = results };
+								return new FindByKeyPrefixResult() {ContinuationToken = new ContinuationToken(nextKey), Items = results};
 							}
 						}
 					}
 				}
-				return new FindByKeyPrefixResult() { ContinuationToken = null, Items = results };
+				return new FindByKeyPrefixResult() {ContinuationToken = null, Items = results};
 			}
+
 			protected override Task<long> GetCountInternalAsync(string schema, CancellationToken cancellationToken)
 			{
 				var items = Storage.Keys.Where(item => item.StartsWith(schema));

@@ -15,6 +15,6 @@ namespace FG.ServiceFabric.Services.Runtime
 		{
 			var innerSession = _innerServiceStateManager.CreateSession();
 			return innerSession;
-		}		
+		}
 	}
 }

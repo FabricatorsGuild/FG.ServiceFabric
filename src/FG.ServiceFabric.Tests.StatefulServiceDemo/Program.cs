@@ -9,7 +9,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 	internal static class Program
 	{
 		/// <summary>
-		/// This is the entry point of the service host process.
+		///     This is the entry point of the service host process.
 		/// </summary>
 		private static void Main()
 		{
@@ -21,9 +21,11 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				// an instance of the class is created in this host process.
 
 				ServiceRuntime.RegisterServiceAsync("FG.ServiceFabric.Tests.StatefulServiceDemoType",
-					context => new With_simple_counter_state.StatefulServiceDemo(context, StateSessionInitilaizer.CreateStateManager(context))).GetAwaiter().GetResult();
+					context => new With_simple_counter_state.StatefulServiceDemo(context,
+						StateSessionInitilaizer.CreateStateManager(context))).GetAwaiter().GetResult();
 
-				ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id, typeof(With_simple_counter_state.StatefulServiceDemo).Name);
+				ServiceEventSource.Current.ServiceTypeRegistered(Process.GetCurrentProcess().Id,
+					typeof(With_simple_counter_state.StatefulServiceDemo).Name);
 
 				// Prevents this host process from terminating so services keep running.
 				Thread.Sleep(Timeout.Infinite);

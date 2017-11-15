@@ -2,9 +2,9 @@
 
 namespace FG.CQRS
 {
-    public interface IDomainEvent
-    {
-        Guid EventId { get; }
-        DateTime UtcTimeStamp { get; set; }
-    }
+	public interface IDomainEvent
+	{
+		Guid EventId { get; }
+		DateTime UtcTimeStamp { get; set; }
+	}
 }

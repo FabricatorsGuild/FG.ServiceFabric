@@ -14,12 +14,14 @@ namespace FG.ServiceFabric.Actors.Runtime
 	public partial class StateSessionActorStateProvider : IStateProvider
 	{
 		#region IStateProviderReplica
+
 		private ReplicaRole _currentRole;
 		private StatefulServiceInitializationParameters _initParams;
 		private IStateReplicator2 _replicator;
 		private IStatefulServicePartition _servicePartition;
 		private ActorTypeInformation _actorTypeInformation;
 		private Func<CancellationToken, Task<bool>> _onDataLossFunc;
+
 		#endregion
 
 		#region IStateProviderReplica
@@ -140,7 +142,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 			return Task.FromResult(false);
 		}
 
-		Task IStateProvider.UpdateEpochAsync(Epoch epoch, long previousEpochLastSequenceNumber, CancellationToken cancellationToken)
+		Task IStateProvider.UpdateEpochAsync(Epoch epoch, long previousEpochLastSequenceNumber,
+			CancellationToken cancellationToken)
 		{
 			return Task.FromResult<object>(null);
 		}
@@ -230,6 +233,4 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 		#endregion #region Private Helper Classes
 	}
-
-
 }

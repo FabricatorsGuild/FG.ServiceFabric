@@ -23,35 +23,42 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 	{
 		namespace and_InMemoryStateSession
 		{
-			public abstract class TestBaseInMemoryStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
+			public abstract class TestBaseInMemoryStateSessionManager<TService> : TestBase<TService>
+				where TService : StatefulServiceDemoBase
 			{
 				protected readonly IDictionary<string, string> _state = new ConcurrentDictionary<string, string>();
+
+				public override IDictionary<string, string> State => _state;
 
 				protected override void OnSetup()
 				{
 					State.Clear();
 					base.OnSetup();
-				}				
-
-				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context)
-				{
-					return new InMemoryStateSessionManager(
-						context.ServiceName.ToString(), 
-						context.PartitionId, 
-						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(), 
-						_state);
 				}
 
-				public override IDictionary<string, string> State => _state;
+				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
+					StatefulServiceContext context)
+				{
+					return new InMemoryStateSessionManager(
+						context.ServiceName.ToString(),
+						context.PartitionId,
+						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter()
+							.GetResult(),
+						_state);
+				}
 			}
 
-			public class Service_with_simple_counter_state : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
+			public class Service_with_simple_counter_state : TestBaseInMemoryStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -62,14 +69,17 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			public class Service_with_multiple_states : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
+			public class Service_with_multiple_states : TestBaseInMemoryStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -81,14 +91,17 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			public class Service_with_polymorphic_states : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
+			public class Service_with_polymorphic_states : TestBaseInMemoryStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -105,14 +118,19 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					{
 						var serviceState = await service.GetStateAsync(CancellationToken.None);
 						serviceState.Items.Should().HaveCount(2);
-						var innerStateItemA = (FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA)serviceState.Items.Single(i => i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA);
-						var innerStateItemB = (FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB)serviceState.Items.Single(i => i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB);
+						var innerStateItemA =
+							(FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA)
+							serviceState.Items.Single(i =>
+								i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA);
+						var innerStateItemB =
+							(FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB)
+							serviceState.Items.Single(i =>
+								i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB);
 
 						innerStateItemA.Name.Should().Be("I am a");
 						innerStateItemA.PropertyInA.Should().Be("Prop in A");
 						innerStateItemB.Name.Should().Be("I am b");
 						innerStateItemB.PropertyInB.Should().Be("Prop in B");
-
 					}
 				}
 			}
@@ -121,13 +139,14 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			public class Service_with_simple_dictionary : TestBaseInMemoryStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
 				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo
 					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -248,14 +267,17 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
+			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -264,8 +286,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -276,7 +299,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
 					for (int i = 0; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should().HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_{i} to be there");
 					}
 				}
 
@@ -285,8 +309,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -298,11 +323,12 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
 					for (int i = 3; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should().HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_{i} to be there");
 
 						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
 						var state = GetState<StateWrapper<long>>(key);
-						state.State.Should().Be(i+1);
+						state.State.Should().Be(i + 1);
 					}
 				}
 
@@ -311,8 +337,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -326,7 +353,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Peek should show empty
 					var hasMore = await statefulServiceDemo.Peek();
 					hasMore.Should().Be(false);
-
 				}
 
 				[Test]
@@ -334,8 +360,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -356,8 +383,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _check_stored_string()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					await statefulServiceDemo.Enqueue(1);
 					await statefulServiceDemo.Dequeue(1);
@@ -380,8 +408,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
@@ -415,8 +444,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_store_beyond_int_maxvalue()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
@@ -450,8 +480,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_return_queue_length_0_for_initial_queue()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					var length = await statefulServiceDemo.GetQueueLength();
 					length.Should().Be(0);
@@ -460,8 +491,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_return_queue_length_0_for_emptied_queue()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 
 					// Enqueue 5 items
@@ -480,8 +512,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_return_queue_length_0_for_queue_with_multiple_enqueues_and_dequeues_until_drained()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 
 					// Enqueue 5 items
@@ -516,8 +549,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_return_queue_length_for_enqueued_items()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -530,8 +564,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_return_queue_length_for_reamaining_enqueued_items_with_multiple_enqueues_and_dequeues()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -559,8 +594,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_enumerate_all_enqueued_items()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -568,14 +604,15 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] { 1, 2, 3, 4, 5 });
+					all.Should().Equal(new long[] {1, 2, 3, 4, 5});
 				}
 
 				[Test]
 				public async Task _should_not_enumerate_anything_after_enqueued_items_have_been_dequeued()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -592,8 +629,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_enumerate_all_enqueued_items_after_last_items_have_been_dequeued()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 
 					// Enqueue 5 items
@@ -605,46 +643,46 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] { 4, 5 });
+					all.Should().Equal(new long[] {4, 5});
 				}
 
 				[Test]
 				public async Task _should_be_able_to_enumerate_all_enqueued_items_after_multiple_enqueues_and_dequeues()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // 1 2 3 4 5
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 1, 2, 3, 4, 5 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {1, 2, 3, 4, 5});
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(3); // _ _ _ 4 5
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {4, 5});
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // _ _ _ 4 5 6 7 8 9 10
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5, 6, 7, 8, 9, 10 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {4, 5, 6, 7, 8, 9, 10});
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(2); // _ _ _ _ _ 6 7 8 9 10
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {6, 7, 8, 9, 10});
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // _ _ _ _ _ 6 7 8 9 10 11 12 13 14 15
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(3); // _ _ _ _ _ _ _ _ 9 10 11 12 13 14 15
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {9, 10, 11, 12, 13, 14, 15});
 
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
+					all.Should().Equal(new long[] {9, 10, 11, 12, 13, 14, 15});
 				}
-
 			}
 		}
 	}

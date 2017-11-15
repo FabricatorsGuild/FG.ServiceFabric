@@ -11,10 +11,10 @@ namespace FG.ServiceFabric.Tests.Persistence
 		public static IStateSessionManager CreateStateManager(ServiceContext context)
 		{
 			var partitionEnumerationManager = MockFabricRuntime.Current != null
-				? (Func<IPartitionEnumerationManager>)(() =>
-					(IPartitionEnumerationManager)MockFabricRuntime.Current.PartitionEnumerationManager)
-				: (Func<IPartitionEnumerationManager>)(() =>
-					(IPartitionEnumerationManager)new FabricClientQueryManagerPartitionEnumerationManager(new FabricClient()));
+				? (Func<IPartitionEnumerationManager>) (() =>
+					(IPartitionEnumerationManager) MockFabricRuntime.Current.PartitionEnumerationManager)
+				: (Func<IPartitionEnumerationManager>) (() =>
+					(IPartitionEnumerationManager) new FabricClientQueryManagerPartitionEnumerationManager(new FabricClient()));
 			return new InMemoryStateSessionManager(StateSessionHelper.GetServiceName(context.ServiceName), context.PartitionId,
 				StateSessionHelper.GetPartitionInfo(context, partitionEnumerationManager).GetAwaiter().GetResult());
 		}

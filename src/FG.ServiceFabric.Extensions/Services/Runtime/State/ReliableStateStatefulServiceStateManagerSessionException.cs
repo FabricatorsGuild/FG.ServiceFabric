@@ -21,7 +21,8 @@ namespace FG.ServiceFabric.Services.Runtime.State
 		{
 		}
 
-		public ReliableStateStatefulServiceStateManagerSessionException(string message, Exception inner) : base(message, inner)
+		public ReliableStateStatefulServiceStateManagerSessionException(string message, Exception inner) : base(message,
+			inner)
 		{
 		}
 

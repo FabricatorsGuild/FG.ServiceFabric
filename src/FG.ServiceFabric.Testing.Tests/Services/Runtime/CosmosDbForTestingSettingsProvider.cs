@@ -3,7 +3,8 @@ using System.Linq;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Utils;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_DocumentDbStateSessionManagerWithTransaction
+namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.
+	and_DocumentDbStateSessionManagerWithTransaction
 {
 	public class CosmosDbForTestingSettingsProvider : ISettingsProvider
 	{
@@ -17,11 +18,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", "");
 		}
 
-		public void AppendCollectionName(string appended)
-		{
-			_settings[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}"] = $"dev-sfp-testing-{appended}";
-		}
-
 		public bool Contains(string key)
 		{
 			return _settings.ContainsKey(key);
@@ -30,5 +26,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 		public string this[string key] => _settings[key];
 
 		public string[] Keys => _settings.Keys.ToArray();
+
+		public void AppendCollectionName(string appended)
+		{
+			_settings[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}"] =
+				$"dev-sfp-testing-{appended}";
+		}
 	}
 }

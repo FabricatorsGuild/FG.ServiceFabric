@@ -18,34 +18,37 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
-
 	// ReSharper disable InconsistentNaming
 	namespace With_StateSessionManager
 	{
 		namespace and_DocumentDbStateSessionManagerWithTransaction
 		{
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
-			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService> where TService : StatefulServiceDemoBase
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService>
+				where TService : StatefulServiceDemoBase
 			{
-				
-				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context)
-				{
-						return new DocumentDbStateSessionManager(
-							"StatefulServiceDemo",
-							Guid.NewGuid(),
-							StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
-							new CosmosDbForTestingSettingsProvider()
-						);
-				}
-
 				public override IDictionary<string, string> State => null;
+
+				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
+					StatefulServiceContext context)
+				{
+					return new DocumentDbStateSessionManager(
+						"StatefulServiceDemo",
+						Guid.NewGuid(),
+						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter()
+							.GetResult(),
+						new CosmosDbForTestingSettingsProvider()
+					);
+				}
 			}
 
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class StateSession_transacted_scope
 			{
-				private ISettingsProvider _settingsProvider;
 				private string _sessionId;
+				private ISettingsProvider _settingsProvider;
 
 				[SetUp]
 				public void Setup()
@@ -59,17 +62,16 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[TearDown]
 				public void Teardown()
 				{
-					
 				}
 
 				public static IStateSessionManager CreateStateManager()
 				{
 					return new DocumentDbStateSessionManager(
-							"StatefulServiceDemo",
-							Guid.NewGuid(), 
-							"range-0",
-							new CosmosDbForTestingSettingsProvider()
-						);
+						"StatefulServiceDemo",
+						Guid.NewGuid(),
+						"range-0",
+						new CosmosDbForTestingSettingsProvider()
+					);
 				}
 
 				[Test]
@@ -80,9 +82,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var session1 = manager.CreateSession();
 					var session2 = manager.CreateSession();
 
-					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
+						CancellationToken.None);
 
-					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null, CancellationToken.None);
+					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null,
+						CancellationToken.None);
 
 					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 					var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
@@ -113,27 +117,36 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var session1 = manager.CreateSession();
 
-					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null, CancellationToken.None);
-					await session1.SetValueAsync<string>("values", "b", "Value from session1 schema values key b", null, CancellationToken.None);
-					await session1.SetValueAsync<string>("values", "c", "Value from session1 schema values key c", null, CancellationToken.None);
-					await session1.SetValueAsync<string>("values", "d", "Value from session1 schema values key d", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
+						CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "b", "Value from session1 schema values key b", null,
+						CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "c", "Value from session1 schema values key c", null,
+						CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "d", "Value from session1 schema values key d", null,
+						CancellationToken.None);
 
 					await session1.CommitAsync();
 
-					var committedResults = await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+					var committedResults =
+						await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
 
-					committedResults.Items.ShouldBeEquivalentTo(new[] { "a", "b", "c", "d" });
+					committedResults.Items.ShouldBeEquivalentTo(new[] {"a", "b", "c", "d"});
 
-					await session1.SetValueAsync<string>("values", "e", "Value from session1 schema values key e", null, CancellationToken.None);
-					await session1.SetValueAsync<string>("values", "f", "Value from session1 schema values key f", null, CancellationToken.None);
-					await session1.SetValueAsync<string>("values", "g", "Value from session1 schema values key g", null, CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "e", "Value from session1 schema values key e", null,
+						CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "f", "Value from session1 schema values key f", null,
+						CancellationToken.None);
+					await session1.SetValueAsync<string>("values", "g", "Value from session1 schema values key g", null,
+						CancellationToken.None);
 					await session1.RemoveAsync<string>("values", "a", CancellationToken.None);
 					await session1.RemoveAsync<string>("values", "b", CancellationToken.None);
 					await session1.RemoveAsync<string>("values", "c", CancellationToken.None);
 					await session1.RemoveAsync<string>("values", "d", CancellationToken.None);
 
-					var uncommittedResults = await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
-					uncommittedResults.Items.ShouldBeEquivalentTo(new[] { "a", "b", "c", "d" });
+					var uncommittedResults =
+						await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+					uncommittedResults.Items.ShouldBeEquivalentTo(new[] {"a", "b", "c", "d"});
 
 					committedResults.ShouldBeEquivalentTo(uncommittedResults);
 				}
@@ -145,14 +158,17 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var session1 = manager.CreateSession();
 
-					var schemas = new[] { "a-series", "b-series", "c-series" };
+					var schemas = new[] {"a-series", "b-series", "c-series"};
 					foreach (var schema in schemas)
 					{
-						await session1.SetValueAsync<string>(schema, "a", $"Value from session1 schema {schema} key a", null, CancellationToken.None);
-						await session1.SetValueAsync<string>(schema, "b", $"Value from session1 schema {schema} key b", null, CancellationToken.None);
-						await session1.SetValueAsync<string>(schema, "c", $"Value from session1 schema {schema} key c", null, CancellationToken.None);
-						await session1.SetValueAsync<string>(schema, "d", $"Value from session1 schema {schema} key d", null, CancellationToken.None);
-
+						await session1.SetValueAsync<string>(schema, "a", $"Value from session1 schema {schema} key a", null,
+							CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "b", $"Value from session1 schema {schema} key b", null,
+							CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "c", $"Value from session1 schema {schema} key c", null,
+							CancellationToken.None);
+						await session1.SetValueAsync<string>(schema, "d", $"Value from session1 schema {schema} key d", null,
+							CancellationToken.None);
 					}
 
 					var schemaKeysPreCommit = await session1.EnumerateSchemaNamesAsync("a", CancellationToken.None);
@@ -164,18 +180,22 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var schemaKeysPostCommit = await session1.EnumerateSchemaNamesAsync("a", CancellationToken.None);
 
 					schemaKeysPostCommit.ShouldBeEquivalentTo(schemas);
-
 				}
 			}
 
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
-			public class Service_with_simple_counter_state : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public class Service_with_simple_counter_state : TestBaseForDocumentDbStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -184,18 +204,21 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(2);
 				}
-
 			}
 
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
-			public class Service_with_multiple_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public class Service_with_multiple_states : TestBaseForDocumentDbStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -207,15 +230,19 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
-			public class Service_with_polymorphic_states : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public class Service_with_polymorphic_states : TestBaseForDocumentDbStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -232,27 +259,36 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					{
 						var serviceState = await service.GetStateAsync(CancellationToken.None);
 						serviceState.Items.Should().HaveCount(2);
-						var innerStateItemA = (FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA)serviceState.Items.Single(i => i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA);
-						var innerStateItemB = (FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB)serviceState.Items.Single(i => i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB);
+						var innerStateItemA =
+							(FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA)
+							serviceState.Items.Single(i =>
+								i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeA);
+						var innerStateItemB =
+							(FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB)
+							serviceState.Items.Single(i =>
+								i is FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.InnerStateItemTypeB);
 
 						innerStateItemA.Name.Should().Be("I am a");
 						innerStateItemA.PropertyInA.Should().Be("Prop in A");
 						innerStateItemB.Name.Should().Be("I am b");
 						innerStateItemB.PropertyInB.Should().Be("Prop in B");
-
 					}
 				}
 			}
 
-			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
-			public class Service_with_simple_queue_enqueued : TestBaseForDocumentDbStateSessionManager<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
+			[Ignore(
+				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public class Service_with_simple_queue_enqueued : TestBaseForDocumentDbStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
-
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
-				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo(context, stateSessionManager);
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo(context,
+							stateSessionManager);
 					return service;
 				}
 
@@ -261,8 +297,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -273,7 +310,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
 					for (int i = 0; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should().HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_{i} to be there");
 					}
 				}
 
@@ -282,20 +320,22 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
 
 					// Dequeue 3 items
 					var longs = await statefulServiceDemo.Dequeue(3);
-					longs.Should().BeEquivalentTo(new long[] { 1, 2, 3 });
+					longs.Should().BeEquivalentTo(new long[] {1, 2, 3});
 
 					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
 					for (int i = 3; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should().HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_{i} to be there");
 
 						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
 						var state = GetState<ServiceFabric.Services.Runtime.StateSession.StateWrapper<long>>(key);
@@ -308,8 +348,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -323,7 +364,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Peek should show empty
 					var hasMore = await statefulServiceDemo.Peek();
 					hasMore.Should().Be(false);
-
 				}
 
 				[Test]
@@ -331,8 +371,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					State.Should().HaveCount(0);
 
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5);
@@ -353,8 +394,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
@@ -388,8 +430,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[Test]
 				public async Task _should_be_able_to_store_beyond_int_maxvalue()
 				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-						_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
 					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
 						  ""state"": {
@@ -420,8 +463,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					item.Single().Should().Be(6L);
 				}
 			}
-
-
 		}
 	}
 	// ReSharper restore InconsistentNaming

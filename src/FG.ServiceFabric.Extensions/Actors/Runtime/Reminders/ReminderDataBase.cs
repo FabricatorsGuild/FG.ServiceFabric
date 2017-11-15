@@ -42,7 +42,6 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 
 		public byte[] Serialize(ReminderDataSerializationType type = ReminderDataSerializationType.Binary)
 		{
-
 			if (type == ReminderDataSerializationType.Binary)
 				return SerializeBinary();
 
@@ -63,7 +62,7 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 
 		public static T Deserialize(byte[] data, ReminderDataSerializationType type = ReminderDataSerializationType.Binary)
 		{
-			if( type == ReminderDataSerializationType.Binary)
+			if (type == ReminderDataSerializationType.Binary)
 				return DeserializeBinary(data);
 
 			if (type == ReminderDataSerializationType.Xml)
@@ -121,7 +120,6 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 					throw new ArgumentException($"The byte array is not a serialized state of {typeof(T)}, {ex.Message}");
 				}
 			}
-
 		}
 
 		private static T DeserializeJsonUtf8(byte[] data)

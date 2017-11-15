@@ -30,15 +30,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Metadata
 			Schema = schema;
 			Key = key;
 			Type = type;
-		}	
+		}
 
 		public string Schema { get; set; }
 		public string Key { get; set; }
 		public string Type { get; set; }
+
 		public virtual StateWrapper<T> BuildStateWrapper<T>(string id, T value, IServiceMetadata serviceMetadata)
 		{
 			return new StateWrapper<T>(id, value, serviceMetadata, this);
 		}
+
 		public StateWrapper BuildStateWrapper(string id, IServiceMetadata serviceMetadata)
 		{
 			return new StateWrapper(id, serviceMetadata, this);

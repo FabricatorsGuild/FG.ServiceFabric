@@ -17,12 +17,12 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 {
 	public class When_starting_actor
 	{
-		private string ApplicationName => @"Overlord";
-		protected MockFabricRuntime _fabricRuntime;
-		protected MockFabricApplication _fabricApplication;
 		protected MockServiceDefinition _actorDemoServiceDefinition;
+		protected MockFabricApplication _fabricApplication;
+		protected MockFabricRuntime _fabricRuntime;
 
 		protected IDictionary<string, string> _state = new ConcurrentDictionary<string, string>();
+		private string ApplicationName => @"Overlord";
 
 		[SetUp]
 		public void CreateActorsWithActorService()
@@ -33,28 +33,29 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			_actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
 			_fabricApplication.SetupActor<ActorWithReminderDemo, ActorService>(
 				(service, actorId) => new ActorWithReminderDemo(service, actorId),
-				createActorService: (context, information, provider, factory) => new FG.ServiceFabric.Actors.Runtime.ActorService(context, information, stateProvider: provider, stateManagerFactory: factory),
-				createActorStateProvider: (context, actorInfo) => new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
+				createActorService: (context, information, provider, factory) =>
+					new FG.ServiceFabric.Actors.Runtime.ActorService(context, information, stateProvider: provider,
+						stateManagerFactory: factory),
+				createActorStateProvider: (context, actorInfo) =>
+					new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
 				serviceDefinition: _actorDemoServiceDefinition);
 		}
 
 		protected virtual void Setup()
 		{
-			
 		}
 
 		private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 		{
 			var stateManager = new InMemoryStateSessionManager(
-					StateSessionHelper.GetServiceName(context.ServiceName),
-					context.PartitionId,
-					StateSessionHelper.GetPartitionInfo(context,
-						() => new MockPartitionEnumerationManager(_fabricRuntime)).GetAwaiter().GetResult(),
-					_state
-				);
+				StateSessionHelper.GetServiceName(context.ServiceName),
+				context.PartitionId,
+				StateSessionHelper.GetPartitionInfo(context,
+					() => new MockPartitionEnumerationManager(_fabricRuntime)).GetAwaiter().GetResult(),
+				_state
+			);
 			return stateManager;
 		}
-
 	}
 
 	// ReSharper disable InconsistentNaming
@@ -63,14 +64,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		[Test]
 		public void reminders_should_be_loaded_on_startup()
 		{
-			var actorWithReminderDemo = _fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));
+			var actorWithReminderDemo =
+				_fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));
 
 			var result = actorWithReminderDemo.GetCountAsync().GetAwaiter().GetResult();
 
 			//result.Should().BeGreaterThan(5);
 			Console.WriteLine(result);
 		}
-
 	}
 
 	public class When_actor_has_not_been_activated_before_with_existing_state : When_starting_actor
@@ -109,14 +110,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 		[Test]
 		public void reminders_should_be_loaded_on_startup()
 		{
-			var actorWithReminderDemo = _fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));
+			var actorWithReminderDemo =
+				_fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));
 
 			var result = actorWithReminderDemo.GetCountAsync().GetAwaiter().GetResult();
 
 			//result.Should().BeGreaterThan(5);
 			Console.WriteLine(result);
 		}
-
 	}
 
 	// ReSharper restore InconsistentNaming

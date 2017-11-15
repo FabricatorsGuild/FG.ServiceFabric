@@ -10,26 +10,26 @@ using NUnit.Framework;
 // ReSharper disable InconsistentNaming
 namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
-    public class When_sending_a_reliable_message : ReliableMessgeTestBase
-    {
-        private ReliableMessage _message;
-        
-        [SetUp]
-        public async Task SendMessage()
-        {
-            _message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
+	public class When_sending_a_reliable_message : ReliableMessgeTestBase
+	{
+		private ReliableMessage _message;
 
-            await OutboundChannel.SendMessageAsync<IIndexActor>(
-                _message, new ActorId("PersonIndex"), 
-                CancellationToken.None,
-	            _fabricApplication.ApplicationInstanceName);
-        }
+		[SetUp]
+		public async Task SendMessage()
+		{
+			_message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
 
-        [Test]
-        public async Task Then_message_gets_put_on_queue()
-        {
-            var message = await OutboundChannel.PeekQueue(CancellationToken.None);
-            message.ShouldBeEquivalentTo(_message);
-        }
-    }
+			await OutboundChannel.SendMessageAsync<IIndexActor>(
+				_message, new ActorId("PersonIndex"),
+				CancellationToken.None,
+				_fabricApplication.ApplicationInstanceName);
+		}
+
+		[Test]
+		public async Task Then_message_gets_put_on_queue()
+		{
+			var message = await OutboundChannel.PeekQueue(CancellationToken.None);
+			message.ShouldBeEquivalentTo(_message);
+		}
+	}
 }

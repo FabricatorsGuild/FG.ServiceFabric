@@ -28,12 +28,25 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			IMockServiceProxyManager serviceProxyManager)
 		{
 			ServiceInterfaceType = serviceInterfaceType;
-			ServicePartitionClient = new MockServicePartitionClient(serviceUri, partitionKey, replicaSelector, listenerName, factory);
+			ServicePartitionClient =
+				new MockServicePartitionClient(serviceUri, partitionKey, replicaSelector, listenerName, factory);
 
 			Proxy = CreateDynamicProxy(target, serviceInterfaceType, serviceProxyManager);
 		}
 
-		private object CreateDynamicProxy(object target, Type serviceInterfaceType, IMockServiceProxyManager serviceProxyManager)
+		public object Proxy { get; }
+
+
+		public Type ServiceInterfaceType { get; }
+		public IServiceRemotingPartitionClient ServicePartitionClient { get; }
+
+		public Microsoft.ServiceFabric.Services.Remoting.V2.Client.IServiceRemotingPartitionClient ServicePartitionClient2
+		{
+			get;
+		}
+
+		private object CreateDynamicProxy(object target, Type serviceInterfaceType,
+			IMockServiceProxyManager serviceProxyManager)
 		{
 			var generator = new ProxyGenerator(new PersistentProxyBuilder());
 			var selector = new InterceptorSelector();
@@ -49,13 +62,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 				serviceProxyInterceptor);
 			return proxy;
 		}
-
-		public object Proxy { get; }
-
-
-		public Type ServiceInterfaceType { get; }
-		public IServiceRemotingPartitionClient ServicePartitionClient { get; }
-		public Microsoft.ServiceFabric.Services.Remoting.V2.Client.IServiceRemotingPartitionClient ServicePartitionClient2 { get; }
 
 		private class MockServicePartitionClient : IServiceRemotingPartitionClient
 		{
@@ -84,7 +90,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			public string ListenerName { get; }
 			public ICommunicationClientFactory<IServiceRemotingClient> Factory { get; }
 		}
-
 
 
 		private class InterceptorSelector : IInterceptorSelector

@@ -26,8 +26,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 	public static class StateSessionHelper
 	{
-		private static readonly Regex RegexActorIdDetector = new Regex(@"(S{.+})|(G{[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}})|(L{[0-9]+})", RegexOptions.Compiled);
-
 		public const string ActorIdStateSchemaName = @"ACTORID";
 		public const string ActorStateSchemaName = @"ACTORSTATE";
 		public const string ActorReminderSchemaName = @"ACTORREMINDER";
@@ -35,65 +33,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		public const string ReliableStateQueueInfoName = @"queue-info";
 
-
-		public class SchemaStateKey
-		{
-			private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(@"(?'service'[a-zA-Z0-9\-\.]+)_(?'partition'[a-zA-Z0-9\-]+)_(?'schema'[a-zA-Z0-9]+)_(?'key'.+)", RegexOptions.Compiled);
-
-			public SchemaStateKey(string serviceName, string partitionKey, string schema = null, string key = null)
-			{
-				ServiceName = serviceName;
-				PartitionKey = partitionKey;
-				Schema = schema;
-				Key = key;
-			}
-
-			public static SchemaStateKey Parse(string schemaStateKey)
-			{
-				var match = RegexActorSchemaStateKeySplitter.Match(schemaStateKey);
-				if (!match.Success)
-				{
-					throw new NotSupportedException($"The key {schemaStateKey} cannot be parsed as a SchemaStateKey");
-				}
-
-				var serviceName = match.Groups["service"]?.Value;
-				var partititonKey = match.Groups["partition"]?.Value;
-				var schema = match.Groups["schema"]?.Value;
-				var key = match.Groups["key"]?.Value;
-
-				return new SchemaStateKey(serviceName, partititonKey, schema, key);
-			}
-
-			public string ServiceName { get; set; }
-			public string PartitionKey { get; set; }
-			public string Schema { get; set; }
-			public string Key { get; set; }
-
-			public override string ToString()
-			{
-				var value = new StringBuilder();
-				if (ServiceName != null)
-				{
-					value = value.Append(ServiceName).Append("_");
-					if (PartitionKey != null)
-					{
-						value = value.Append(PartitionKey).Append("_");
-						if (Schema != null)
-						{
-							value = value.Append(Schema).Append("_");
-							if (Key != null)
-							{
-								value = value.Append(Key).Append("_");
-							}
-						}
-					}					
-				}
-				return value.ToString();
-			}
-		}
+		private static readonly Regex RegexActorIdDetector =
+			new Regex(
+				@"(S{.+})|(G{[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}})|(L{[0-9]+})",
+				RegexOptions.Compiled);
 
 		private static object _lock = new object();
-		private static readonly IDictionary<string, IDictionary<Guid, string>> PartitionKeys = new ConcurrentDictionary<string, IDictionary<Guid, string>>();
+
+		private static readonly IDictionary<string, IDictionary<Guid, string>> PartitionKeys =
+			new ConcurrentDictionary<string, IDictionary<Guid, string>>();
 
 		public static string GetServiceName(Uri serviceName)
 		{
@@ -106,11 +54,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			var stateKeyPrefix = $"{serviceName}_{partitionKey}_";
 			return stateKeyPrefix;
 		}
+
 		public static string GetSchemaStateKey(string serviceName, string partitionKey, string schema, string stateName)
 		{
 			var stateKey = $"{GetSchemaStateKeyPrefix(serviceName, partitionKey, schema)}{stateName}";
 			return stateKey;
 		}
+
 		public static string GetSchemaStateKeyPrefix(string serviceName, string partitionKey, string schema)
 		{
 			var stateKeyPrefix = $"{GetSchemaPrefix(serviceName, partitionKey)}{schema}_";
@@ -121,7 +71,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		{
 			var stateKey = $"{GetSchemaStateKeyPrefix(serviceName, partitionKey, schema)}{ReliableStateQueueInfoName}";
 			return stateKey;
-		}		
+		}
 
 		public static string GetSchemaQueueStateKey(string serviceName, string partitionKey, string schema, long index)
 		{
@@ -129,7 +79,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return stateKey;
 		}
 
-		public static async Task<string> GetPartitionInfo(ServiceContext serviceContext, Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
+		public static async Task<string> GetPartitionInfo(ServiceContext serviceContext,
+			Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
 		{
 			try
 			{
@@ -169,7 +120,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 
 				var partitionKeys = new List<Partition>();
-				
+
 				string continuationToken = null;
 				do
 				{
@@ -231,7 +182,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 								servicePartitionKeys.Add(partitionId, $"singleton");
 							}
 						}
-					}				
+					}
 				}
 
 				return PartitionKeys[serviceUriKey][serviceContext.PartitionId];
@@ -261,7 +212,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			return key;
 		}
-		
+
 		public static ActorId TryGetActorIdFromSchemaKey(string schemaKey)
 		{
 			var match = RegexActorIdDetector.Match(schemaKey);
@@ -299,6 +250,65 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		public static string GetActorStateSchemaName(string actorStateName)
 		{
 			return $"{ActorStateSchemaName}-{actorStateName}";
+		}
+
+
+		public class SchemaStateKey
+		{
+			private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
+				@"(?'service'[a-zA-Z0-9\-\.]+)_(?'partition'[a-zA-Z0-9\-]+)_(?'schema'[a-zA-Z0-9]+)_(?'key'.+)",
+				RegexOptions.Compiled);
+
+			public SchemaStateKey(string serviceName, string partitionKey, string schema = null, string key = null)
+			{
+				ServiceName = serviceName;
+				PartitionKey = partitionKey;
+				Schema = schema;
+				Key = key;
+			}
+
+			public string ServiceName { get; set; }
+			public string PartitionKey { get; set; }
+			public string Schema { get; set; }
+			public string Key { get; set; }
+
+			public static SchemaStateKey Parse(string schemaStateKey)
+			{
+				var match = RegexActorSchemaStateKeySplitter.Match(schemaStateKey);
+				if (!match.Success)
+				{
+					throw new NotSupportedException($"The key {schemaStateKey} cannot be parsed as a SchemaStateKey");
+				}
+
+				var serviceName = match.Groups["service"]?.Value;
+				var partititonKey = match.Groups["partition"]?.Value;
+				var schema = match.Groups["schema"]?.Value;
+				var key = match.Groups["key"]?.Value;
+
+				return new SchemaStateKey(serviceName, partititonKey, schema, key);
+			}
+
+			public override string ToString()
+			{
+				var value = new StringBuilder();
+				if (ServiceName != null)
+				{
+					value = value.Append(ServiceName).Append("_");
+					if (PartitionKey != null)
+					{
+						value = value.Append(PartitionKey).Append("_");
+						if (Schema != null)
+						{
+							value = value.Append(Schema).Append("_");
+							if (Key != null)
+							{
+								value = value.Append(Key).Append("_");
+							}
+						}
+					}
+				}
+				return value.ToString();
+			}
 		}
 	}
 }

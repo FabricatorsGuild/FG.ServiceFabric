@@ -16,18 +16,21 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 	public abstract class TestBase<T>
 		where T : StatefulServiceDemoBase
 	{
-		private string ApplicationName => @"Overlord";
-		protected MockFabricRuntime FabricRuntime;
 		protected MockFabricApplication _fabricApplication;
 
 		private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
+		private IList<T> _services = new List<T>();
+		protected MockFabricRuntime FabricRuntime;
 
 		protected TestBase()
 		{
 		}
 
+		private string ApplicationName => @"Overlord";
+
 		protected IEnumerable<T> Services => _services;
-		private IList<T> _services = new List<T>();
+
+		public abstract IDictionary<string, string> State { get; }
 
 		[SetUp]
 		public void Setup()
@@ -68,9 +71,13 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			}
 		}
 
-		protected virtual void OnSetup() { }
+		protected virtual void OnSetup()
+		{
+		}
 
-		protected virtual void OnTearDown() { }
+		protected virtual void OnTearDown()
+		{
+		}
 
 		private T CreateAndMonitorService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 		{
@@ -84,7 +91,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 
 		private void ServiceOnRunAsyncLoop(object sender, RunAsyncLoopEventArgs e)
 		{
-			var partitionKey = StateSessionHelper.GetPartitionInfo(e.Context, () => FabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult();
+			var partitionKey = StateSessionHelper.GetPartitionInfo(e.Context, () => FabricRuntime.PartitionEnumerationManager)
+				.GetAwaiter().GetResult();
 			_runAsyncLoopUpdates[partitionKey] = e.Iteration;
 		}
 
@@ -93,7 +101,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 		[TearDown]
 		public void TearDown()
 		{
-
 			Console.WriteLine($"States stored");
 			Console.WriteLine($"______________________");
 			foreach (var stateKey in State.Keys)
@@ -120,8 +127,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 			return Newtonsoft.Json.JsonConvert.DeserializeObject<T2>(State[key]);
 		}
 
-		public abstract IDictionary<string, string> State { get; }
-
-		public abstract IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime, StatefulServiceContext context);		
+		public abstract IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
+			StatefulServiceContext context);
 	}
 }

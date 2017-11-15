@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FG.ServiceFabric.Actors.Remoting.Tests
 {
-    public class Class1
-    {
-    }
+	public class Class1
+	{
+	}
 }

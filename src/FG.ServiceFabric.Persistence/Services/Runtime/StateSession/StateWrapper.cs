@@ -11,7 +11,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 	[DataContract]
 	public class IdWrapper
 	{
-		public IdWrapper() { }
+		public IdWrapper()
+		{
+		}
+
 		public IdWrapper(string id)
 		{
 			Id = id;
@@ -23,22 +26,23 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 	}
 
 	[Serializable]
-    [DataContract]
-    public class StateWrapper<T> : StateWrapper
+	[DataContract]
+	public class StateWrapper<T> : StateWrapper
 	{
 		public StateWrapper()
-	    {		    
-	    }
+		{
+		}
+
 		public StateWrapper(string id, T state, IServiceMetadata serviceMetadata, IValueMetadata valueMetadata)
 			: base(id, serviceMetadata, valueMetadata)
-        {
-            State = state;
-        }
-        
-        [JsonProperty(PropertyName = "state")]
-        [DataMember]
-        public T State { get; set; }
-    }
+		{
+			State = state;
+		}
+
+		[JsonProperty(PropertyName = "state")]
+		[DataMember]
+		public T State { get; set; }
+	}
 
 	[Serializable]
 	[DataContract]
@@ -47,6 +51,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		public StateWrapper()
 		{
 		}
+
 		public StateWrapper(string id, IServiceMetadata serviceMetadata, IValueMetadata valueMetadata)
 			: base(id)
 		{
@@ -76,5 +81,5 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		[JsonProperty(PropertyName = "type")]
 		[DataMember]
 		public string Type { get; private set; }
-	}	
+	}
 }

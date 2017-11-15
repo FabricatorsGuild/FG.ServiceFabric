@@ -12,7 +12,6 @@ using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 {
-
 	public class RunAsyncLoopEventArgs
 	{
 		public StatefulServiceContext Context { get; set; }
@@ -23,17 +22,17 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 	{
 		private readonly IStateSessionManager _stateSessionManager;
 
-		public event EventHandler<RunAsyncLoopEventArgs> RunAsyncLoop;
-
-		protected void OnRunAsyncLoop(int iteration)
-		{
-			RunAsyncLoop?.Invoke(this, new RunAsyncLoopEventArgs() { Context = this.Context, Iteration = iteration });
-		}
-
 		public StatefulServiceDemoBase(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 			: base(context)
 		{
 			_stateSessionManager = stateSessionManager;
+		}
+
+		public event EventHandler<RunAsyncLoopEventArgs> RunAsyncLoop;
+
+		protected void OnRunAsyncLoop(int iteration)
+		{
+			RunAsyncLoop?.Invoke(this, new RunAsyncLoopEventArgs() {Context = this.Context, Iteration = iteration});
 		}
 
 		protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
@@ -133,17 +132,15 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 		public class InnerStateItemTypeA : IInnerStateItem
 		{
-			public string Name { get; set; }
-
 			public string PropertyInA { get; set; }
+			public string Name { get; set; }
 		}
 
 		public class InnerStateItemTypeB : IInnerStateItem
 		{
-			public string Name { get; set; }
 			public string PropertyInB { get; set; }
-
-		}		
+			public string Name { get; set; }
+		}
 
 		public sealed class StatefulServiceDemo : StatefulServiceDemoBase
 		{
@@ -164,7 +161,10 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 					var state = new ArrayState()
 					{
 						Items = new IInnerStateItem[]
-							{new InnerStateItemTypeA() {Name = "I am a", PropertyInA = "Prop in A"}, new InnerStateItemTypeB() {Name = "I am b", PropertyInB = "Prop in B"},}
+						{
+							new InnerStateItemTypeA() {Name = "I am a", PropertyInA = "Prop in A"},
+							new InnerStateItemTypeB() {Name = "I am b", PropertyInB = "Prop in B"},
+						}
 					};
 
 
@@ -174,7 +174,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				OnRunAsyncLoop(0);
 			}
 
-			public async Task< ArrayState> GetStateAsync(CancellationToken cancellationToken)
+			public async Task<ArrayState> GetStateAsync(CancellationToken cancellationToken)
 			{
 				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
 
@@ -183,7 +183,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 					var stateValue = await session.GetValueAsync<ArrayState>("myDictionary2", "theValue", cancellationToken);
 
 					return stateValue;
-				}				
+				}
 			}
 		}
 	}
@@ -213,13 +213,6 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				_stateSessionManager = stateSessionManager;
 			}
 
-#pragma warning disable 1998
-			protected override async Task RunAsync(CancellationToken cancellationToken)
-#pragma warning restore 1998
-			{
-				OnRunAsyncLoop(0);
-			}
-
 			public async Task Enqueue(int count)
 			{
 				var cancellationToken = CancellationToken.None;
@@ -230,14 +223,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				{
 					for (int i = 0; i < count; i++)
 					{
-						await session.EnqueueAsync("myQueue",_internalCounter++, null, cancellationToken);
+						await session.EnqueueAsync("myQueue", _internalCounter++, null, cancellationToken);
 					}
 				}
-			}
-
-			private T FastGetValue<T>(ConditionalValue<T> value)
-			{
-				return value.HasValue ? value.Value : default(T);
 			}
 
 			public async Task<long[]> Dequeue(int count)
@@ -306,6 +294,18 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 					return results.ToArray();
 				}
 			}
+
+#pragma warning disable 1998
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+#pragma warning restore 1998
+			{
+				OnRunAsyncLoop(0);
+			}
+
+			private T FastGetValue<T>(ConditionalValue<T> value)
+			{
+				return value.HasValue ? value.Value : default(T);
+			}
 		}
 	}
 
@@ -317,6 +317,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			Task Remove(string key);
 			Task<KeyValuePair<string, string>[]> EnumerateAll();
 		}
+
 		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
 		{
 			private readonly IStateSessionManager _stateSessionManager;
@@ -327,13 +328,6 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				: base(context, stateSessionManager)
 			{
 				_stateSessionManager = stateSessionManager;
-			}
-
-#pragma warning disable 1998
-			protected override async Task RunAsync(CancellationToken cancellationToken)
-#pragma warning restore 1998
-			{
-				OnRunAsyncLoop(0);
 			}
 
 			public async Task Add(string key, string value)
@@ -381,6 +375,13 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 					return results.ToArray();
 				}
+			}
+
+#pragma warning disable 1998
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+#pragma warning restore 1998
+			{
+				OnRunAsyncLoop(0);
 			}
 		}
 	}

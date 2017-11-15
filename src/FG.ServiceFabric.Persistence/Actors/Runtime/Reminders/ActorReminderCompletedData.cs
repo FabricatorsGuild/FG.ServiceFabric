@@ -9,6 +9,17 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 	[DataContract]
 	internal sealed class ActorReminderCompletedData
 	{
+		private ActorReminderCompletedData()
+		{
+		}
+
+		internal ActorReminderCompletedData(ActorId actorId, string reminderName, DateTime utcTime)
+		{
+			ActorId = actorId;
+			ReminderName = reminderName;
+			UtcTime = utcTime;
+		}
+
 		[JsonProperty("actorId")]
 		private string ActorIdValue
 		{
@@ -27,17 +38,5 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 		[JsonProperty("utcTime")]
 		[DataMember]
 		internal DateTime UtcTime { get; private set; }
-
-		private ActorReminderCompletedData()
-		{
-			
-		}
-
-		internal ActorReminderCompletedData(ActorId actorId, string reminderName, DateTime utcTime)
-		{
-			ActorId = actorId;
-			ReminderName = reminderName;
-			UtcTime = utcTime;
-		}		
 	}
 }

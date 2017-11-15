@@ -9,8 +9,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 	public class MockStatefulService : StatefulService
 	{
 		private readonly ICodePackageActivationContext _codePackageActivationContext;
-		private readonly IServiceProxyFactory _serviceProxyFactory;
 		private readonly NodeContext _nodeContext;
+		private readonly IServiceProxyFactory _serviceProxyFactory;
 
 		public MockStatefulService(
 			ICodePackageActivationContext codePackageActivationContext,
@@ -20,13 +20,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			IReliableStateManagerReplica2 stateManager = null
 		) :
 			base(
-				serviceContext: statefulServiceContext, 
-				reliableStateManagerReplica:stateManager
+				serviceContext: statefulServiceContext,
+				reliableStateManagerReplica: stateManager
 			)
 		{
 			_codePackageActivationContext = codePackageActivationContext;
 			_serviceProxyFactory = serviceProxyFactory;
-			
+
 			_nodeContext = nodeContext;
 		}
 	}

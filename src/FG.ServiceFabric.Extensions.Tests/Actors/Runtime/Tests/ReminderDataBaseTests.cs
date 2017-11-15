@@ -25,7 +25,8 @@ namespace FG.ServiceFabric.Actors.Runtime.Tests
 		[Test]
 		public void Test_serialization_types()
 		{
-			var types = new[] {ReminderDataSerializationType.Binary, ReminderDataSerializationType.Xml, ReminderDataSerializationType.Json};
+			var types = new[]
+				{ReminderDataSerializationType.Binary, ReminderDataSerializationType.Xml, ReminderDataSerializationType.Json};
 
 			var timer = new Stopwatch();
 
@@ -36,7 +37,7 @@ namespace FG.ServiceFabric.Actors.Runtime.Tests
 				var length = 0;
 				for (int i = 0; i < 10000; i++)
 				{
-					var someState = new SomeState() { Value = i, StartedTime = DateTime.Now };
+					var someState = new SomeState() {Value = i, StartedTime = DateTime.Now};
 					var serialize = someState.Serialize(type);
 					length += serialize.Length;
 				}
@@ -49,7 +50,8 @@ namespace FG.ServiceFabric.Actors.Runtime.Tests
 		[Test]
 		public void Test_deserialization_types()
 		{
-			var types = new[] { ReminderDataSerializationType.Binary, ReminderDataSerializationType.Xml, ReminderDataSerializationType.Json };
+			var types = new[]
+				{ReminderDataSerializationType.Binary, ReminderDataSerializationType.Xml, ReminderDataSerializationType.Json};
 
 			var timer = new Stopwatch();
 
@@ -60,11 +62,11 @@ namespace FG.ServiceFabric.Actors.Runtime.Tests
 				var length = 0;
 				for (int i = 0; i < 10000; i++)
 				{
-					var someState = new SomeState() { Value = i, StartedTime = DateTime.Now };
+					var someState = new SomeState() {Value = i, StartedTime = DateTime.Now};
 					var serialize = someState.Serialize(type);
 					length += serialize.Length;
 
-					var deserialized = SomeState.Deserialize(serialize, type);				
+					var deserialized = SomeState.Deserialize(serialize, type);
 				}
 				timer.Stop();
 
@@ -79,8 +81,8 @@ namespace FG.ServiceFabric.Actors.Runtime.Tests
 	{
 		[DataMember]
 		public long Value { get; set; }
+
 		[DataMember]
 		public DateTime StartedTime { get; set; }
 	}
-
 }

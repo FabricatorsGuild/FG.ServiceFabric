@@ -19,19 +19,9 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 	{
 		protected string ApplicationName => @"Overlord";
 
-		public class TestService : StatefulService
-		{
-			public TestService(StatefulServiceContext serviceContext) : base(serviceContext)
-			{
-			}
-
-			public TestService(StatefulServiceContext serviceContext, IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
-			{
-			}
-		}
-
 		[Test]
-		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateless_service_with_Singleton_Partitioning()
+		public async Task
+			MockPartitionEnumerationManager_should_return_one_partition_for_Stateless_service_with_Singleton_Partitioning()
 		{
 			var fabricRuntime = new MockFabricRuntime();
 			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
@@ -63,7 +53,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		}
 
 		[Test]
-		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Uniform_Int64_Partitioning()
+		public async Task
+			MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Uniform_Int64_Partitioning()
 		{
 			var fabricRuntime = new MockFabricRuntime();
 			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
@@ -95,7 +86,8 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		}
 
 		[Test]
-		public async Task MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Named_Partitioning()
+		public async Task
+			MockPartitionEnumerationManager_should_return_one_partition_for_Stateful_service_with_Named_Partitioning()
 		{
 			var fabricRuntime = new MockFabricRuntime();
 			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
@@ -124,6 +116,18 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 
 			partitionKeys.Should().HaveCount(3);
 			partitionKeys.All(p => p.Id != Guid.Empty).Should().BeTrue();
+		}
+
+		public class TestService : StatefulService
+		{
+			public TestService(StatefulServiceContext serviceContext) : base(serviceContext)
+			{
+			}
+
+			public TestService(StatefulServiceContext serviceContext, IReliableStateManagerReplica2 reliableStateManagerReplica)
+				: base(serviceContext, reliableStateManagerReplica)
+			{
+			}
 		}
 	}
 }

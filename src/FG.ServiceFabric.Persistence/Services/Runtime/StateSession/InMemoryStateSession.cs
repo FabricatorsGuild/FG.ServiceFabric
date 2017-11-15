@@ -13,17 +13,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 
 		public InMemoryStateSessionManager(
-			string serviceName, 
-			Guid partitionId, 
+			string serviceName,
+			Guid partitionId,
 			string partitionKey,
-			IDictionary<string, string> state = null) : 
+			IDictionary<string, string> state = null) :
 			base(serviceName, partitionId, partitionKey)
 		{
 			_storage = state ?? new ConcurrentDictionary<string, string>();
-
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager,
+			IStateSessionObject[] stateSessionObjects)
 		{
 			return new InMemoryStateSession(this, stateSessionObjects);
 		}
@@ -34,8 +34,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			private readonly InMemoryStateSessionManager _manager;
 
 			public InMemoryStateSession(
-				InMemoryStateSessionManager manager, 
-				IStateSessionObject[] stateSessionObjects) 
+				InMemoryStateSessionManager manager,
+				IStateSessionObject[] stateSessionObjects)
 				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
@@ -55,6 +55,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var resultCount = items.LongCount();
 				return resultCount;
 			}
+
 			protected override bool Contains(string id)
 			{
 				return Storage.ContainsKey(id);
@@ -73,9 +74,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			protected override void Write(string id, string content)
 			{
 				Storage[id] = content;
-			}			
+			}
 
-			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
+			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
+				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
 				var results = new List<string>();
 				var nextMarker = continuationToken?.Marker ?? "";
@@ -91,12 +93,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							resultCount++;
 							if (resultCount >= maxNumResults)
 							{
-								return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(item), Items = results };
+								return new FindByKeyPrefixResult() {ContinuationToken = new ContinuationToken(item), Items = results};
 							}
 						}
 					}
 				}
-				return new FindByKeyPrefixResult() { ContinuationToken = null, Items = results };
+				return new FindByKeyPrefixResult() {ContinuationToken = null, Items = results};
 			}
 		}
 	}

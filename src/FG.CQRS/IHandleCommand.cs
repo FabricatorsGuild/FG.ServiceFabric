@@ -2,9 +2,9 @@
 
 namespace FG.CQRS
 {
-    public interface IHandleCommand<in TCommand>
-        where TCommand : ICommand
-    {
-        Task Handle(TCommand command);
-    }
+	public interface IHandleCommand<in TCommand>
+		where TCommand : ICommand
+	{
+		Task Handle(TCommand command);
+	}
 }

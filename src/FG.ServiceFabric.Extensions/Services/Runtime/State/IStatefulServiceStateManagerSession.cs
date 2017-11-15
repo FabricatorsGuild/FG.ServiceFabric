@@ -26,7 +26,5 @@ namespace FG.ServiceFabric.Services.Runtime.State
 
 		Task CommitAsync();
 		Task AbortAsync();
-
-
 	}
 }

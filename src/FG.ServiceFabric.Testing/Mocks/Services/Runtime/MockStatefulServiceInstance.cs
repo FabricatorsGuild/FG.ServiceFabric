@@ -34,16 +34,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				return;
 			}
 
-			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ServiceRegistration.GetApplicationName(), ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
+			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ServiceRegistration.GetApplicationName(),
+				ServiceRegistration.Name, this.Partition.PartitionInformation, this.Replica.Id);
 			StateManager = (ServiceRegistration.CreateStateManager ??
-			                (() => (IReliableStateManagerReplica2)new MockReliableStateManager(FabricRuntime))).Invoke();
+			                (() => (IReliableStateManagerReplica2) new MockReliableStateManager(FabricRuntime))).Invoke();
 			var serviceFactory = ServiceRegistration.CreateStatefulService ?? GetMockStatefulService;
 			// TODO: consider this further, is it really what should be done???
 
 			var statefulService = serviceFactory(statefulServiceContext, StateManager);
 			if (statefulService is FG.ServiceFabric.Services.Runtime.StatefulService)
 			{
-				var applicationUriBuilder = new ApplicationUriBuilder(statefulServiceContext.CodePackageActivationContext, statefulServiceContext.CodePackageActivationContext.ApplicationName);
+				var applicationUriBuilder = new ApplicationUriBuilder(statefulServiceContext.CodePackageActivationContext,
+					statefulServiceContext.CodePackageActivationContext.ApplicationName);
 				statefulService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
 				statefulService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
 				statefulService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
@@ -52,6 +54,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			ServiceInstance = statefulService;
 
 			base.Build();
-		}		
+		}
 	}
 }

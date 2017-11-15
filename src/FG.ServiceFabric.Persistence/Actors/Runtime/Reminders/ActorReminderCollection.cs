@@ -15,14 +15,6 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 			this.reminderCollectionsByActorId = new ConcurrentDictionary<ActorId, IReadOnlyCollection<IActorReminderState>>();
 		}
 
-		public void Add(ActorId actorId, IActorReminderState reminderState)
-		{
-			var collection = this.reminderCollectionsByActorId.GetOrAdd(
-				actorId, k => new ConcurrentCollection<IActorReminderState>());
-
-			((ConcurrentCollection<IActorReminderState>)collection).Add(reminderState);
-		}
-
 		bool IReadOnlyDictionary<ActorId, IReadOnlyCollection<IActorReminderState>>.ContainsKey(ActorId key)
 		{
 			return this.reminderCollectionsByActorId.ContainsKey(key);
@@ -67,6 +59,14 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 			return this.reminderCollectionsByActorId.GetEnumerator();
 		}
 
+		public void Add(ActorId actorId, IActorReminderState reminderState)
+		{
+			var collection = this.reminderCollectionsByActorId.GetOrAdd(
+				actorId, k => new ConcurrentCollection<IActorReminderState>());
+
+			((ConcurrentCollection<IActorReminderState>) collection).Add(reminderState);
+		}
+
 		#region Helper Class
 
 		private class ConcurrentCollection<T> : IReadOnlyCollection<T>
@@ -78,17 +78,9 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 				this.concurrentBag = new ConcurrentBag<T>();
 			}
 
-			public void Add(T item)
-			{
-				this.concurrentBag.Add(item);
-			}
-
 			int IReadOnlyCollection<T>.Count
 			{
-				get
-				{
-					return this.concurrentBag.Count;
-				}
+				get { return this.concurrentBag.Count; }
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
@@ -99,6 +91,11 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 			IEnumerator<T> IEnumerable<T>.GetEnumerator()
 			{
 				return this.concurrentBag.GetEnumerator();
+			}
+
+			public void Add(T item)
+			{
+				this.concurrentBag.Add(item);
 			}
 		}
 

@@ -8,40 +8,45 @@ using Microsoft.ServiceFabric.Services.Remoting.Client;
 
 namespace FG.ServiceFabric.Services.Runtime
 {
-    public abstract class StatefulService : Microsoft.ServiceFabric.Services.Runtime.StatefulService, IService
-    {
-        private IServiceProxyFactory _serviceProxyFactory;
-        private ApplicationUriBuilder _applicationUriBuilder;
-        private IActorProxyFactory _actorProxyFactory;
-	    private Func<IActorClientLogger> _actorClientLoggerFactory;
-	    private Func<IServiceClientLogger> _serviceClientLoggerFactory;
+	public abstract class StatefulService : Microsoft.ServiceFabric.Services.Runtime.StatefulService, IService
+	{
+		private Func<IActorClientLogger> _actorClientLoggerFactory;
+		private IActorProxyFactory _actorProxyFactory;
+		private ApplicationUriBuilder _applicationUriBuilder;
+		private Func<IServiceClientLogger> _serviceClientLoggerFactory;
+		private IServiceProxyFactory _serviceProxyFactory;
 
-		protected StatefulService(StatefulServiceContext serviceContext, 
+		protected StatefulService(StatefulServiceContext serviceContext,
 			Func<IActorClientLogger> actorClientLoggerFactory = null,
 			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext)
-        {
+		{
 			_actorClientLoggerFactory = actorClientLoggerFactory;
 			_serviceClientLoggerFactory = serviceClientLoggerFactory;
 			_applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
-        }
+		}
 
-	    protected StatefulService(StatefulServiceContext serviceContext, 
-			IReliableStateManagerReplica2 reliableStateManagerReplica, 
-			Func<IActorClientLogger> actorClientLoggerFactory = null, 
+		protected StatefulService(StatefulServiceContext serviceContext,
+			IReliableStateManagerReplica2 reliableStateManagerReplica,
+			Func<IActorClientLogger> actorClientLoggerFactory = null,
 			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext, reliableStateManagerReplica)
-	    {
-		    _actorClientLoggerFactory = actorClientLoggerFactory;
-		    _serviceClientLoggerFactory = serviceClientLoggerFactory;
-		    _applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
-	    }
+		{
+			_actorClientLoggerFactory = actorClientLoggerFactory;
+			_serviceClientLoggerFactory = serviceClientLoggerFactory;
+			_applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
+		}
 
 		[Obsolete("Dont use this, use IStateSessionManager API instead", true)]
-	    public new IReliableStateManager StateManager => base.StateManager;
+		public new IReliableStateManager StateManager => base.StateManager;
 
-        public ApplicationUriBuilder ApplicationUriBuilder => _applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
+		public ApplicationUriBuilder ApplicationUriBuilder =>
+			_applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
 
-        public IActorProxyFactory ActorProxyFactory => _actorProxyFactory ?? (_actorProxyFactory = new FG.ServiceFabric.Actors.Client.ActorProxyFactory(_actorClientLoggerFactory?.Invoke()));
+		public IActorProxyFactory ActorProxyFactory => _actorProxyFactory ?? (_actorProxyFactory =
+			                                               new FG.ServiceFabric.Actors.Client.ActorProxyFactory(
+				                                               _actorClientLoggerFactory?.Invoke()));
 
-        public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory ?? (_serviceProxyFactory = new FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke()));                
-    }
+		public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory ?? (_serviceProxyFactory =
+			                                                   new FG.ServiceFabric.Services.Remoting.Runtime.Client.
+				                                                   ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke()));
+	}
 }

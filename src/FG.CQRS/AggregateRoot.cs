@@ -3,113 +3,118 @@ using FG.CQRS.Exceptions;
 
 namespace FG.CQRS
 {
+	public abstract partial class AggregateRoot<TAggregateRootEventInterface> : IAggregateRoot, IEventStored
+		where TAggregateRootEventInterface : class, IAggregateRootEvent
+	{
+		private readonly EventDispatcher<TAggregateRootEventInterface> _eventDispatcher =
+			new EventDispatcher<TAggregateRootEventInterface>();
 
-    public abstract partial class AggregateRoot<TAggregateRootEventInterface> : IAggregateRoot, IEventStored
-        where TAggregateRootEventInterface : class, IAggregateRootEvent
-    {
-        private ITimeProvider _timeProvider;
-        protected int Version;
+		private ITimeProvider _timeProvider;
+		protected int Version;
 
-        public Guid AggregateRootId { get; private set; }
-        private void SetId(Guid id) { AggregateRootId = id; }
+		public Guid AggregateRootId { get; private set; }
 
-        protected void RaiseEvent<TDomainEvent>(TDomainEvent aggregateRootEvent) 
-            where TDomainEvent : TAggregateRootEventInterface
-        {
-            if(aggregateRootEvent is IAggregateRootCreatedEvent)
-            {
-                if (Version != 0)
-                {
-                    throw new AggregateRootException(
-                    $"Expected the event implementing {typeof(IAggregateRootCreatedEvent)} to be first version.");
-                }
+		private void SetId(Guid id)
+		{
+			AggregateRootId = id;
+		}
 
-                if(AggregateRootId != Guid.Empty)
-                {
-                    throw new AggregateRootException(
-                        $"The {nameof(AggregateRootId)} can only be set once. " +
-                        $"Only the first event should implement {typeof(IAggregateRootCreatedEvent)}.");
-                }
+		protected void RaiseEvent<TDomainEvent>(TDomainEvent aggregateRootEvent)
+			where TDomainEvent : TAggregateRootEventInterface
+		{
+			if (aggregateRootEvent is IAggregateRootCreatedEvent)
+			{
+				if (Version != 0)
+				{
+					throw new AggregateRootException(
+						$"Expected the event implementing {typeof(IAggregateRootCreatedEvent)} to be first version.");
+				}
 
-                if(aggregateRootEvent.AggregateRootId == Guid.Empty)
-                {
-                    throw new AggregateRootException($"Missing {nameof(aggregateRootEvent.AggregateRootId)}");
-                }
-            }
-            else
-            {
-                if(AggregateRootId == Guid.Empty)
-                {
-                    throw new AggregateRootException(
-                        $"No {nameof(AggregateRootId)} set. " +
-                        $"Did you forget to implement {typeof(IAggregateRootCreatedEvent)} in the first event?");
-                }
+				if (AggregateRootId != Guid.Empty)
+				{
+					throw new AggregateRootException(
+						$"The {nameof(AggregateRootId)} can only be set once. " +
+						$"Only the first event should implement {typeof(IAggregateRootCreatedEvent)}.");
+				}
 
-                if(aggregateRootEvent.AggregateRootId != Guid.Empty && aggregateRootEvent.AggregateRootId != AggregateRootId)
-                {
-                    throw new AggregateRootException(
-                        $"{nameof(AggregateRootId)} in event is  {aggregateRootEvent.AggregateRootId} which is different from the current {AggregateRootId}");
-                }
+				if (aggregateRootEvent.AggregateRootId == Guid.Empty)
+				{
+					throw new AggregateRootException($"Missing {nameof(aggregateRootEvent.AggregateRootId)}");
+				}
+			}
+			else
+			{
+				if (AggregateRootId == Guid.Empty)
+				{
+					throw new AggregateRootException(
+						$"No {nameof(AggregateRootId)} set. " +
+						$"Did you forget to implement {typeof(IAggregateRootCreatedEvent)} in the first event?");
+				}
 
-                aggregateRootEvent.AggregateRootId = AggregateRootId;
-            }
+				if (aggregateRootEvent.AggregateRootId != Guid.Empty && aggregateRootEvent.AggregateRootId != AggregateRootId)
+				{
+					throw new AggregateRootException(
+						$"{nameof(AggregateRootId)} in event is  {aggregateRootEvent.AggregateRootId} which is different from the current {AggregateRootId}");
+				}
 
-            aggregateRootEvent.Version = Version + 1;
-            aggregateRootEvent.UtcTimeStamp = _timeProvider.UtcNow;
+				aggregateRootEvent.AggregateRootId = AggregateRootId;
+			}
 
-            ApplyEvent(aggregateRootEvent);
-            AssertInvariantsAreMet();
-            _eventController.RaiseDomainEventAsync(aggregateRootEvent).GetAwaiter().GetResult();
-        }
+			aggregateRootEvent.Version = Version + 1;
+			aggregateRootEvent.UtcTimeStamp = _timeProvider.UtcNow;
 
-        public virtual void AssertInvariantsAreMet()
-        {
-            if (AggregateRootId == Guid.Empty)
-            {
-                throw new InvariantsNotMetException($"{nameof(AggregateRootId)} not set.");
-            }
-        }
-        
-        private void ApplyEvent(TAggregateRootEventInterface aggregateRootEvent)
-        {
-            if (aggregateRootEvent is IAggregateRootCreatedEvent)
-            {
-                SetId(aggregateRootEvent.AggregateRootId);
-            }
-            Version = aggregateRootEvent.Version;
-            _eventDispatcher.Dispatch(aggregateRootEvent);
-        }
+			ApplyEvent(aggregateRootEvent);
+			AssertInvariantsAreMet();
+			_eventController.RaiseDomainEventAsync(aggregateRootEvent).GetAwaiter().GetResult();
+		}
 
-        private readonly EventDispatcher<TAggregateRootEventInterface> _eventDispatcher = new EventDispatcher<TAggregateRootEventInterface>();
-        
-        protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
-        {
-            return _eventDispatcher.RegisterHandlers();
-        }
+		public virtual void AssertInvariantsAreMet()
+		{
+			if (AggregateRootId == Guid.Empty)
+			{
+				throw new InvariantsNotMetException($"{nameof(AggregateRootId)} not set.");
+			}
+		}
 
-        #region IEventStored
+		private void ApplyEvent(TAggregateRootEventInterface aggregateRootEvent)
+		{
+			if (aggregateRootEvent is IAggregateRootCreatedEvent)
+			{
+				SetId(aggregateRootEvent.AggregateRootId);
+			}
+			Version = aggregateRootEvent.Version;
+			_eventDispatcher.Dispatch(aggregateRootEvent);
+		}
 
-        private IDomainEventController _eventController;
-        
-        public void Initialize(IDomainEventController eventController, IDomainEvent[] eventStream, ITimeProvider timeProvider = null)
-        {
-            Initialize(eventController, timeProvider);
+		protected EventDispatcher<TAggregateRootEventInterface>.RegistrationBuilder RegisterEventAppliers()
+		{
+			return _eventDispatcher.RegisterHandlers();
+		}
 
-            if (eventStream == null)
-                return;
+		#region IEventStored
 
-            foreach (var domainEvent in eventStream)
-            {
-                ApplyEvent(domainEvent as TAggregateRootEventInterface);
-            }
-        }
+		private IDomainEventController _eventController;
 
-        public void Initialize(IDomainEventController eventController, ITimeProvider timeProvider = null)
-        {
-            _timeProvider = timeProvider ?? UtcNowTimeProvider.Instance;
-            _eventController = eventController;
-        }
+		public void Initialize(IDomainEventController eventController, IDomainEvent[] eventStream,
+			ITimeProvider timeProvider = null)
+		{
+			Initialize(eventController, timeProvider);
 
-        #endregion
-    }
+			if (eventStream == null)
+				return;
+
+			foreach (var domainEvent in eventStream)
+			{
+				ApplyEvent(domainEvent as TAggregateRootEventInterface);
+			}
+		}
+
+		public void Initialize(IDomainEventController eventController, ITimeProvider timeProvider = null)
+		{
+			_timeProvider = timeProvider ?? UtcNowTimeProvider.Instance;
+			_eventController = eventController;
+		}
+
+		#endregion
+	}
 }

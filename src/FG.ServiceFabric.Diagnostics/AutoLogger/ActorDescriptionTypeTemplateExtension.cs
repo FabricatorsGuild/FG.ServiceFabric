@@ -3,8 +3,8 @@ using FG.Diagnostics.AutoLogger.Model;
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
 	public class ActorDescriptionTypeTemplateExtension : BaseTemplateExtension
-    {        
-        private string Definition = @"{
+	{
+		private string Definition = @"{
               ""Name"": ""ActorDescription"",
               ""CLRType"": ""FG.ServiceFabric.Diagnostics.ActoDescription"",
               ""Arguments"": [
@@ -65,11 +65,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
               ]
             }";
 
-        protected override string GetDefinition()
-        {
-            return Definition;
-		}
-
 		public override string Module => @"ServiceFabric";
+
+		protected override string GetDefinition()
+		{
+			return Definition;
+		}
 	}
 }

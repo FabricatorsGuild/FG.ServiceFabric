@@ -2,9 +2,9 @@
 
 namespace FG.CQRS
 {
-    public interface IHandleDomainEvent<in TDomainEvent>
-        where TDomainEvent : IDomainEvent
-    {
-        Task Handle(TDomainEvent domainEvent);
-    }
+	public interface IHandleDomainEvent<in TDomainEvent>
+		where TDomainEvent : IDomainEvent
+	{
+		Task Handle(TDomainEvent domainEvent);
+	}
 }

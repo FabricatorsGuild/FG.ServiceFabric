@@ -1,10 +1,10 @@
 using System;
 using System.Text;
 
-namespace FG.Common.Utils {
+namespace FG.Common.Utils
+{
 	public static class PathExtensions
 	{
-
 		public static string GetAbsolutePath(string relativePath)
 		{
 			var currentDirectory = System.IO.Directory.GetCurrentDirectory();
@@ -34,7 +34,7 @@ namespace FG.Common.Utils {
 
 
 		/// <summary>
-		/// Creates a relative path from one file or folder to another.
+		///     Creates a relative path from one file or folder to another.
 		/// </summary>
 		/// <param name="fromPath">Contains the directory that defines the start of the relative path.</param>
 		/// <param name="toPath">Contains the path that defines the endpoint of the relative path.</param>
@@ -60,7 +60,8 @@ namespace FG.Common.Utils {
 
 			if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
 			{
-				relativePath = relativePath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
+				relativePath =
+					relativePath.Replace(System.IO.Path.AltDirectorySeparatorChar, System.IO.Path.DirectorySeparatorChar);
 			}
 
 			return relativePath;
@@ -78,7 +79,8 @@ namespace FG.Common.Utils {
 			}
 
 			var basePathFromCommonPrefix = basePath.RemoveFromStart(commonPrefix);
-			var backTrailingComponents = basePathFromCommonPrefix.Split(new char[] { System.IO.Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
+			var backTrailingComponents = basePathFromCommonPrefix.Split(new char[] {System.IO.Path.DirectorySeparatorChar},
+				StringSplitOptions.RemoveEmptyEntries);
 
 			var builder = new StringBuilder();
 			foreach (var backTrailingComponent in backTrailingComponents)

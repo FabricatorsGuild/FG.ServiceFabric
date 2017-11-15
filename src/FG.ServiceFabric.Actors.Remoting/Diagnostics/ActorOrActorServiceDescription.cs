@@ -21,6 +21,7 @@ namespace FG.ServiceFabric.Diagnostics
 		{
 			return new ActorDescription(actor);
 		}
+
 		public static implicit operator ActorOrActorServiceDescription(ActorService actorService)
 		{
 			return new ActorServiceDescription(actorService);

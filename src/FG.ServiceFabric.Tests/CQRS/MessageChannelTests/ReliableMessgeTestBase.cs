@@ -6,21 +6,21 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
-    public class ReliableMessgeTestBase : TestBase
-    {
-        [SetUp]
-        public void CreateOutboundChannel()
-        {
-            OutboundChannel = new OutboundReliableMessageChannel(new MockActorStateManager(),
-                FabricRuntime.ActorProxyFactory, null, null, new MockableActorBinder<IIndexActor>(FabricRuntime.ActorProxyFactory));
-        }
+	public class ReliableMessgeTestBase : TestBase
+	{
+		public OutboundReliableMessageChannel OutboundChannel { get; set; }
 
-        protected override void SetupRuntime()
-        {
-            ForTestIndexActor.Setup(_fabricApplication);
-            base.SetupRuntime();
-        }
+		[SetUp]
+		public void CreateOutboundChannel()
+		{
+			OutboundChannel = new OutboundReliableMessageChannel(new MockActorStateManager(),
+				FabricRuntime.ActorProxyFactory, null, null, new MockableActorBinder<IIndexActor>(FabricRuntime.ActorProxyFactory));
+		}
 
-        public OutboundReliableMessageChannel OutboundChannel { get; set; }
-    }
+		protected override void SetupRuntime()
+		{
+			ForTestIndexActor.Setup(_fabricApplication);
+			base.SetupRuntime();
+		}
+	}
 }

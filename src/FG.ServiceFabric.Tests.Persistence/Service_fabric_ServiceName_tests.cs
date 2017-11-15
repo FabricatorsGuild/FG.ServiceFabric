@@ -9,7 +9,6 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.Persistence
 {
-
 	// ReSharper disable InconsistentNaming
 	public class Service_fabric_ServiceName_tests
 	{
@@ -21,8 +20,6 @@ namespace FG.ServiceFabric.Tests.Persistence
 			var name = StateSessionHelper.GetServiceName(serviceName);
 			name.Should().Be("sf.application.name-servicename.with.some.namespace");
 		}
-
-
 	}
 
 	// ReSharper restore InconsistentNaming

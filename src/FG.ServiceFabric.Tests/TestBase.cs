@@ -7,26 +7,26 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests
 {
-    public abstract class TestBase
-    {
-	    private string ApplicationName => @"Overlord";
-	    protected MockFabricApplication _fabricApplication;
-        protected MockFabricRuntime FabricRuntime;
+	public abstract class TestBase
+	{
+		protected MockFabricApplication _fabricApplication;
+		protected MockFabricRuntime FabricRuntime;
+		private string ApplicationName => @"Overlord";
 
-        protected IServiceProxyFactory ServiceProxyFactory => FabricRuntime.ServiceProxyFactory;
-        protected IActorProxyFactory ActorProxyFactory => FabricRuntime.ActorProxyFactory;
-        
-        [SetUp]
-        public void Setup()
-        {
-            FabricRuntime = new MockFabricRuntime();
-	        _fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
-            // ReSharper disable once VirtualMemberCallInConstructor
-            SetupRuntime();
-        }
+		protected IServiceProxyFactory ServiceProxyFactory => FabricRuntime.ServiceProxyFactory;
+		protected IActorProxyFactory ActorProxyFactory => FabricRuntime.ActorProxyFactory;
 
-        protected virtual void SetupRuntime()
-        {
-        }
-    }
+		[SetUp]
+		public void Setup()
+		{
+			FabricRuntime = new MockFabricRuntime();
+			_fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
+			// ReSharper disable once VirtualMemberCallInConstructor
+			SetupRuntime();
+		}
+
+		protected virtual void SetupRuntime()
+		{
+		}
+	}
 }

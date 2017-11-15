@@ -10,7 +10,8 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public abstract class TextStateSessionManagerWithTransaction : StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>, IStateSessionManager
+	public abstract class TextStateSessionManagerWithTransaction :
+		StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>, IStateSessionManager
 	{
 		protected TextStateSessionManagerWithTransaction(
 			string serviceName,
@@ -18,22 +19,24 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			string partitionKey) :
 			base(serviceName, partitionId, partitionKey)
 		{
-
 		}
 
-		public abstract class TextStateSession : StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>.StateSessionBase<TextStateSessionManagerWithTransaction>, IStateSession
+		public abstract class TextStateSession :
+			StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>.StateSessionBase<
+				TextStateSessionManagerWithTransaction>, IStateSession
 		{
-			private readonly TextStateSessionManagerWithTransaction _manager;
-			private IStateSessionManagerInternals _managerInternals => _manager;
 			private readonly object _lock = new object();
+			private readonly TextStateSessionManagerWithTransaction _manager;
 
 			protected TextStateSession(
-				TextStateSessionManagerWithTransaction manager, 
+				TextStateSessionManagerWithTransaction manager,
 				IStateSessionObject[] stateSessionObjects)
 				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
-			}			
+			}
+
+			private IStateSessionManagerInternals _managerInternals => _manager;
 
 			private bool ContainsByRead(string id)
 			{
@@ -47,10 +50,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			protected abstract void Write(string id, string content);
 
-			protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null,
+			protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
+				ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken());
 
-			protected override Task<bool> ContainsInternal(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task<bool> ContainsInternal(string id, string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
@@ -65,21 +70,22 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			protected override Task<StateWrapper<T>> GetValueInternalAsync<T>(string id, CancellationToken cancellationToken = new CancellationToken())
-			{				
+			protected override Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+				CancellationToken cancellationToken = new CancellationToken())
+			{
 				try
 				{
 					StateWrapper<T> value = null;
 					lock (_lock)
 					{
-
 						var stringValue = Read(id);
 						if (stringValue == null)
 						{
 							throw new KeyNotFoundException($"State with {id} does not exist");
 						}
 
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings{ TypeNameHandling = TypeNameHandling.Auto });						
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
+							new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
 					}
 					return Task.FromResult(value);
 				}
@@ -89,7 +95,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema,
+				string key, CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
@@ -102,7 +109,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
 						}
 
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue, new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto });
+						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
+							new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
 					}
 					return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, value));
 				}
@@ -112,7 +120,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			protected override Task SetValueInternalAsync(string id, string schema, string key, StateWrapper value, Type valueType, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task SetValueInternalAsync(string id, string schema, string key, StateWrapper value,
+				Type valueType, CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
@@ -127,7 +136,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						}
 						else
 						{
-							var stringValue = JsonConvert.SerializeObject(value, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented });
+							var stringValue = JsonConvert.SerializeObject(value,
+								new JsonSerializerSettings() {TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented});
 							Write(id, stringValue);
 						}
 					}
@@ -140,7 +150,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			protected override Task RemoveInternalAsync(string id, string schema, string key, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task RemoveInternalAsync(string id, string schema, string key,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
@@ -160,7 +171,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
-			protected override Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix, int maxNumResults = 100000, ContinuationToken continuationToken = null,
+			protected override Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix,
+				int maxNumResults = 100000, ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				var result = Find(schemaKeyPrefix, null, maxNumResults, continuationToken, cancellationToken);
@@ -173,7 +185,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					});
 			}
 
-			protected override Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key, 
+			protected override Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				return Task.FromResult(
@@ -181,7 +193,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 						.Items
 						.Select(id => id.Substring(schemaKeyPrefix.Length, id.Length - schemaKeyPrefix.Length - key.Length - 1))
 						.Distinct());
-			}			
+			}
 
 			protected override void Dispose(bool disposing)
 			{
@@ -190,6 +202,5 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 		}
-
 	}
 }

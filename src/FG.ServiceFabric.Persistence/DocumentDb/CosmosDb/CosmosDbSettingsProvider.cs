@@ -40,16 +40,20 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 		{
 			return settingsProvider[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}"];
 		}
+
 		public static string PrimaryKey(this ISettingsProvider settingsProvider)
 		{
 			var key = $"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}";
 
 			return settingsProvider[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}"];
 		}
+
 		public static string DatabaseName(this ISettingsProvider settingsProvider)
 		{
-			return settingsProvider[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}"];
+			return settingsProvider
+				[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}"];
 		}
+
 		public static string Collection(this ISettingsProvider settingsProvider)
 		{
 			return settingsProvider[$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}"];

@@ -4,9 +4,8 @@ using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Actors
 {
-    public interface IReliableMessageReceiverActor : IActor
-    {
-        Task ReceiveMessageAsync(ReliableMessage message);
-    }
-    
+	public interface IReliableMessageReceiverActor : IActor
+	{
+		Task ReceiveMessageAsync(ReliableMessage message);
+	}
 }

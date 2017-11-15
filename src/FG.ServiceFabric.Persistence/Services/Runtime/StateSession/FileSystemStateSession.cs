@@ -30,10 +30,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			_commonPath = storagePath ?? CommonPathDefault;
 
 			_invalidCharsReplacement = System.IO.Path.GetInvalidFileNameChars()
-				.Select((c, i) => new { InvalidChar = c.ToString(), Replacement = $"%{i}%" })
+				.Select((c, i) => new {InvalidChar = c.ToString(), Replacement = $"%{i}%"})
 				.ToDictionary(c => c.InvalidChar, c => c.Replacement);
 			_replacementsToInvalidChars = System.IO.Path.GetInvalidFileNameChars()
-				.Select((c, i) => new { InvalidChar = c.ToString(), Replacement = $"%{i}%" })
+				.Select((c, i) => new {InvalidChar = c.ToString(), Replacement = $"%{i}%"})
 				.ToDictionary(c => c.Replacement, c => c.InvalidChar);
 		}
 
@@ -64,14 +64,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		protected override string GetEscapedKeyInternal(string key)
 		{
 			return EscapeFileName(key);
-		}		
+		}
 
 		protected override string GetUnescapedKeyInternal(string key)
 		{
 			return UnescapeFileName(key);
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager, IStateSessionObject[] stateSessionObjects)
+		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager,
+			IStateSessionObject[] stateSessionObjects)
 		{
 			return new FileSystemStateSession(this, stateSessionObjects);
 		}
@@ -80,13 +81,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		private class FileSystemStateSession : TextStateSession, IStateSession
 		{
 			private readonly object _lock = new object();
-			private string CommonPath => _manager._commonPath;
 
 			private readonly FileSystemStateSessionManager _manager;
 
 			public FileSystemStateSession(
-				FileSystemStateSessionManager manager, 
-				IStateSessionObject[] stateSessionObjects) 
+				FileSystemStateSessionManager manager,
+				IStateSessionObject[] stateSessionObjects)
 				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
@@ -100,12 +100,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 			}
 
+			private string CommonPath => _manager._commonPath;
+
 			private string GetFilePath(string id)
 			{
 				var fileName = $"{_manager.EscapeFileName(id)}.json";
 				var filePath = System.IO.Path.Combine(CommonPath, fileName);
 				return filePath;
 			}
+
 			protected override string Read(string id, bool checkExistsOnly = false)
 			{
 				var filePath = GetFilePath(id);
@@ -131,9 +134,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var filePath = GetFilePath(id);
 				System.IO.File.WriteAllText(filePath, content);
-			}			
-						
-			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000, ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
+			}
+
+			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
+				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
 				var results = new List<string>();
 				var nextMarker = continuationToken?.Marker ?? "";
@@ -159,7 +163,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var files = System.IO.Directory.GetFiles(CommonPath, $"{schema}*").OrderBy(f => f);
 				return Task.FromResult(files.LongCount());
-			}			
+			}
 		}
 	}
 }

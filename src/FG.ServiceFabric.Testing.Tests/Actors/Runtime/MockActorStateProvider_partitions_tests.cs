@@ -20,10 +20,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 	// ReSharper disable InconsistentNaming
 	public class MockActorStateProvider_partitions_tests
 	{
-		private string ApplicationName => @"Overlord";
-		private MockFabricRuntime _fabricRuntime;
-		private MockFabricApplication _fabricApplication;
 		private MockServiceDefinition _actorDemoServiceDefinition;
+		private MockFabricApplication _fabricApplication;
+		private MockFabricRuntime _fabricRuntime;
+		private string ApplicationName => @"Overlord";
 
 		[SetUp]
 #pragma warning disable 1998
@@ -33,7 +33,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			_fabricRuntime = new MockFabricRuntime();
 			_fabricApplication = _fabricRuntime.RegisterApplication(ApplicationName);
 
-			 _actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
+			_actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
 			_fabricApplication.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
@@ -49,10 +49,11 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			var instanceCount = 10;
 			var lowKey = new BigInteger(long.MinValue);
 			var highKey = new BigInteger(long.MaxValue);
-			var uniformInt64Partitions = MockServiceDefinition.CreateUniformInt64Partitions(instanceCount, (long)lowKey, (long)highKey);
+			var uniformInt64Partitions =
+				MockServiceDefinition.CreateUniformInt64Partitions(instanceCount, (long) lowKey, (long) highKey);
 
 			var low = lowKey;
-			var partitionRange = (highKey- lowKey) / instanceCount;
+			var partitionRange = (highKey - lowKey) / instanceCount;
 			foreach (var partition in uniformInt64Partitions.Partitions)
 			{
 				var int64Range = (partition.PartitionInformation as Int64RangePartitionInformation);
@@ -71,9 +72,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 #pragma warning restore 1998
 		{
 			var uniformInt64Partitions = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
-		
+
 			var partitionsUsed = new List<Guid>();
-			foreach (var actorName in new string[] { "first", "second", "third" })
+			foreach (var actorName in new string[] {"first", "second", "third"})
 			{
 				var actorId = new ActorId(actorName);
 				var partitionKey = actorId.GetPartitionKey();
@@ -94,7 +95,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 			var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 			var nameCount = 100;
-			foreach (var name in new []{"first", "second", "third"})
+			foreach (var name in new[] {"first", "second", "third"})
 			{
 				await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
 				{
@@ -103,7 +104,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 				nameCount += 100;
 			}
-			
+
 			await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
 			{
 				var proxy = _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
@@ -121,7 +122,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				var partitionInfo = partition.PartitionInformation as Int64RangePartitionInformation;
 				if (partitionInfo == null)
 				{
-					throw new InvalidOperationException($"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
+					throw new InvalidOperationException(
+						$"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
 				}
 				partitionKeys.Add(partitionInfo);
 			}

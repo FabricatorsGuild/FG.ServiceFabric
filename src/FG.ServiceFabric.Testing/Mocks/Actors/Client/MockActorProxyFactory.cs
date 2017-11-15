@@ -25,10 +25,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
 	public class MockActorProxyFactory : IActorProxyFactory, IMockActorProxyManager, IMockServiceProxyManager
 	{
-		private readonly MockFabricRuntime _fabricRuntime;
-		private readonly IDictionary<Type, IDictionary<Guid, IActorStateProvider>> _actorStateProviders;
-
 		private readonly IDictionary<object, object> _actorProxies;
+		private readonly IDictionary<Type, IDictionary<Guid, IActorStateProvider>> _actorStateProviders;
+		private readonly MockFabricRuntime _fabricRuntime;
 
 		internal MockActorProxyFactory(
 			MockFabricRuntime fabricRuntime,
@@ -38,6 +37,106 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			_fabricRuntime = fabricRuntime;
 			_actorStateProviders = new Dictionary<Type, IDictionary<Guid, IActorStateProvider>>();
 			_actorProxies = new Dictionary<object, object>();
+		}
+
+		public TActorInterface CreateActorProxy<TActorInterface>(ActorId actorId, string applicationName = null,
+			string serviceName = null, string listenerName = null)
+			where TActorInterface : IActor
+		{
+			var task = Create<TActorInterface>(actorId);
+			task.Wait();
+			return task.Result;
+		}
+
+		public TActorInterface CreateActorProxy<TActorInterface>(Uri serviceUri, ActorId actorId, string listenerName = null)
+			where TActorInterface : IActor
+		{
+			var task = Create<TActorInterface>(actorId);
+			task.Wait();
+			return task.Result;
+		}
+
+		public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri serviceUri, ActorId actorId,
+			string listenerName = null)
+			where TServiceInterface : IService
+		{
+			var partitionKey = new ServicePartitionKey(actorId.GetPartitionKey());
+			return CreateActorService<TServiceInterface>(serviceUri, partitionKey);
+		}
+
+		public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri serviceUri, long partitionKey,
+			string listenerName = null) where TServiceInterface : IService
+		{
+			return CreateActorService<TServiceInterface>(serviceUri, new ServicePartitionKey(partitionKey));
+		}
+
+		void IMockActorProxyManager.BeforeMethod(IActor proxy, MethodInfo method)
+		{
+			var actor = GetActor<Actor>(proxy);
+			if (actor == null) return;
+
+			var actorMethodContext =
+				ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
+			actor.CallPrivateMethod("OnPreActorMethodAsync", actorMethodContext);
+
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				Console.WriteLine();
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Green;
+				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} activating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+			}
+		}
+
+		void IMockActorProxyManager.AfterMethod(IActor proxy, MethodInfo method)
+		{
+			var actor = GetActor<Actor>(proxy);
+			if (actor == null) return;
+
+			var actorMethodContext =
+				ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
+			actor.CallPrivateMethod("OnPostActorMethodAsync", actorMethodContext);
+
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
+				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} terminating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+				Console.WriteLine();
+			}
+
+			var saveStateTask = actor.StateManager.SaveStateAsync(CancellationToken.None);
+			saveStateTask.Wait(CancellationToken.None);
+		}
+
+		void IMockServiceProxyManager.BeforeMethod(IService service, MethodInfo method)
+		{
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				Console.WriteLine();
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Green;
+				var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+			}
+		}
+
+		void IMockServiceProxyManager.AfterMethod(IService service, MethodInfo method)
+		{
+			if (!_fabricRuntime.DisableMethodCallOutput)
+			{
+				var color = Console.ForegroundColor;
+				Console.ForegroundColor = ConsoleColor.Red;
+				var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
+				Console.WriteLine($"{message.PadRight(80, '=')}");
+				Console.ForegroundColor = color;
+				Console.WriteLine();
+			}
 		}
 
 		private IActorStateProvider GetOrCreateActorStateProvider(
@@ -80,7 +179,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			return actorStateProvider;
 		}
 
-		private IActorStateProvider GetActorStateProvider(IMockableActorRegistration actorRegistation, ServicePartitionKey partitionKey)
+		private IActorStateProvider GetActorStateProvider(IMockableActorRegistration actorRegistation,
+			ServicePartitionKey partitionKey)
 		{
 			var actorImplementationType = actorRegistation.ImplementationType;
 
@@ -127,7 +227,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			var partitionKey = new ServicePartitionKey(actorId.GetPartitionKey());
 
 			var actorInterfaceType = typeof(TActorInterface);
-			var instance = _fabricRuntime.Instances.SingleOrDefault(i => i.Equals(actorInterfaceType, partitionKey)) as MockActorServiceInstance;
+			var instance =
+				_fabricRuntime.Instances.SingleOrDefault(i => i.Equals(actorInterfaceType, partitionKey)) as
+					MockActorServiceInstance;
 
 			var actorRegistration = instance?.ActorRegistration;
 			if (actorRegistration == null)
@@ -147,28 +249,33 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 				}
 				else if (actorRegistration.Activator != null)
 				{
-					target= actorRegistration.Activator(actorService, actorId);
-					instance.Actors[actorId] = (Actor)target;
+					target = actorRegistration.Activator(actorService, actorId);
+					instance.Actors[actorId] = (Actor) target;
 				}
 				else
 				{
 					target = ActivateActorWithReflection(actorRegistration.ImplementationType, actorService, actorId);
-					instance.Actors[actorId] = (Actor)target;
+					instance.Actors[actorId] = (Actor) target;
 				}
 
 				if (target == null)
 				{
-					throw new NotSupportedException($"Failed to activate an instance of Actor {actorRegistration.ImplementationType.Name} for ActorId {actorId}");
+					throw new NotSupportedException(
+						$"Failed to activate an instance of Actor {actorRegistration.ImplementationType.Name} for ActorId {actorId}");
 				}
 
-				var mockableTarget = (FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);
+				var mockableTarget =
+					(FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);
 				if (mockableTarget != null)
 				{
 					var applicationName = actorService.Context.CodePackageActivationContext.ApplicationName;
-					var applicationUriBuilder = new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName), applicationName);
+					var applicationUriBuilder =
+						new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName), applicationName);
 
-					mockableTarget.SetPrivateField("_serviceProxyFactoryFactory", (Func<IServiceProxyFactory>)(() => _fabricRuntime.ServiceProxyFactory));
-					mockableTarget.SetPrivateField("_actorProxyFactoryFactory", (Func<IActorProxyFactory>)(() => _fabricRuntime.ActorProxyFactory));
+					mockableTarget.SetPrivateField("_serviceProxyFactoryFactory",
+						(Func<IServiceProxyFactory>) (() => _fabricRuntime.ServiceProxyFactory));
+					mockableTarget.SetPrivateField("_actorProxyFactoryFactory",
+						(Func<IActorProxyFactory>) (() => _fabricRuntime.ActorProxyFactory));
 					mockableTarget.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
 				}
 
@@ -182,7 +289,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 				var serviceUri = instance.ActorRegistration.ServiceRegistration.ServiceUri;
 				var actorProxy = new MockActorProxy(
-					target, typeof(TActorInterface), actorId, serviceUri, ServicePartitionKey.Singleton, TargetReplicaSelector.Default, "", null, this);
+					target, typeof(TActorInterface), actorId, serviceUri, ServicePartitionKey.Singleton, TargetReplicaSelector.Default,
+					"", null, this);
 				var proxy = actorProxy.Proxy;
 
 				_actorProxies.Add(proxy.GetHashCode(), target);
@@ -206,25 +314,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 			return null;
 		}
 
-		public TActorInterface CreateActorProxy<TActorInterface>(ActorId actorId, string applicationName = null, string serviceName = null, string listenerName = null)
-			where TActorInterface : IActor
-		{
-			var task = Create<TActorInterface>(actorId);
-			task.Wait();
-			return task.Result;
-		}
-
-		public TActorInterface CreateActorProxy<TActorInterface>(Uri serviceUri, ActorId actorId, string listenerName = null) where TActorInterface : IActor
-		{
-			var task = Create<TActorInterface>(actorId);
-			task.Wait();
-			return task.Result;
-		}
-
-		private TServiceInterface CreateActorService<TServiceInterface>(Uri serviceUri, ServicePartitionKey partitionKey) where TServiceInterface : IService
+		private TServiceInterface CreateActorService<TServiceInterface>(Uri serviceUri, ServicePartitionKey partitionKey)
+			where TServiceInterface : IService
 		{
 			var serviceInterfaceType = typeof(TServiceInterface);
-			var instance = _fabricRuntime.Instances.SingleOrDefault(i => i.Equals(serviceUri, serviceInterfaceType, partitionKey)) as MockActorServiceInstance;
+			var instance =
+				_fabricRuntime.Instances.SingleOrDefault(i => i.Equals(serviceUri, serviceInterfaceType, partitionKey)) as
+					MockActorServiceInstance;
 
 			var actorRegistration = instance?.ActorRegistration;
 			if (actorRegistration == null)
@@ -233,100 +329,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 					$"Expected a MockableActorRegistration with ActorServiceType for the type {typeof(TServiceInterface).Name}");
 			}
 
-			var mockServiceProxy = new MockServiceProxy(instance.ServiceInstance, serviceUri, serviceInterfaceType, partitionKey, TargetReplicaSelector.Default, "", null, this);
-			return (TServiceInterface)mockServiceProxy.Proxy;			
-		}	
-
-		public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri serviceUri, ActorId actorId, string listenerName = null)
-			where TServiceInterface : IService
-		{
-			var partitionKey = new ServicePartitionKey(actorId.GetPartitionKey());
-			return CreateActorService<TServiceInterface>(serviceUri, partitionKey);
-		}
-
-		public TServiceInterface CreateActorServiceProxy<TServiceInterface>(Uri serviceUri, long partitionKey,
-			string listenerName = null) where TServiceInterface : IService
-		{
-			return CreateActorService<TServiceInterface>(serviceUri, new ServicePartitionKey(partitionKey));
+			var mockServiceProxy = new MockServiceProxy(instance.ServiceInstance, serviceUri, serviceInterfaceType, partitionKey,
+				TargetReplicaSelector.Default, "", null, this);
+			return (TServiceInterface) mockServiceProxy.Proxy;
 		}
 
 		internal Actor ActivateActorWithReflection(Type actorType, ActorService actorService, ActorId actorId)
 		{
 			if (!typeof(Actor).IsAssignableFrom(actorType))
 			{
-				throw new ArgumentException($"Cannot activate instance of {actorType?.FullName} as it should inherit from {typeof(Actor).FullName}");
+				throw new ArgumentException(
+					$"Cannot activate instance of {actorType?.FullName} as it should inherit from {typeof(Actor).FullName}");
 			}
 
 			var instance = (Actor) actorType.ActivateCtor(new object[] {actorService, actorId});
 			return instance;
 		}
-
-		void IMockActorProxyManager.BeforeMethod(IActor proxy, MethodInfo method)
-		{
-			var actor = GetActor<Actor>(proxy);
-			if (actor == null) return;
-
-			var actorMethodContext = ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
-			actor.CallPrivateMethod("OnPreActorMethodAsync", actorMethodContext);
-
-			if (!_fabricRuntime.DisableMethodCallOutput)
-			{
-				Console.WriteLine();
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.Green;
-				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} activating";
-				Console.WriteLine($"{message.PadRight(80, '=')}");
-				Console.ForegroundColor = color;
-			}
-		}
-
-		void IMockActorProxyManager.AfterMethod(IActor proxy, MethodInfo method)
-		{
-			var actor = GetActor<Actor>(proxy);
-			if (actor == null) return;
-
-			var actorMethodContext = ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(method.Name, ActorCallType.ActorInterfaceMethod);
-			actor.CallPrivateMethod("OnPostActorMethodAsync", actorMethodContext);
-
-			if (!_fabricRuntime.DisableMethodCallOutput)
-			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.Red;
-				var message = $"Actor {actor?.GetType().Name} '{actor?.Id}'({actor?.GetHashCode()}) {method} terminating";
-				Console.WriteLine($"{message.PadRight(80, '=')}");
-				Console.ForegroundColor = color;
-				Console.WriteLine();
-			}
-
-			var saveStateTask = actor.StateManager.SaveStateAsync(CancellationToken.None);
-			saveStateTask.Wait(CancellationToken.None);
-		}
-
-		void IMockServiceProxyManager.BeforeMethod(IService service, MethodInfo method)
-		{
-			if (!_fabricRuntime.DisableMethodCallOutput)
-			{
-				Console.WriteLine();
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.Green;
-				var message = $"Service {service?.GetType().Name} ({service?.GetHashCode()}) {method} activating";
-				Console.WriteLine($"{message.PadRight(80, '=')}");
-				Console.ForegroundColor = color;
-			}
-		}
-
-		void IMockServiceProxyManager.AfterMethod(IService service, MethodInfo method)
-		{
-			if (!_fabricRuntime.DisableMethodCallOutput)
-			{
-				var color = Console.ForegroundColor;
-				Console.ForegroundColor = ConsoleColor.Red;
-				var message = $"Actor {service?.GetType().Name} ({service?.GetHashCode()}) {method} terminating";
-				Console.WriteLine($"{message.PadRight(80, '=')}");
-				Console.ForegroundColor = color;
-				Console.WriteLine();
-			}
-		}
 	}
-
 }

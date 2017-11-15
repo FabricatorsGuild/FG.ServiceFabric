@@ -11,11 +11,13 @@ namespace FG.ServiceFabric.Actors.Runtime.StateSession
 		public ActorStateWrapper()
 		{
 		}
+
 		public ActorStateWrapper(string id, T value, IServiceMetadata serviceMetadata, IActorValueMetadata actorValueMetadata)
 			: base(id, value, serviceMetadata, actorValueMetadata)
 		{
 			ActorId = actorValueMetadata.ActorId;
 		}
+
 		[JsonProperty("actorId")]
 		private string ActorIdValue
 		{

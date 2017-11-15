@@ -1,6 +1,6 @@
 namespace FG.ServiceFabric.Actors.State
 {
-    public interface IVersionedState<TMigrationContainer>
-    {
-    }
+	public interface IVersionedState<TMigrationContainer>
+	{
+	}
 }

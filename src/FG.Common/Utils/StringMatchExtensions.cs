@@ -4,28 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace FG.Common.Utils {
+namespace FG.Common.Utils
+{
 	public static class StringMatchExtensions
 	{
-
 		private static readonly Regex RemoveNonWordStringRegex = new Regex(@"[^\w]", RegexOptions.Compiled);
 
 		private static readonly Regex FindInitialLowercaseRegex = new Regex(@"\b([a-z])", RegexOptions.Compiled);
 
-		private static readonly Regex HumanReadableStringRegex = new Regex(@"((?<=\p{Ll})\p{Lu}|\p{Lu}(?=\p{Ll}))", RegexOptions.Compiled);
-		public static bool Matches(this string that, string pattern, StringComparison stringComparison, bool useWildcards = true)
+		private static readonly Regex HumanReadableStringRegex =
+			new Regex(@"((?<=\p{Ll})\p{Lu}|\p{Lu}(?=\p{Ll}))", RegexOptions.Compiled);
+
+		public static bool Matches(this string that, string pattern, StringComparison stringComparison,
+			bool useWildcards = true)
 		{
 			if (that == null) return (pattern == null);
 
 			var regExPattern = pattern;
 			if (useWildcards)
 			{
-				regExPattern = "^" + Regex.Escape(pattern).
-				                           Replace("\\*", ".*").
-				                           Replace("\\?", ".") + "$";
+				regExPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$";
 			}
 			var options = RegexOptions.None;
-			if (stringComparison == StringComparison.InvariantCultureIgnoreCase || stringComparison == StringComparison.CurrentCultureIgnoreCase ||
+			if (stringComparison == StringComparison.InvariantCultureIgnoreCase ||
+			    stringComparison == StringComparison.CurrentCultureIgnoreCase ||
 			    stringComparison == StringComparison.OrdinalIgnoreCase)
 			{
 				options = RegexOptions.IgnoreCase;
@@ -43,7 +45,7 @@ namespace FG.Common.Utils {
 		{
 			if (that == null) return null;
 			if (remove == null) return that;
-			if(that.EndsWith(remove))
+			if (that.EndsWith(remove))
 			{
 				var length = that.Length;
 				var lengthRemove = remove.Length;
@@ -52,11 +54,12 @@ namespace FG.Common.Utils {
 			}
 			return that;
 		}
+
 		public static string RemoveFromStart(this string that, string remove)
 		{
 			if (that == null) return null;
 			if (remove == null) return that;
-			if(that.StartsWith(remove))
+			if (that.StartsWith(remove))
 			{
 				var length = that.Length;
 				var lengthRemove = remove.Length;

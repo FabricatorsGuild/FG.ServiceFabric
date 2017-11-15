@@ -2,11 +2,12 @@
 
 namespace FG.CQRS
 {
-    public interface IEventStoreSession
-    {
-        Task<TAggregateRoot> GetAsync<TAggregateRoot>()
-            where TAggregateRoot : class, IEventStored, new();
-        Task SaveChanges();
-        Task Delete();
-    }
+	public interface IEventStoreSession
+	{
+		Task<TAggregateRoot> GetAsync<TAggregateRoot>()
+			where TAggregateRoot : class, IEventStored, new();
+
+		Task SaveChanges();
+		Task Delete();
+	}
 }

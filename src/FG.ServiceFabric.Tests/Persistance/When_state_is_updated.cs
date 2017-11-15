@@ -16,30 +16,31 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.Persistance
 {
-    public class When_state_is_updated : TestBase
-    {
-        private InMemoryStateSession _inMemoryStateSession;
+	public class When_state_is_updated : TestBase
+	{
+		private InMemoryStateSession _inMemoryStateSession;
 
-        [SetUp]
-        public async Task SetCountTo3()
-        {
-            var proxy = ActorProxyFactory.CreateActorProxy<IDbStoredActor>(ActorId.CreateRandom());
-            await proxy.SetCountAsync(3, CancellationToken.None);
-        }
+		[SetUp]
+		public async Task SetCountTo3()
+		{
+			var proxy = ActorProxyFactory.CreateActorProxy<IDbStoredActor>(ActorId.CreateRandom());
+			await proxy.SetCountAsync(3, CancellationToken.None);
+		}
 
-        protected override void SetupRuntime()
-        {
-            _inMemoryStateSession = new InMemoryStateSession();
-           ForTestDbStoredActor.Setup(_fabricApplication, _inMemoryStateSession);
-        }
+		protected override void SetupRuntime()
+		{
+			_inMemoryStateSession = new InMemoryStateSession();
+			ForTestDbStoredActor.Setup(_fabricApplication, _inMemoryStateSession);
+		}
 
-        [Test]
-        public async Task Then_state_is_written_to_document_db()
-        {
-            var state = await _inMemoryStateSession.QueryAsync<CountState>();
-            state.Single().Count.Should().Be(3);
-        }
-    }
+		[Test]
+		public async Task Then_state_is_written_to_document_db()
+		{
+			var state = await _inMemoryStateSession.QueryAsync<CountState>();
+			state.Single().Count.Should().Be(3);
+		}
+	}
+
 	public class When_statename_is_an_urn
 	{
 		[Test]
@@ -49,7 +50,7 @@ namespace FG.ServiceFabric.Tests.Persistance
 
 			stateName.AbsolutePath.Should().Be("myDictionary");
 		}
-	}	
+	}
 
 	public class When_serializing_inner_object
 	{
@@ -95,7 +96,7 @@ namespace FG.ServiceFabric.Tests.Persistance
 
 				longs.Add(index);
 
-				var letter = ((char)(65 + i)).ToString();
+				var letter = ((char) (65 + i)).ToString();
 				var ordinal = index - tail;
 				Console.WriteLine($"{ordinal} {index} - {letter}");
 
@@ -134,10 +135,9 @@ namespace FG.ServiceFabric.Tests.Persistance
 		{
 			return base.CreateProperty(member, memberSerialization);
 		}
-		
+
 		public override JsonContract ResolveContract(Type type)
 		{
-			
 			return base.ResolveContract(type);
 		}
 
@@ -151,9 +151,9 @@ namespace FG.ServiceFabric.Tests.Persistance
 	{
 		public string Key { get; set; }
 		public string StateCLRType { get; set; }
+
 		[JsonProperty(TypeNameHandling = TypeNameHandling.Objects)]
 		public object Value { get; set; }
-
 	}
 
 	public class TestObject

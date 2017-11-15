@@ -25,36 +25,37 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 	// ReSharper disable InconsistentNaming
 	namespace With_StateSessionActorStateProvider
 	{
-
 		namespace _and_InMemoryStateSession
 		{
 			public abstract class TestBase<T>
-				where T: ActorBase, IActorDemo
+				where T : ActorBase, IActorDemo
 			{
-				protected string ApplicationName => @"Overlord";
-				protected MockFabricRuntime FabricRuntime;
-				protected MockFabricApplication _fabricApplication;
-
 				protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
+				protected MockFabricApplication _fabricApplication;
+				protected MockFabricRuntime FabricRuntime;
 
 				protected TestBase()
 				{
 				}
 
+				protected string ApplicationName => @"Overlord";
+
 				[SetUp]
 				public void Setup()
 				{
 					State.Clear();
-					FabricRuntime = new MockFabricRuntime() { DisableMethodCallOutput = true };
+					FabricRuntime = new MockFabricRuntime() {DisableMethodCallOutput = true};
 					_fabricApplication = FabricRuntime.RegisterApplication(this.ApplicationName);
 
 					_fabricApplication.SetupActor(
 						activator: CreateActor,
-						createActorService: (context, information, provider, factory) => new ActorDemoActorService(context, information, stateProvider: provider),
-						createActorStateProvider: (context, actorInfo) => new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
+						createActorService: (context, information, provider, factory) =>
+							new ActorDemoActorService(context, information, stateProvider: provider),
+						createActorStateProvider: (context, actorInfo) =>
+							new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
 						serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
 
-					SetupActor().GetAwaiter().GetResult();					
+					SetupActor().GetAwaiter().GetResult();
 				}
 
 				protected abstract T CreateActor(ActorDemoActorService service, ActorId actorId);
@@ -90,12 +91,12 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 				{
 					var stateManager = new InMemoryStateSessionManager(
-							StateSessionHelper.GetServiceName(context.ServiceName),
-							context.PartitionId,
-							StateSessionHelper.GetPartitionInfo(context,
-								() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
-							State
-						);
+						StateSessionHelper.GetServiceName(context.ServiceName),
+						context.PartitionId,
+						StateSessionHelper.GetPartitionInfo(context,
+							() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
+						State
+					);
 					SetUpStates(stateManager);
 					return stateManager;
 				}
@@ -132,9 +133,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
 					actorState.ActorId.GetStringId().Should().Be("testivus");
 					actorState.State.Should().Be(1);
-
 				}
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(ActorDemoActorService service, ActorId actorId)
+
+				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
+					ActorDemoActorService service, ActorId actorId)
 				{
 					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
 				}
@@ -188,7 +190,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					actorState.State.Should().Be(5);
 				}
 
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(ActorDemoActorService service, ActorId actorId)
+				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
+					ActorDemoActorService service, ActorId actorId)
 				{
 					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
 				}
@@ -196,7 +199,6 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 			public class _with_multiple_activated_actors : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo>
 			{
-
 				[Test]
 				public async Task _should_return_prior_state_on_activate()
 				{
@@ -206,7 +208,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 						var i = await actorProxy.GetCountAsync();
 
 						var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId($"testivus-{j}"));
-						var actorIdKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
+						var actorIdKey = State.Keys.Single(k =>
+							k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
 						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 						actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
 						actorIdState.Key.Should().Be(actorIdSchemaKey);
@@ -215,25 +218,28 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 						actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
 						actorIdState.State.Should().Be(actorIdSchemaKey);
 
-						var actorStateKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey));
+						var actorStateKey = State.Keys.Single(k =>
+							k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey));
 						var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
 						actorState.Schema.Should().StartWith(StateSessionHelper.ActorStateSchemaName);
 						actorState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
 						actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
 						actorState.ActorId.GetStringId().Should().Be($"testivus-{j}");
 						actorState.State.Should().Be(1);
-
 					}
 
 					State.Should().HaveCount(200);
 				}
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(ActorDemoActorService service, ActorId actorId)
+
+				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
+					ActorDemoActorService service, ActorId actorId)
 				{
 					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
 				}
 			}
 
-			public class _with_multiple_activated_actors_with_multiple_states : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo>
+			public class _with_multiple_activated_actors_with_multiple_states : TestBase<
+				FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo>
 			{
 				private IList<long> _partitionKeys;
 
@@ -242,12 +248,12 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					for (int j = 0; j < 100; j++)
 					{
 						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
-						var i = await actorProxy.GetCountAsync();						
+						var i = await actorProxy.GetCountAsync();
 					}
 
 					await base.SetupActor();
 
-					
+
 					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 					var partitions = new List<Guid>();
@@ -271,7 +277,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					for (var j = 0; j < 100; j++)
 					{
 						var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId($"testivus-{j}"));
-						var actorIdKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
+						var actorIdKey = State.Keys.Single(k =>
+							k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
 						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 						actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
 						actorIdState.Key.Should().Be(actorIdSchemaKey);
@@ -297,7 +304,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				[Test]
 				public async Task _should_enumerate_all_actors()
 				{
-					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();					
+					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 					var actors = new List<string>();
 					foreach (var partitionKey in _partitionKeys)
@@ -338,7 +345,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				{
 					var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId(actorName));
 
-					var actorStateKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey) && k.Contains(stateName));
+					var actorStateKey = State.Keys.Single(k =>
+						k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey) && k.Contains(stateName));
 					var actorState = GetState<ActorStateWrapper<T>>(actorStateKey);
 					actorState.Schema.Should().StartWith(StateSessionHelper.ActorStateSchemaName);
 					actorState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
@@ -347,13 +355,15 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					checkValue(actorState.State);
 				}
 
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo CreateActor(ActorDemoActorService service, ActorId actorId)
+				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo CreateActor(
+					ActorDemoActorService service, ActorId actorId)
 				{
 					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo(service, actorId);
 				}
 			}
 
-			public class _with_actors_with_reminders : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo>
+			public class
+				_with_actors_with_reminders : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo>
 			{
 				private IList<long> _partitionKeys;
 
@@ -393,14 +403,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					State.Where(i => i.Key.Contains(StateSessionHelper.ActorReminderSchemaName)).Should().HaveCount(10);
 					State.Where(i => i.Key.Contains(StateSessionHelper.ActorStateSchemaName)).Should().HaveCount(10);
 				}
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo CreateActor(ActorDemoActorService service, ActorId actorId)
+
+				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo CreateActor(
+					ActorDemoActorService service, ActorId actorId)
 				{
 					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo(service, actorId);
 				}
 			}
-
 		}
-
 	}
 	// ReSharper restore InconsistentNaming
 }

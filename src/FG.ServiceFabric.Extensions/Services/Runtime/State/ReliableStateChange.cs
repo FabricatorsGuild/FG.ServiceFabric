@@ -50,7 +50,8 @@ namespace FG.ServiceFabric.Services.Runtime.State
 		//
 		//   changeKind:
 		//     Kind of state change for given actor state name.
-		public ReliableStateChange(string schema, string stateName, Type type, object value, ReliableStateChangeKind changeKind)
+		public ReliableStateChange(string schema, string stateName, Type type, object value,
+			ReliableStateChangeKind changeKind)
 		{
 			Schema = schema;
 			StateName = stateName;
@@ -60,23 +61,27 @@ namespace FG.ServiceFabric.Services.Runtime.State
 		}
 
 		/// Summary:
-		///		Gets the name of the schema (collection/dictionary/queue)
+		/// Gets the name of the schema (collection/dictionary/queue)
 		public string Schema { get; }
+
 		//
 		// Summary:
 		//     Gets name of the state.
 		public string StateName { get; }
+
 		//
 		// Summary:
 		//     Gets the type of value associated with given state name.
 		public Type Type { get; }
+
 		//
 		// Summary:
 		//     Gets the value associated with given state name.
 		public object Value { get; }
+
 		//
 		// Summary:
 		//     Gets the kind of change
-		public ReliableStateChangeKind ChangeKind { get; }		
+		public ReliableStateChangeKind ChangeKind { get; }
 	}
 }

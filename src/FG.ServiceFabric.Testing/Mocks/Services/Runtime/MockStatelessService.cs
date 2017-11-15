@@ -8,8 +8,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 	public class MockStatelessService : StatelessService
 	{
 		private readonly ICodePackageActivationContext _codePackageActivationContext;
-		private readonly IServiceProxyFactory _serviceProxyFactory;
 		private readonly NodeContext _nodeContext;
+		private readonly IServiceProxyFactory _serviceProxyFactory;
 
 		public MockStatelessService(
 			ICodePackageActivationContext codePackageActivationContext,

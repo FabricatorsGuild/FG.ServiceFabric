@@ -9,11 +9,12 @@ namespace FG.ServiceFabric.Actors.Runtime.StateSession.Metadata
 {
 	public class ActorStateValueMetadata : ValueMetadata, IActorValueMetadata
 	{
-		public ActorStateValueMetadata(StateWrapperType type, ActorId actorId) 
+		public ActorStateValueMetadata(StateWrapperType type, ActorId actorId)
 			: base(type)
 		{
 			ActorId = actorId;
 		}
+
 		public ActorId ActorId { get; private set; }
 
 		public override StateWrapper<T> BuildStateWrapper<T>(string id, T value, IServiceMetadata serviceMetadata)

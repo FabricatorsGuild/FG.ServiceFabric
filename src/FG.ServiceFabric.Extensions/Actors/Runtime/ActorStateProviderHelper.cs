@@ -7,30 +7,34 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class ActorStateProviderHelper
-    {
+	public class ActorStateProviderHelper
+	{
 		private const long DefaultMaxPrimaryReplicationQueueSize = 8192;
 		private const long DefaultMaxSecondaryReplicationQueueSize = 16384;
 
 		public static IActorStateProvider CreateDefaultStateProvider(ActorTypeInformation actorTypeInfo)
-        {
-            var assembly = typeof(Microsoft.ServiceFabric.Actors.Runtime.ActorService).Assembly;
+		{
+			var assembly = typeof(Microsoft.ServiceFabric.Actors.Runtime.ActorService).Assembly;
 
-            var internalActorStateProviderHelperType = assembly.GetType("Microsoft.ServiceFabric.Actors.Runtime.ActorStateProviderHelper");
+			var internalActorStateProviderHelperType =
+				assembly.GetType("Microsoft.ServiceFabric.Actors.Runtime.ActorStateProviderHelper");
 
-            var createDefaultStateProviderMethod = internalActorStateProviderHelperType.GetMethod("CreateDefaultStateProvider", BindingFlags.NonPublic | BindingFlags.Static);
-            var actorStateProvider = (IActorStateProvider)createDefaultStateProviderMethod.Invoke(null, new object[] {actorTypeInfo});
+			var createDefaultStateProviderMethod = internalActorStateProviderHelperType.GetMethod("CreateDefaultStateProvider",
+				BindingFlags.NonPublic | BindingFlags.Static);
+			var actorStateProvider =
+				(IActorStateProvider) createDefaultStateProviderMethod.Invoke(null, new object[] {actorTypeInfo});
 
-            return actorStateProvider;
-        }
+			return actorStateProvider;
+		}
 
 		/// <summary>
-		/// This is used by Kvs and Volatile actor state provider.
+		///     This is used by Kvs and Volatile actor state provider.
 		/// </summary>
 		/// <param name="codePackage"></param>
 		/// <param name="actorImplType"></param>
 		/// <returns></returns>
-		public static ReplicatorSettings GetActorReplicatorSettings(CodePackageActivationContext codePackage, Type actorImplType)
+		public static ReplicatorSettings GetActorReplicatorSettings(CodePackageActivationContext codePackage,
+			Type actorImplType)
 		{
 			var settings = ReplicatorSettings.LoadFrom(
 				codePackage,

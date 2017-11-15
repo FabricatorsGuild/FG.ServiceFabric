@@ -38,7 +38,8 @@ namespace FG.ServiceFabric.Services.Runtime
 			throw new NotImplementedException();
 		}
 
-		public Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition, CancellationToken cancellationToken)
+		public Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition,
+			CancellationToken cancellationToken)
 		{
 			throw new NotImplementedException();
 		}
@@ -63,7 +64,8 @@ namespace FG.ServiceFabric.Services.Runtime
 			throw new NotImplementedException();
 		}
 
-		public Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken, Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
+		public Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken,
+			Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
 		{
 			throw new NotImplementedException();
 		}

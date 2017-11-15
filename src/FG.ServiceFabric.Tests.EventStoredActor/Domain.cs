@@ -9,146 +9,154 @@ using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 
 namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-    #region Domain event interfaces
-    public interface IRootEvent : IAggregateRootEvent { }
+	#region Domain event interfaces
 
-    public interface ISomePropertyUpdated : IRootEvent
-    {
-        string SomeProperty { get; }
-    }
-    
-    public interface IChildEvent : IRootEvent
-    {
-        int ChildId { get; }
-    }
+	public interface IRootEvent : IAggregateRootEvent
+	{
+	}
 
-    public interface IChildAdded : IChildEvent
-    {
-    }
-    
-    public interface IChildPropertyUpdated : IChildEvent
-    {
-        string ChildProperty { get; set; }
-    }
+	public interface ISomePropertyUpdated : IRootEvent
+	{
+		string SomeProperty { get; }
+	}
 
-    #endregion
+	public interface IChildEvent : IRootEvent
+	{
+		int ChildId { get; }
+	}
 
-    #region Domain events
-    [DataContract]
-    public class CreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
-    {
-        [DataMember]
-        public string SomeProperty { get; set; }
-    }
-    [DataContract]
-    public class InvalidCreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
-    {
-        [DataMember]
-        public string SomeProperty { get; set; }
-    }
+	public interface IChildAdded : IChildEvent
+	{
+	}
 
-    [DataContract]
-    public class ChildAddedEvent : AggregateRootEventBase, IChildAdded, IChildPropertyUpdated
-    {
-        [DataMember]
-        public int ChildId { get; set; }
+	public interface IChildPropertyUpdated : IChildEvent
+	{
+		string ChildProperty { get; set; }
+	}
 
-        [DataMember]
-        public string ChildProperty { get; set; }
+	#endregion
 
-    }
-    #endregion
+	#region Domain events
 
-    #region Event stream (service fabric specific)
+	[DataContract]
+	public class CreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
+	{
+		[DataMember]
+		public string SomeProperty { get; set; }
+	}
 
-    [DataContract]
-    [KnownType(typeof(CreatedEvent))]
-    [KnownType(typeof(ChildAddedEvent))]
-    public class TheEventStream : DomainEventStreamBase
-    {
-    }
+	[DataContract]
+	public class InvalidCreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
+	{
+		[DataMember]
+		public string SomeProperty { get; set; }
+	}
 
-    #endregion
+	[DataContract]
+	public class ChildAddedEvent : AggregateRootEventBase, IChildAdded, IChildPropertyUpdated
+	{
+		[DataMember]
+		public int ChildId { get; set; }
 
-    #region Aggregate
-    public class Domain : AggregateRoot<IRootEvent>
-    {
-        public Domain()
-        {
-            RegisterEventAppliers()
-                .For<ISomePropertyUpdated>(e => SomeProperty = e.SomeProperty)
-                .For<IChildAdded>(e =>
-                {
-                    _children.Add(new Child(this, e.ChildId));
-                    _maxChildId = Math.Max(_maxChildId, e.ChildId);
-                })
-                .For<IChildEvent>(e => _children.Single(c => c.ChildId == e.ChildId).ApplyEvent(e))
-                ;
-        }
+		[DataMember]
+		public string ChildProperty { get; set; }
+	}
 
-        public override void AssertInvariantsAreMet()
-        {
-            if(string.IsNullOrWhiteSpace(SomeProperty))
-                throw new InvariantsNotMetException(nameof(SomeProperty));
+	#endregion
 
-            base.AssertInvariantsAreMet();
-        }
-        
-        public string SomeProperty { get; private set; }
-        private readonly List<Child> _children = new List<Child>();
-        public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
-        private int _maxChildId = 0;
+	#region Event stream (service fabric specific)
 
-        public void Create(Guid aggregateRootId, string someProperty)
-        {
-            if (string.IsNullOrWhiteSpace(someProperty))
-                throw new Exception("Can not be empty.");
+	[DataContract]
+	[KnownType(typeof(CreatedEvent))]
+	[KnownType(typeof(ChildAddedEvent))]
+	public class TheEventStream : DomainEventStreamBase
+	{
+	}
 
-            RaiseEvent(new CreatedEvent { AggregateRootId = aggregateRootId, SomeProperty = someProperty });
-        }
+	#endregion
 
-        public void CreateInvalid(Guid aggregateRootId, string someProperty)
-        {
-            if (string.IsNullOrWhiteSpace(someProperty))
-                throw new Exception("Can not be empty.");
+	#region Aggregate
 
-            RaiseEvent(new InvalidCreatedEvent { AggregateRootId = aggregateRootId, SomeProperty = someProperty });
-        }
+	public class Domain : AggregateRoot<IRootEvent>
+	{
+		private readonly List<Child> _children = new List<Child>();
+		private int _maxChildId = 0;
 
-        public int AddChild()
-        {
-            var childId = _maxChildId + 1;
-            RaiseEvent(new ChildAddedEvent { ChildId = childId });
-            return childId;
-        }
+		public Domain()
+		{
+			RegisterEventAppliers()
+				.For<ISomePropertyUpdated>(e => SomeProperty = e.SomeProperty)
+				.For<IChildAdded>(e =>
+				{
+					_children.Add(new Child(this, e.ChildId));
+					_maxChildId = Math.Max(_maxChildId, e.ChildId);
+				})
+				.For<IChildEvent>(e => _children.Single(c => c.ChildId == e.ChildId).ApplyEvent(e))
+				;
+		}
 
-        public class Child : Entity<Domain, IChildEvent>
-        {
-            public Child(Domain aggregateRoot, int id) : base(aggregateRoot)
-            {
-                ChildId = id;
+		public string SomeProperty { get; private set; }
+		public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
 
-                RegisterEventAppliers().For<IChildPropertyUpdated>(e => ChildProperty = e.ChildProperty);
-            }
+		public override void AssertInvariantsAreMet()
+		{
+			if (string.IsNullOrWhiteSpace(SomeProperty))
+				throw new InvariantsNotMetException(nameof(SomeProperty));
 
-            public int ChildId { get; }
+			base.AssertInvariantsAreMet();
+		}
 
-            public string ChildProperty { get; private set; }
-        }
-    }
-    #endregion
+		public void Create(Guid aggregateRootId, string someProperty)
+		{
+			if (string.IsNullOrWhiteSpace(someProperty))
+				throw new Exception("Can not be empty.");
 
-    #region Read Models
+			RaiseEvent(new CreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
+		}
 
-    public class ReadModelGenerator : AggregateRootReadModelGenerator<TheEventStream, IRootEvent, ReadModel>
-    {
-        public ReadModelGenerator(IEventStreamReader<TheEventStream> eventStreamReader) : base(eventStreamReader)
-        {
-            RegisterEventAppliers()
-                .For<ISomePropertyUpdated>(e => ReadModel.SomeProperty = e.SomeProperty)
-                ;
-        }
-    }
+		public void CreateInvalid(Guid aggregateRootId, string someProperty)
+		{
+			if (string.IsNullOrWhiteSpace(someProperty))
+				throw new Exception("Can not be empty.");
 
-    #endregion
+			RaiseEvent(new InvalidCreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
+		}
+
+		public int AddChild()
+		{
+			var childId = _maxChildId + 1;
+			RaiseEvent(new ChildAddedEvent {ChildId = childId});
+			return childId;
+		}
+
+		public class Child : Entity<Domain, IChildEvent>
+		{
+			public Child(Domain aggregateRoot, int id) : base(aggregateRoot)
+			{
+				ChildId = id;
+
+				RegisterEventAppliers().For<IChildPropertyUpdated>(e => ChildProperty = e.ChildProperty);
+			}
+
+			public int ChildId { get; }
+
+			public string ChildProperty { get; private set; }
+		}
+	}
+
+	#endregion
+
+	#region Read Models
+
+	public class ReadModelGenerator : AggregateRootReadModelGenerator<TheEventStream, IRootEvent, ReadModel>
+	{
+		public ReadModelGenerator(IEventStreamReader<TheEventStream> eventStreamReader) : base(eventStreamReader)
+		{
+			RegisterEventAppliers()
+				.For<ISomePropertyUpdated>(e => ReadModel.SomeProperty = e.SomeProperty)
+				;
+		}
+	}
+
+	#endregion
 }
