@@ -92,6 +92,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 		}
 
+		private static object _lock = new object();
 		private static readonly IDictionary<string, IDictionary<Guid, string>> PartitionKeys = new ConcurrentDictionary<string, IDictionary<Guid, string>>();
 
 		public static string GetServiceName(Uri serviceName)
@@ -136,7 +137,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				var serviceUriKey = serviceUri.ToString().ToLowerInvariant();
 
 				var servicePartitionKeys = default(IDictionary<Guid, string>);
-				if (PartitionKeys.ContainsKey(serviceUriKey))
+				var hasKey = false;
+				lock (_lock)
+				{
+					hasKey = PartitionKeys.ContainsKey(serviceUriKey);
+				}
+				if (hasKey)
 				{
 					servicePartitionKeys = PartitionKeys[serviceUriKey];
 					if (servicePartitionKeys.ContainsKey(serviceContext.PartitionId))
@@ -146,8 +152,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				}
 				else
 				{
-					servicePartitionKeys = new ConcurrentDictionary<Guid, string>();
-					PartitionKeys.Add(serviceUriKey, servicePartitionKeys);					
+					lock (_lock)
+					{
+						if (PartitionKeys.ContainsKey(serviceUriKey))
+						{
+							servicePartitionKeys = PartitionKeys[serviceUriKey];
+							if (servicePartitionKeys.ContainsKey(serviceContext.PartitionId))
+							{
+								return servicePartitionKeys[serviceContext.PartitionId];
+							}
+						}
+
+						servicePartitionKeys = new ConcurrentDictionary<Guid, string>();
+						PartitionKeys.Add(serviceUriKey, servicePartitionKeys);
+					}
 				}
 
 				var partitionKeys = new List<Partition>();
@@ -171,9 +189,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					var namedPartitionInformation = partition.PartitionInformation as NamedPartitionInformation;
 					if (namedPartitionInformation != null)
 					{
-						if (!servicePartitionKeys.ContainsKey(partitionId))
+						lock (_lock)
 						{
-							servicePartitionKeys.Add(partitionId, namedPartitionInformation.Name);
+							if (!servicePartitionKeys.ContainsKey(partitionId))
+							{
+								servicePartitionKeys.Add(partitionId, namedPartitionInformation.Name);
+							}
 						}
 					}
 
@@ -187,10 +208,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 							.ToArray();
 						for (var i = 0; i < int64RangePartitionInformations.Length; i++)
 						{
-							var int64RangePartitionInformation = int64RangePartitionInformations[i];
-							if (!servicePartitionKeys.ContainsKey(int64RangePartitionInformation.Id))
+							lock (_lock)
 							{
-								servicePartitionKeys.Add(int64RangePartitionInformation.Id, $"range-{i}");
+								var int64RangePartitionInformation = int64RangePartitionInformations[i];
+								if (!servicePartitionKeys.ContainsKey(int64RangePartitionInformation.Id))
+								{
+									servicePartitionKeys.Add(int64RangePartitionInformation.Id, $"range-{i}");
+								}
 							}
 						}
 						enumeratedIntPartitions = true;
@@ -200,9 +224,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 					var singletonPartitionInformation = partition.PartitionInformation as SingletonPartitionInformation;
 					if (singletonPartitionInformation != null)
 					{
-						if (!servicePartitionKeys.ContainsKey(partitionId))
+						lock (_lock)
 						{
-							servicePartitionKeys.Add(partitionId, $"singleton");
+							if (!servicePartitionKeys.ContainsKey(partitionId))
+							{
+								servicePartitionKeys.Add(partitionId, $"singleton");
+							}
 						}
 					}				
 				}
