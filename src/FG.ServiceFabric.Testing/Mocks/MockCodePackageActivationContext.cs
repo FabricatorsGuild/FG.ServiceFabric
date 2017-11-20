@@ -4,31 +4,34 @@ using System.Collections.ObjectModel;
 using System.Fabric;
 using System.Fabric.Description;
 using System.Fabric.Health;
+using FG.Common.Utils;
 
 namespace FG.ServiceFabric.Testing.Mocks
 {
 	public class MockCodePackageActivationContext : ICodePackageActivationContext
 	{
 		public MockCodePackageActivationContext(
-			string ApplicationName,
-			string ApplicationTypeName,
-			string CodePackageName,
-			string CodePackageVersion,
-			string Context,
-			string LogDirectory,
-			string TempDirectory,
-			string WorkDirectory,
-			string ServiceManifestName,
-			string ServiceManifestVersion)
+			string applicationName,
+			string applicationTypeName,
+			string codePackageName,
+			string codePackageVersion,
+			string context,
+			string logDirectory,
+			string tempDirectory,
+			string workDirectory,
+			string serviceManifestName,
+			string serviceManifestVersion)
 		{
-			this.ApplicationName = ApplicationName;
-			this.ApplicationTypeName = ApplicationTypeName;
-			this.CodePackageName = CodePackageName;
-			this.CodePackageVersion = CodePackageVersion;
-			this.ContextId = Context;
-			this.LogDirectory = LogDirectory;
-			this.TempDirectory = TempDirectory;
-			this.WorkDirectory = WorkDirectory;
+			this.ApplicationName = applicationName;
+			this.ApplicationTypeName = applicationTypeName;
+			this.CodePackageName = codePackageName;
+			this.CodePackageVersion = codePackageVersion;
+			this.ContextId = context;
+			this.LogDirectory = logDirectory;
+			this.TempDirectory = tempDirectory;
+			this.WorkDirectory = workDirectory;
+			this.ServiceManifestName = serviceManifestName;
+			this.ServiceManifestVersion = serviceManifestVersion;
 		}
 
 		private string ServiceManifetName { get; set; }
@@ -49,6 +52,7 @@ namespace FG.ServiceFabric.Testing.Mocks
 		public string TempDirectory { get; private set; }
 
 		public string WorkDirectory { get; private set; }
+		public string ServiceManifestName { get; }
 
 		public ApplicationPrincipalsDescription GetApplicationPrincipals()
 		{
@@ -67,11 +71,17 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		public IList<string> GetConfigurationPackageNames()
 		{
-			return new List<string>() {""};
+			return new List<string>() {"config"};
 		}
 
 		public ConfigurationPackage GetConfigurationPackageObject(string packageName)
 		{
+			if (packageName == "config")
+			{
+				var configurationPackage = ReflectionUtils.ActivateInternalCtor<ConfigurationPackage>();
+
+			}
+
 			throw new NotImplementedException();
 		}
 

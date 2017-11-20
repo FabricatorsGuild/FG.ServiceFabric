@@ -72,16 +72,16 @@ namespace FG.ServiceFabric.Testing.Mocks
 		internal ICodePackageActivationContext GetCodePackageContext(string applicationName)
 		{
 			return new MockCodePackageActivationContext(
-				ApplicationName: $"fabric:/{applicationName}",
-				ApplicationTypeName: $"{applicationName}Type",
-				CodePackageName: "Code",
-				CodePackageVersion: "1.0.0.0",
-				Context: Guid.NewGuid().ToString(),
-				LogDirectory: @"C:\Log",
-				TempDirectory: @"C:\Temp",
-				WorkDirectory: @"C:\Work",
-				ServiceManifestName: "ServiceManifest",
-				ServiceManifestVersion: "1.0.0.0"
+				applicationName: $"fabric:/{applicationName}",
+				applicationTypeName: $"{applicationName}Type",
+				codePackageName: "Code",
+				codePackageVersion: "1.0.0.0",
+				context: Guid.NewGuid().ToString(),
+				logDirectory: @"C:\Log",
+				tempDirectory: @"C:\Temp",
+				workDirectory: @"C:\Work",
+				serviceManifestName: "ServiceManifest",
+				serviceManifestVersion: "1.0.0.0"
 			);
 		}
 
@@ -92,7 +92,16 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		internal void RegisterInstances(IEnumerable<MockServiceInstance> instances)
 		{
-			_activeInstances.AddRange(instances);
+			var mockServiceInstances = instances.ToArray();
+			foreach (var instance in mockServiceInstances)
+			{
+				if (_activeInstances.Any(i => i.ServiceUri.Equals(instance.ServiceUri)))
+				{
+					throw new MockFabricSetupException($"Trying to register services with {instance.ServiceUri}, but MockFabricRuntime already has a registration for that ServiceUri");
+				}
+			}
+
+			_activeInstances.AddRange(mockServiceInstances);
 		}
 
 		public IEnumerable<IMockServiceInstance> GetInstances()

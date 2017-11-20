@@ -10,6 +10,7 @@ using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks.Actors.Client;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+using FG.ServiceFabric.Utils;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Data;
@@ -521,8 +522,18 @@ namespace FG.ServiceFabric.Testing.Mocks
 				}
 				else
 				{
-					var parameter = CreateActorParameter(actorType, actorService, actorId, parameterType);
-					if (parameter == null) throw new MockServiceRuntimeException($"Trying to setup Actor {actorType.Name} but test class does not override CreateActorParameter or the override returns null");
+					object parameter = null;
+					if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateStateSessionManager(actorService.Context);
+					}
+					else if (typeof(ISettingsProvider).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateSettingsProvider(actorService.Context, actorService.GetType());
+					}
+					parameter = CreateActorParameter(actorType, actorService, actorId, parameterType, parameter);
+					if (parameter == null)
+						throw new MockServiceRuntimeException($"Trying to setup Actor {actorType.Name} {actorId.ToString()} and needs parameter of type {parameterType.FullName} but test class does not override CreateActorParameter or the override returns null");
 					parameters.Add(parameter);
 				}
 			}
@@ -530,56 +541,6 @@ namespace FG.ServiceFabric.Testing.Mocks
 			var actor = maxArgsConstructor.Invoke(parameters.ToArray()) as ActorBase;
 			return actor;
 		}
-
-		protected virtual object CreateActorParameter(Type actorType, ActorService actorService, ActorId actorId, Type parameterType) { return null; }
-
-		private ActorService CreateActorService(Type actorServiceType, ActorTypeInformation actorTypeInformation, StatefulServiceContext context, IActorStateProvider stateProvider, Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory)
-		{
-			var maxArgsConstructor = actorServiceType.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault();
-			if (maxArgsConstructor == null) throw new MockFabricSetupException($"Could not find a .ctor for ServiceType {actorServiceType.Name}");
-
-			var parameters = new List<object>();
-			foreach (var constructorParameter in maxArgsConstructor.GetParameters())
-			{
-				var parameterType = constructorParameter.ParameterType;
-
-				if (typeof(IActorStateProvider).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(stateProvider);
-				}
-				else if (typeof(StatefulServiceContext).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(context);
-				}
-				else if (typeof(ActorTypeInformation).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(actorTypeInformation);
-				}
-				else if (typeof(Func<ActorBase, IActorStateProvider, IActorStateManager>).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(stateManagerFactory);
-				}
-				else if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(CreateStateSessionManager(context));
-				}
-				else
-				{
-					parameters.Add(CreateActorServiceParameter(actorServiceType, parameterType));
-				}
-			}
-
-			var actorService = maxArgsConstructor.Invoke(parameters.ToArray()) as ActorService;
-			return actorService;
-		}
-
-		protected virtual Func<ActorBase, IActorStateProvider, IActorStateManager> CreateActorStateManagerFactory() { return null; }
-
-		protected virtual IActorStateProvider CreateActorStateProvider(StatefulServiceContext context, ActorTypeInformation actorTypeInformation) { return null; }
-
-		protected virtual object CreateActorServiceParameter(Type actorServiceType, Type parameterType) { return null; }
-
-		protected virtual IStateSessionManager CreateStateSessionManager(ServiceContext context) { return null; }
 
 		private void SetupActor(MockFabricApplication fabricApplication, Type actorType, Type actorServiceType, MockServiceDefinition serviceDefinition)
 		{
@@ -629,18 +590,24 @@ namespace FG.ServiceFabric.Testing.Mocks
 				{
 					parameters.Add(context);
 				}
-				else if (typeof(IReliableStateManagerReplica2).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(stateManagerReplica);
-				}
-				else if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(CreateStateSessionManager(context));
-				}
 				else
 				{
-					var parameter = CreateServiceParameter(context, serviceType, parameterType);
-					if (parameter == null) throw new MockServiceRuntimeException($"Trying to setup StatefulService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null");
+					object parameter = null;
+					if (typeof(IReliableStateManagerReplica2).IsAssignableFrom(parameterType))
+					{
+						parameters.Add(stateManagerReplica);
+					}
+					else if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateStateSessionManager(context);
+					}
+					else if (typeof(ISettingsProvider).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateSettingsProvider(context, serviceType);
+					}
+					parameter = CreateServiceParameter(context, serviceType, parameterType, parameter);
+					if (parameter == null)
+						throw new MockServiceRuntimeException($"Trying to setup StatefulService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null for parameter {parameterType.FullName} on {context.ServiceName.ToString()}");
 					parameters.Add(parameter);
 				}
 			}
@@ -662,14 +629,20 @@ namespace FG.ServiceFabric.Testing.Mocks
 				{
 					parameters.Add(context);
 				}
-				else if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
-				{
-					parameters.Add(CreateStateSessionManager(context));
-				}
 				else
 				{
-					var parameter = CreateServiceParameter(context, serviceType, parameterType);
-					if (parameter == null) throw new MockServiceRuntimeException($"Trying to setup StatelessService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null");
+					object parameter = null;
+					if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateStateSessionManager(context);
+					}
+					else if (typeof(ISettingsProvider).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateSettingsProvider(context, serviceType);
+					}
+					parameter = CreateServiceParameter(context, serviceType, parameterType, parameter);
+					if (parameter == null)
+						throw new MockServiceRuntimeException($"Trying to setup StatelessService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null for parameter {parameterType.FullName} on {context.ServiceName.ToString()}");
 					parameters.Add(parameter);
 				}
 			}
@@ -678,10 +651,97 @@ namespace FG.ServiceFabric.Testing.Mocks
 			return service;
 		}
 
+
+		private ActorService CreateActorService(Type actorServiceType, ActorTypeInformation actorTypeInformation, StatefulServiceContext context, IActorStateProvider stateProvider, Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory)
+		{
+			var maxArgsConstructor = actorServiceType.GetConstructors().OrderByDescending(c => c.GetParameters().Length).FirstOrDefault();
+			if (maxArgsConstructor == null) throw new MockFabricSetupException($"Could not find a .ctor for ServiceType {actorServiceType.Name}");
+
+			var parameters = new List<object>();
+			foreach (var constructorParameter in maxArgsConstructor.GetParameters())
+			{
+				var parameterType = constructorParameter.ParameterType;
+
+
+				if (typeof(IActorStateProvider).IsAssignableFrom(parameterType))
+				{
+					parameters.Add(stateProvider);
+				}
+				else if (typeof(StatefulServiceContext).IsAssignableFrom(parameterType))
+				{
+					parameters.Add(context);
+				}
+				else if (typeof(ActorTypeInformation).IsAssignableFrom(parameterType))
+				{
+					parameters.Add(actorTypeInformation);
+				}
+				else
+				{
+					object parameter = null;
+					if (typeof(Func<ActorBase, IActorStateProvider, IActorStateManager>).IsAssignableFrom(parameterType))
+					{
+						parameter = stateManagerFactory;
+					}
+					else if (typeof(IStateSessionManager).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateStateSessionManager(context);
+					}
+					else if (typeof(ISettingsProvider).IsAssignableFrom(parameterType))
+					{
+						parameter = CreateSettingsProvider(context, actorServiceType);
+					}
+
+					parameter = CreateActorServiceParameter(actorServiceType, parameterType, parameter);
+					if (parameter == null)
+						throw new MockServiceRuntimeException($"Trying to setup ActorService {actorServiceType.Name} but test class does not override CreateActorServiceParameter or the override returns null for parameter {parameterType.FullName} on {context.ServiceName.ToString()}");
+					parameters.Add(parameter);
+
+				}
+			}
+
+			var actorService = maxArgsConstructor.Invoke(parameters.ToArray()) as ActorService;
+			return actorService;
+		}
+
+		protected virtual ISettingsProvider CreateSettingsProvider(ServiceContext context, Type serviceType)
+		{
+			return null;
+		}
+
+
+		protected virtual object CreateActorParameter(Type actorType, ActorService actorService, ActorId actorId, Type parameterType, object defaultValue) { return null; }
+
+		protected virtual Func<ActorBase, IActorStateProvider, IActorStateManager> CreateActorStateManagerFactory() { return null; }
+
+		protected virtual IActorStateProvider CreateActorStateProvider(StatefulServiceContext context, ActorTypeInformation actorTypeInformation) { return null; }
+
+		protected virtual object CreateActorServiceParameter(Type actorServiceType, Type parameterType, object defaultValue) { return null; }
+
+
+		protected virtual IStateSessionManager CreateStateSessionManager(ServiceContext context) { return null; }
+
 		protected virtual IReliableStateManagerReplica2 CreateStateManager(Type serviceType, MockServiceDefinition serviceDefinition) { return null; }
 
-		protected virtual object CreateServiceParameter(StatefulServiceContext context, Type serviceType, Type parameterType) { return null; }
+		protected virtual object CreateServiceParameter(StatefulServiceContext context, Type serviceType, Type parameterType, object defaultValue) { return null; }
 
-		protected virtual object CreateServiceParameter(StatelessServiceContext context, Type serviceType, Type parameterType) { return null; }
+		protected virtual object CreateServiceParameter(StatelessServiceContext context, Type serviceType, Type parameterType, object defaultValue) { return null; }
+	}
+
+	public class MockFabricSettingProvider : SettingsProviderBase
+	{
+		public string this[string key]
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public string[] Keys { get; }
+		public bool Contains(string key)
+		{
+			throw new NotImplementedException();
+		}
+
+		public MockFabricSettingProvider(ServiceContext context) : base(context)
+		{
+		}
 	}
 }
