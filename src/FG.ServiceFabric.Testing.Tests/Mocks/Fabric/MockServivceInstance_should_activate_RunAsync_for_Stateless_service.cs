@@ -20,118 +20,20 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 {
 	public class MockFabricRuntime_service_instance_activation
 	{
-		public interface IRunningService : IService
-		{
-			Task<int> GetCount();
-		}
-
-		public interface ITestActor : IActor
-		{
-			
-		}
-
-		public class TestStatelessService : StatelessService, IRunningService
-		{
-			private int _count = 0;
-
-			public TestStatelessService(StatelessServiceContext serviceContext) : base(serviceContext)
-			{
-			}
-
-			protected override async Task RunAsync(CancellationToken cancellationToken)
-			{
-				while (true)
-				{
-					_count++;
-
-					await Task.Delay(100, cancellationToken);
-				}
-			}
-
-			public Task<int> GetCount()
-			{
-				return Task.FromResult(_count);
-			}
-
-
-		}
-
-		public class TestStatefulService : StatefulService, IRunningService
-		{
-			private int _count = 0;
-
-			public TestStatefulService(StatefulServiceContext serviceContext) : base(serviceContext)
-			{
-			}
-
-			public TestStatefulService(
-				StatefulServiceContext serviceContext, IReliableStateManagerReplica reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
-			{
-			}
-
-			protected override async Task RunAsync(CancellationToken cancellationToken)
-			{
-				while (true)
-				{
-					_count++;
-
-					await Task.Delay(100, cancellationToken);
-				}
-			}
-
-			public Task<int> GetCount()
-			{
-				return Task.FromResult(_count);
-			}
-		}
-
-		public class TestActorService : ActorService, IRunningService
-		{
-			private int _count = 0;
-
-			public TestActorService(
-				StatefulServiceContext context,
-				ActorTypeInformation actorTypeInfo,
-				Func<ActorService, ActorId, ActorBase> actorFactory = null,
-				Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null,
-				IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) :
-				base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
-			{
-			}
-
-			protected override async Task RunAsync(CancellationToken cancellationToken)
-			{
-				while (true)
-				{
-					Console.WriteLine($"RunAsync loop {_count} for {this.GetHashCode()}");
-					_count++;
-
-					await Task.Delay(100, cancellationToken);
-				}
-			}
-
-			public Task<int> GetCount()
-			{
-				return Task.FromResult(_count);
-			}
-		}
-
-		public class TestActor : Actor, ITestActor
-		{
-			public TestActor(ActorService actorService, ActorId actorId) : base(actorService, actorId)
-			{
-			}
-		}
+		protected string ApplicationName => @"Overlord";
 
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Actor_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupActor<TestActor, TestActorService>(
+			fabricApplication.SetupActor<TestActor, TestActorService>(
 				(service, actorId) => new TestActor(service, actorId),
-				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context, actorTypeInformation,
-				stateProvider: stateProvider, stateManagerFactory: stateManagerFactory), serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
+				(context, actorTypeInformation, stateProvider, stateManagerFactory) => new TestActorService(context,
+					actorTypeInformation,
+					stateProvider: stateProvider, stateManagerFactory: stateManagerFactory),
+				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
 			await Task.Delay(500);
 
@@ -158,9 +60,10 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateless_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupService(
+			fabricApplication.SetupService(
 				(context) => new TestStatelessService(context),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
@@ -189,9 +92,10 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 		[Test]
 		public async Task MockServivceInstance_should_activate_RunAsync_for_Stateful_service()
 		{
-			var fabricRuntime = new MockFabricRuntime("Overlord");
+			var fabricRuntime = new MockFabricRuntime();
+			var fabricApplication = fabricRuntime.RegisterApplication(ApplicationName);
 
-			fabricRuntime.SetupService(
+			fabricApplication.SetupService(
 				(context, stateManager) => new TestStatefulService(context, stateManager),
 				serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue));
 
@@ -217,5 +121,106 @@ namespace FG.ServiceFabric.Testing.Tests.Mocks.Fabric
 			}
 		}
 
+		public interface IRunningService : IService
+		{
+			Task<int> GetCount();
+		}
+
+		public interface ITestActor : IActor
+		{
+		}
+
+		public class TestStatelessService : StatelessService, IRunningService
+		{
+			private int _count = 0;
+
+			public TestStatelessService(StatelessServiceContext serviceContext) : base(serviceContext)
+			{
+			}
+
+			public Task<int> GetCount()
+			{
+				return Task.FromResult(_count);
+			}
+
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+			{
+				while (true)
+				{
+					_count++;
+
+					await Task.Delay(100, cancellationToken);
+				}
+			}
+		}
+
+		public class TestStatefulService : StatefulService, IRunningService
+		{
+			private int _count = 0;
+
+			public TestStatefulService(StatefulServiceContext serviceContext) : base(serviceContext)
+			{
+			}
+
+			public TestStatefulService(
+				StatefulServiceContext serviceContext, IReliableStateManagerReplica2 reliableStateManagerReplica) : base(
+				serviceContext, reliableStateManagerReplica)
+			{
+			}
+
+			public Task<int> GetCount()
+			{
+				return Task.FromResult(_count);
+			}
+
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+			{
+				while (true)
+				{
+					_count++;
+
+					await Task.Delay(100, cancellationToken);
+				}
+			}
+		}
+
+		public class TestActorService : ActorService, IRunningService
+		{
+			private int _count = 0;
+
+			public TestActorService(
+				StatefulServiceContext context,
+				ActorTypeInformation actorTypeInfo,
+				Func<ActorService, ActorId, ActorBase> actorFactory = null,
+				Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory
+					= null,
+				IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) :
+				base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
+			{
+			}
+
+			public Task<int> GetCount()
+			{
+				return Task.FromResult(_count);
+			}
+
+			protected override async Task RunAsync(CancellationToken cancellationToken)
+			{
+				while (true)
+				{
+					Console.WriteLine($"RunAsync loop {_count} for {this.GetHashCode()}");
+					_count++;
+
+					await Task.Delay(100, cancellationToken);
+				}
+			}
+		}
+
+		public class TestActor : Actor, ITestActor
+		{
+			public TestActor(ActorService actorService, ActorId actorId) : base(actorService, actorId)
+			{
+			}
+		}
 	}
 }

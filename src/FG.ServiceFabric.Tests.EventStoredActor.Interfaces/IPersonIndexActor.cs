@@ -9,26 +9,27 @@ using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
 {
-    #region Contracts
+	#region Contracts
 
-    public interface IIndexActor : IReliableMessageReceiverActor, IActor
-    {
-        Task<IEnumerable<Guid>> ListCommandsAsync();
-    }
-    
-    #endregion
+	public interface IIndexActor : IReliableMessageReceiverActor, IActor
+	{
+		Task<IEnumerable<Guid>> ListCommandsAsync();
+	}
 
-    #region Commands
-    [DataContract]
-    public class IndexCommand : DomainCommandBase
-    {
-        [DataMember]
-        public Guid PersonId { get; set; }
-    }
-    
-    #endregion
+	#endregion
 
-    #region Models
-   
-    #endregion
+	#region Commands
+
+	[DataContract]
+	public class IndexCommand : DomainCommandBase
+	{
+		[DataMember]
+		public Guid PersonId { get; set; }
+	}
+
+	#endregion
+
+	#region Models
+
+	#endregion
 }

@@ -2,7 +2,7 @@
 
 namespace FG.ServiceFabric.Tests.EventStoredActor.Diagnostics
 {
-    public interface IActorLogger : IOutboundMessageChannelLogger
-    {
-    }
+	public interface IActorLogger : IOutboundMessageChannelLogger
+	{
+	}
 }

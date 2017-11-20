@@ -1,6 +1,6 @@
 ﻿namespace FG.CQRS
 {
-    public interface IAggregateReadModel : IHasIdentity
-    {
-    }
+	public interface IAggregateReadModel : IHasIdentity
+	{
+	}
 }

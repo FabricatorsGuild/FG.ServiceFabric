@@ -5,58 +5,63 @@ using System.Reflection;
 
 namespace FG.ServiceFabric.Testing.Assertion
 {
-    public static class ObjectPropertyAssertions
-    {
-        public static void CheckAllMatchingProperties(this object baseObject, object compareTo, Action<string, object, object> actionToPerformForEachPropertyChecked, 
-            IDictionary<string, string> propertyNameTransforms, string[] ignoredProperties = null)
-        {
-            var aProperties = baseObject.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(pi => (ignoredProperties??new string []{}).All(p => !string.Equals(p, pi.Name, StringComparison.InvariantCultureIgnoreCase)))
-                .ToDictionary((pi) => pi.Name.ToLower(), pi => pi);
-            var bProperties = compareTo.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary((pi) => pi.Name.ToLower(), pi => pi);
+	public static class ObjectPropertyAssertions
+	{
+		public static void CheckAllMatchingProperties(this object baseObject, object compareTo,
+			Action<string, object, object> actionToPerformForEachPropertyChecked,
+			IDictionary<string, string> propertyNameTransforms, string[] ignoredProperties = null)
+		{
+			var aProperties = baseObject.GetType()
+				.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+				.Where(pi =>
+					(ignoredProperties ?? new string[] { }).All(p =>
+						!string.Equals(p, pi.Name, StringComparison.InvariantCultureIgnoreCase)))
+				.ToDictionary((pi) => pi.Name.ToLower(), pi => pi);
+			var bProperties = compareTo.GetType()
+				.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+				.ToDictionary((pi) => pi.Name.ToLower(), pi => pi);
 
-            var caseInsensitivePropertyNameTransforms = propertyNameTransforms.ToDictionary(kvp => kvp.Key.ToLower(), kvp => kvp.Value.ToLower());
-            
-            foreach (var aPropertyName in aProperties.Keys)
-            {
-                var bPropertyName = caseInsensitivePropertyNameTransforms.ContainsKey(aPropertyName.ToLower())
-                    ? caseInsensitivePropertyNameTransforms[aPropertyName]
-                    : aPropertyName;
+			var caseInsensitivePropertyNameTransforms =
+				propertyNameTransforms.ToDictionary(kvp => kvp.Key.ToLower(), kvp => kvp.Value.ToLower());
 
-                var aProperty = aProperties[aPropertyName];
-                if (!bProperties.ContainsKey(bPropertyName))
-                    throw new ArgumentException($"Missing property {bPropertyName} on B object");
-                var bProperty = bProperties[bPropertyName];
+			foreach (var aPropertyName in aProperties.Keys)
+			{
+				var bPropertyName = caseInsensitivePropertyNameTransforms.ContainsKey(aPropertyName.ToLower())
+					? caseInsensitivePropertyNameTransforms[aPropertyName]
+					: aPropertyName;
 
-                var aValue = aProperty.GetValue(baseObject);
-                var bValue = bProperty.GetValue(compareTo);
+				var aProperty = aProperties[aPropertyName];
+				if (!bProperties.ContainsKey(bPropertyName))
+					throw new ArgumentException($"Missing property {bPropertyName} on B object");
+				var bProperty = bProperties[bPropertyName];
 
-                actionToPerformForEachPropertyChecked(aPropertyName, aValue, bValue);
-            }
-        }
+				var aValue = aProperty.GetValue(baseObject);
+				var bValue = bProperty.GetValue(compareTo);
 
-        public static void CheckMatchingProperties(this object a, object b, Action<string, object, object> checkProperty, params string[] propertyNames)
-        {
-            var aProperties = a.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary((pi) => pi.Name, pi => pi);
-            var bProperties = b.GetType()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .ToDictionary((pi) => pi.Name, pi => pi);
+				actionToPerformForEachPropertyChecked(aPropertyName, aValue, bValue);
+			}
+		}
 
-            foreach (var propertyName in propertyNames)
-            {
-                var aProperty = aProperties[propertyName];
-                var bProperty = bProperties[propertyName];
+		public static void CheckMatchingProperties(this object a, object b, Action<string, object, object> checkProperty,
+			params string[] propertyNames)
+		{
+			var aProperties = a.GetType()
+				.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+				.ToDictionary((pi) => pi.Name, pi => pi);
+			var bProperties = b.GetType()
+				.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+				.ToDictionary((pi) => pi.Name, pi => pi);
 
-                var aValue = aProperty.GetValue(a);
-                var bValue = bProperty.GetValue(b);
+			foreach (var propertyName in propertyNames)
+			{
+				var aProperty = aProperties[propertyName];
+				var bProperty = bProperties[propertyName];
 
-                checkProperty(propertyName, aValue, bValue);
-            }
-        }
-    }
+				var aValue = aProperty.GetValue(a);
+				var bValue = bProperty.GetValue(b);
+
+				checkProperty(propertyName, aValue, bValue);
+			}
+		}
+	}
 }

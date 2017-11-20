@@ -11,6 +11,7 @@ using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
@@ -27,12 +28,25 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			IMockServiceProxyManager serviceProxyManager)
 		{
 			ServiceInterfaceType = serviceInterfaceType;
-			ServicePartitionClient = new MockServicePartitionClient(serviceUri, partitionKey, replicaSelector, listenerName, factory);
+			ServicePartitionClient =
+				new MockServicePartitionClient(serviceUri, partitionKey, replicaSelector, listenerName, factory);
 
 			Proxy = CreateDynamicProxy(target, serviceInterfaceType, serviceProxyManager);
 		}
 
-		private object CreateDynamicProxy(object target, Type serviceInterfaceType, IMockServiceProxyManager serviceProxyManager)
+		public object Proxy { get; }
+
+
+		public Type ServiceInterfaceType { get; }
+		public IServiceRemotingPartitionClient ServicePartitionClient { get; }
+
+		public Microsoft.ServiceFabric.Services.Remoting.V2.Client.IServiceRemotingPartitionClient ServicePartitionClient2
+		{
+			get;
+		}
+
+		private object CreateDynamicProxy(object target, Type serviceInterfaceType,
+			IMockServiceProxyManager serviceProxyManager)
 		{
 			var generator = new ProxyGenerator(new PersistentProxyBuilder());
 			var selector = new InterceptorSelector();
@@ -48,12 +62,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 				serviceProxyInterceptor);
 			return proxy;
 		}
-
-		public object Proxy { get; }
-
-
-		public Type ServiceInterfaceType { get; }
-		public IServiceRemotingPartitionClient ServicePartitionClient { get; }
 
 		private class MockServicePartitionClient : IServiceRemotingPartitionClient
 		{
@@ -84,9 +92,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 		}
 
 
-
 		private class InterceptorSelector : IInterceptorSelector
 		{
+			[System.Diagnostics.DebuggerStepThrough]
 			public IInterceptor[] SelectInterceptors(Type type, MethodInfo method, IInterceptor[] interceptors)
 			{
 				if (method.DeclaringType == typeof(IActorProxy))
@@ -106,11 +114,17 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 				_serviceProxyManager = serviceProxyManager;
 			}
 
+			[System.Diagnostics.DebuggerStepThrough]
 			public void Intercept(IInvocation invocation)
 			{
 				_serviceProxyManager?.BeforeMethod(invocation.Proxy as IService, invocation.Method);
-				invocation.Proceed();
+				RunInvocation(invocation);
 				_serviceProxyManager?.AfterMethod(invocation.Proxy as IService, invocation.Method);
+			}
+
+			public void RunInvocation(IInvocation invocation)
+			{
+				invocation.Proceed();
 			}
 		}
 

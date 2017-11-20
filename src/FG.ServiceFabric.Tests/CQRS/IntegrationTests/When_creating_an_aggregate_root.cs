@@ -10,45 +10,46 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
 {
-    public class When_creating_an_aggregate_root : TestBase
-    {
-        protected override void SetupRuntime()
-        {
-            ForTestEventStoredActor.Setup(FabricRuntime);
-            ForTestIndexActor.Setup(FabricRuntime);
-            base.SetupRuntime();
-        }
+	public class When_creating_an_aggregate_root : TestBase
+	{
+		private readonly Guid _aggregateRootId = Guid.NewGuid();
 
-        private readonly Guid _aggregateRootId = Guid.NewGuid();
-        [SetUp]
-        public async Task RaiseEvent()
-        {
-            var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
-            await proxy.CreateAsync(new CreateCommand { SomeProperty = "Stig"});
-        }
+		protected override void SetupRuntime()
+		{
+			ForTestEventStoredActor.Setup(_fabricApplication);
+			ForTestIndexActor.Setup(_fabricApplication);
+			base.SetupRuntime();
+		}
 
-        [Test]
-        public async Task Then_event_is_applied()
-        {
-            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
-                serviceUri: FabricRuntime.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
-                actorId: new ActorId(_aggregateRootId));
+		[SetUp]
+		public async Task RaiseEvent()
+		{
+			var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
+			await proxy.CreateAsync(new CreateCommand {SomeProperty = "Stig"});
+		}
 
-            var result = await serviceProxy.GetAsync(_aggregateRootId);
+		[Test]
+		public async Task Then_event_is_applied()
+		{
+			var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
+				serviceUri: _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
+				actorId: new ActorId(_aggregateRootId));
 
-            result.Should().NotBeNull();
-            result.SomeProperty.Should().Be("Stig");
-        }
+			var result = await serviceProxy.GetAsync(_aggregateRootId);
 
-        [Test]
-        public async Task Then_event_is_stored()
-        {
-            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
-                serviceUri: FabricRuntime.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
-                actorId: new ActorId(_aggregateRootId));
+			result.Should().NotBeNull();
+			result.SomeProperty.Should().Be("Stig");
+		}
 
-            var events = await serviceProxy.GetAllEventHistoryAsync(_aggregateRootId);
-            events.Should().Contain(x => x.EventType == typeof(CreatedEvent).FullName);
-        }
-    }
+		[Test]
+		public async Task Then_event_is_stored()
+		{
+			var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
+				serviceUri: _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
+				actorId: new ActorId(_aggregateRootId));
+
+			var events = await serviceProxy.GetAllEventHistoryAsync(_aggregateRootId);
+			events.Should().Contain(x => x.EventType == typeof(CreatedEvent).FullName);
+		}
+	}
 }

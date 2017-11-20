@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("FG.ServiceFabric.Testing")]
-[assembly: AssemblyDescription("Provides Mocks for common Service Fabric classes allowing for unit and integration testing of Actors and Services")]
+[assembly:
+	AssemblyDescription(
+		"Provides Mocks for common Service Fabric classes allowing for unit and integration testing of Actors and Services")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fabricators Guild")]
 [assembly: AssemblyProduct("FG.ServiceFabric.Testing")]

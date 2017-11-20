@@ -1,35 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.Fabric;
-using System.Linq;
 using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Services.Client;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Client
+namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 {
+	// ReSharper disable InconsistentNaming
 	public class MockActorStateProvider_partitions_tests
 	{
-		private MockFabricRuntime _fabricRuntime;
 		private MockServiceDefinition _actorDemoServiceDefinition;
+		private MockFabricApplication _fabricApplication;
+		private MockFabricRuntime _fabricRuntime;
+		private string ApplicationName => @"Overlord";
 
 		[SetUp]
+#pragma warning disable 1998
 		public async Task CreateActorsWithActorService()
+#pragma warning restore 1998
 		{
-			_fabricRuntime = new MockFabricRuntime("Overlord");
+			_fabricRuntime = new MockFabricRuntime();
+			_fabricApplication = _fabricRuntime.RegisterApplication(ApplicationName);
 
-			 _actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
-			_fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+			_actorDemoServiceDefinition = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
+			_fabricApplication.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),
@@ -37,15 +42,18 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		}
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockServiceDefinition_should_create_in64_ranges()
+#pragma warning restore 1998
 		{
 			var instanceCount = 10;
 			var lowKey = new BigInteger(long.MinValue);
 			var highKey = new BigInteger(long.MaxValue);
-			var uniformInt64Partitions = MockServiceDefinition.CreateUniformInt64Partitions(instanceCount, (long)lowKey, (long)highKey);
+			var uniformInt64Partitions =
+				MockServiceDefinition.CreateUniformInt64Partitions(instanceCount, (long) lowKey, (long) highKey);
 
 			var low = lowKey;
-			var partitionRange = (highKey- lowKey) / instanceCount;
+			var partitionRange = (highKey - lowKey) / instanceCount;
 			foreach (var partition in uniformInt64Partitions.Partitions)
 			{
 				var int64Range = (partition.PartitionInformation as Int64RangePartitionInformation);
@@ -59,12 +67,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		}
 
 		[Test]
+#pragma warning disable 1998
 		public async Task MockServiceDefinition_should_split_actors_into_separate_partitions()
+#pragma warning restore 1998
 		{
 			var uniformInt64Partitions = MockServiceDefinition.CreateUniformInt64Partitions(10, long.MinValue, long.MaxValue);
-		
+
 			var partitionsUsed = new List<Guid>();
-			foreach (var actorName in new string[] { "first", "second", "third" })
+			foreach (var actorName in new string[] {"first", "second", "third"})
 			{
 				var actorId = new ActorId(actorName);
 				var partitionKey = actorId.GetPartitionKey();
@@ -82,10 +92,10 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		[Test]
 		public async Task Should_be_able_to_remove_actor_from_ActorService()
 		{
-			var serviceUri = _fabricRuntime.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+			var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
 
 			var nameCount = 100;
-			foreach (var name in new []{"first", "second", "third"})
+			foreach (var name in new[] {"first", "second", "third"})
 			{
 				await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
 				{
@@ -94,7 +104,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 				}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 				nameCount += 100;
 			}
-			
+
 			await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
 			{
 				var proxy = _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
@@ -112,7 +122,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 				var partitionInfo = partition.PartitionInformation as Int64RangePartitionInformation;
 				if (partitionInfo == null)
 				{
-					throw new InvalidOperationException($"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
+					throw new InvalidOperationException(
+						$"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
 				}
 				partitionKeys.Add(partitionInfo);
 			}
@@ -135,4 +146,5 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			counts.Should().BeEquivalentTo(new[] {200, 300});
 		}
 	}
+	// ReSharper restore InconsistentNaming
 }

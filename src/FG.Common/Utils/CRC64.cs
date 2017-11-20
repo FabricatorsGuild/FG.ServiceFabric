@@ -3,14 +3,15 @@ using System.Globalization;
 namespace FG.Common.Utils
 {
 	/// <summary>
-	/// Computes CRC64 for a given byte payload.
+	///     Computes CRC64 for a given byte payload.
 	/// </summary>
 	public static class CRC64
 	{
 		/// <summary>
-		/// CRC table.
+		///     CRC table.
 		/// </summary>
-		private static readonly ulong[] Crc64Table = {
+		private static readonly ulong[] Crc64Table =
+		{
 			0x0000000000000000, 0x42F0E1EBA9EA3693, 0x85E1C3D753D46D26, 0xC711223CFA3E5BB5,
 			0x493366450E42ECDF, 0x0BC387AEA7A8DA4C, 0xCCD2A5925D9681F9, 0x8E224479F47CB76A,
 			0x9266CC8A1C85D9BE, 0xD0962D61B56FEF2D, 0x17870F5D4F51B498, 0x5577EEB6E6BB820B,
@@ -78,7 +79,7 @@ namespace FG.Common.Utils
 		};
 
 		/// <summary>
-		/// Returns the CRC64 for the given payload.
+		///     Returns the CRC64 for the given payload.
 		/// </summary>
 		/// <param name="value">Byte payload.</param>
 		/// <returns>CRC64 value.</returns>
@@ -87,7 +88,7 @@ namespace FG.Common.Utils
 			var crc = 0xffffffffffffffff;
 			for (var i = 0; i < value.Length; i++)
 			{
-				var tableIndex = (((uint)(crc >> 56)) ^ value[i]) & 0xff;
+				var tableIndex = (((uint) (crc >> 56)) ^ value[i]) & 0xff;
 				crc = Crc64Table[tableIndex] ^ (crc << 8);
 			}
 
@@ -95,7 +96,7 @@ namespace FG.Common.Utils
 		}
 
 		/// <summary>
-		/// Returns the CRC64 for the given payload.
+		///     Returns the CRC64 for the given payload.
 		/// </summary>
 		/// <param name="values">Byte payloads.</param>
 		/// <returns>CRC64 value.</returns>
@@ -106,7 +107,7 @@ namespace FG.Common.Utils
 			{
 				for (var i = 0; i < values[x].Length; i++)
 				{
-					var tableIndex = (((uint)(crc >> 56)) ^ values[x][i]) & 0xff;
+					var tableIndex = (((uint) (crc >> 56)) ^ values[x][i]) & 0xff;
 					crc = Crc64Table[tableIndex] ^ (crc << 8);
 				}
 			}
@@ -115,7 +116,7 @@ namespace FG.Common.Utils
 		}
 
 		/// <summary>
-		/// Returns the CRC64 in string form for the given payload.
+		///     Returns the CRC64 in string form for the given payload.
 		/// </summary>
 		/// <param name="value">Byte payload.</param>
 		/// <returns>CRC64 value.</returns>

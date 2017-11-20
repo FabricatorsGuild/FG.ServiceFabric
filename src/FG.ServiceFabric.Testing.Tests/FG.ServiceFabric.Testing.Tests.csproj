@@ -9,10 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FG.ServiceFabric.Testing.Tests</RootNamespace>
     <AssemblyName>FG.ServiceFabric.Testing.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -51,82 +51,35 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.dll</HintPath>
-    </Reference>
-    <Reference Include="FluentAssertions.Core, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
-      <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Actors, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.6.220\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Data, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.6.220\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Data.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.6.220\lib\net45\Microsoft.ServiceFabric.Data.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.FabricTransport, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.6.220\lib\net45\Microsoft.ServiceFabric.FabricTransport.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Internal, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\Microsoft.ServiceFabric.Internal.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Internal.Strings, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\Microsoft.ServiceFabric.Internal.Strings.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Services, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.2.6.220\lib\net45\Microsoft.ServiceFabric.Services.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.6.220\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
-    </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Fabric, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\System.Fabric.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Fabric.Management.ServiceModel, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\System.Fabric.Management.ServiceModel.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Fabric.Management.ServiceModel.XmlSerializers, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\System.Fabric.Management.ServiceModel.XmlSerializers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Fabric.Strings, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.5.6.220\lib\net45\System.Fabric.Strings.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Actors\Client\MockActorProxyFactory_tests.cs" />
-    <Compile Include="Actors\Client\MockActorProxyFactory_StateProvider_tests.cs" />
-    <Compile Include="Actors\Client\MockActorStateProvider_partitions_tests.cs" />
-    <Compile Include="Mocks\Fabric\MockServivceInstance_should_activate_RunAsync_for_Stateless_service.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FG.Common\FG.Common.csproj">
       <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
       <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
+      <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
+      <Name>FG.ServiceFabric.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
+      <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
+      <Name>FG.ServiceFabric.Persistence</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
+      <Project>{2F2B5701-77B5-4467-9504-8BE73A3725A7}</Project>
+      <Name>FG.ServiceFabric.Testing</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj">
       <Project>{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}</Project>
@@ -136,23 +89,102 @@
       <Project>{9AB85068-EF28-4659-9C8F-D6AFC45D097A}</Project>
       <Name>FG.ServiceFabric.Tests.Actor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
-      <Project>{bcee1998-b962-48a3-b31e-e345dbed1348}</Project>
-      <Name>FG.ServiceFabric.Extensions</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
-      <Project>{2F2B5701-77B5-4467-9504-8BE73A3725A7}</Project>
-      <Name>FG.ServiceFabric.Testing</Name>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj">
+      <Project>{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}</Project>
+      <Name>FG.ServiceFabric.Tests.StatefulService</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="FluentAssertions">
+      <HintPath>..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FluentAssertions.Core">
+      <HintPath>..\packages\FluentAssertions.4.19.4\lib\net45\FluentAssertions.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.8.219\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.219\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Data.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.219\lib\net45\Microsoft.ServiceFabric.Data.Interfaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Diagnostics, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.Diagnostics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.FabricTransport, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.FabricTransport.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.FabricTransport.V2, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.FabricTransport.V2.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Internal, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Internal.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Internal.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Internal.Strings.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Preview, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Preview.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Services, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Services.2.8.219\lib\net45\Microsoft.ServiceFabric.Services.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.219\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnit.3.8.1\lib\net45\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Fabric, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Fabric.Management.ServiceModel, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Management.ServiceModel.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Fabric.Management.ServiceModel.XmlSerializers, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Management.ServiceModel.XmlSerializers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Fabric.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Strings.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Actors\Client\MockActorProxyFactory_StateProvider_tests.cs" />
+    <Compile Include="Actors\Client\MockActorProxyFactory_tests.cs" />
+    <Compile Include="Actors\Runtime\MockActorStateProvider_partitions_tests.cs" />
+    <Compile Include="Actors\Runtime\MockActorStateProvider_reminders_tests.cs" />
+    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession.cs" />
+    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession2.cs" />
+    <None Include="app.config" />
+    <Compile Include="Mocks\Fabric\MockServivceInstance_should_activate_RunAsync_for_Stateless_service.cs" />
+    <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
+    <None Include="packages.config" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Runtime\CosmosDbForTestingSettingsProvider.cs" />
+    <Compile Include="Services\Runtime\TestBase.cs" />
+    <Compile Include="Services\Runtime\With_DocumentDbStateSession.cs" />
+    <Compile Include="Services\Runtime\With_FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\With_InMemoryStateSession.cs" />
+    <Compile Include="Services\Runtime\With_InMemoryStateSessionWithTransactions.cs" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" />
+  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.219\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.219\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.6.220\build\Microsoft.ServiceFabric.Actors.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.219\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.219\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

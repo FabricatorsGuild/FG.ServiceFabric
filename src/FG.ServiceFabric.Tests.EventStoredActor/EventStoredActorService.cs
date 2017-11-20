@@ -13,34 +13,34 @@ using IEventStoredActorService = FG.ServiceFabric.Tests.EventStoredActor.Interfa
 
 namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-    internal class EventStoredActorService 
-        : EventStoredActorService<Domain, TheEventStream>, Interfaces.IEventStoredActorService
-    {
-        public EventStoredActorService(
-            StatefulServiceContext context,
-            ActorTypeInformation actorTypeInfo,
-            Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null,
-            Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager>
-                stateManagerFactory = null,
-            IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) :
-            base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
-        {
-        }
-        
-        protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
-        {
-            foreach (var serviceReplicaListener in base.CreateServiceReplicaListeners())
-            {
-                yield return serviceReplicaListener;
-            }
-        }
+	internal class EventStoredActorService
+		: EventStoredActorService<Domain, TheEventStream>, Interfaces.IEventStoredActorService
+	{
+		public EventStoredActorService(
+			StatefulServiceContext context,
+			ActorTypeInformation actorTypeInfo,
+			Func<ActorService, ActorId, Actors.Runtime.ActorBase> actorFactory = null,
+			Func<Microsoft.ServiceFabric.Actors.Runtime.ActorBase, IActorStateProvider, IActorStateManager>
+				stateManagerFactory = null,
+			IActorStateProvider stateProvider = null, ActorServiceSettings settings = null) :
+			base(context, actorTypeInfo, actorFactory, stateManagerFactory, stateProvider, settings)
+		{
+		}
 
-        public Task<ReadModel> GetAsync(Guid aggregateRootId)
-        {
-            using (var generator = new ReadModelGenerator(StateProviderEventStreamReader))
-            {
-                return generator.GenerateAsync(aggregateRootId, CancellationToken.None);
-            }
-        }
-    }
+		public Task<ReadModel> GetAsync(Guid aggregateRootId)
+		{
+			using (var generator = new ReadModelGenerator(StateProviderEventStreamReader))
+			{
+				return generator.GenerateAsync(aggregateRootId, CancellationToken.None);
+			}
+		}
+
+		protected override IEnumerable<ServiceReplicaListener> CreateServiceReplicaListeners()
+		{
+			foreach (var serviceReplicaListener in base.CreateServiceReplicaListeners())
+			{
+				yield return serviceReplicaListener;
+			}
+		}
+	}
 }

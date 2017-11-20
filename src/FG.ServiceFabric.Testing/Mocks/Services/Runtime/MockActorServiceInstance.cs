@@ -4,13 +4,23 @@ using System.Fabric;
 using System.Linq;
 using System.Reflection;
 using FG.Common.Utils;
+using FG.ServiceFabric.Services.Runtime;
 using FG.ServiceFabric.Testing.Mocks.Actors.Runtime;
+using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
+	public enum MockActorServiceInstanceStatus
+	{
+		Registered = 0,
+		Built = 1,
+		Running = 2,
+		Stopped,
+	}
+
 	internal class MockActorServiceInstance : MockServiceInstance
 	{
 		public IActorStateProvider ActorStateProvider { get; private set; }
@@ -23,8 +33,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			IActorStateProvider actorStateProvider,
 			Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory)
 		{
-			return (ActorService)new MockActorService(
-				codePackageActivationContext: FabricRuntime.CodePackageContext,
+			return (ActorService) new MockActorService(
+				codePackageActivationContext: serviceContext.CodePackageActivationContext,
 				serviceProxyFactory: FabricRuntime.ServiceProxyFactory,
 				actorProxyFactory: FabricRuntime.ActorProxyFactory,
 				nodeContext: FabricRuntime.BuildNodeContext(),
@@ -44,10 +54,12 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 			if (actorServiceType == typeof(Microsoft.ServiceFabric.Actors.Runtime.ActorService))
 			{
-				return new ActorService(serviceContext, actorTypeInformation, stateProvider: actorStateProvider, stateManagerFactory: stateManagerFactory);
+				return new ActorService(serviceContext, actorTypeInformation, stateProvider: actorStateProvider,
+					stateManagerFactory: stateManagerFactory);
 			}
 
-			var constructors = actorServiceType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+			var constructors =
+				actorServiceType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
 			foreach (var constructor in constructors.OrderByDescending(c => c.GetParameters().Length))
 			{
@@ -90,7 +102,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 				if (canConstruct)
 				{
-					return (ActorService)constructor.Invoke(null, arguments.ToArray());
+					return (ActorService) constructor.Invoke(null, arguments.ToArray());
 				}
 			}
 
@@ -107,11 +119,14 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 				return;
 			}
 
-			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(ActorRegistration.ServiceRegistration.Name);
-			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
-			                      (() => (IActorStateProvider) new MockActorStateProvider(FabricRuntime))).Invoke();
-
 			var actorTypeInformation = ActorTypeInformation.Get(ActorRegistration.ImplementationType);
+			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(
+				ActorRegistration.ServiceRegistration.GetApplicationName(), ActorRegistration.ServiceRegistration.Name,
+				this.Partition.PartitionInformation, this.Replica.Id);
+			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
+			                      ((context, actorInfo) => (IActorStateProvider) new MockActorStateProvider(FabricRuntime)))
+				.Invoke(statefulServiceContext, actorTypeInformation);
+
 			var stateManagerFactory = ActorRegistration.CreateActorStateManager != null
 				? (Func<ActorBase, IActorStateProvider, IActorStateManager>) (
 					(actor, stateProvider) => ActorRegistration.CreateActorStateManager(actor, stateProvider))
@@ -119,14 +134,17 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			var actorServiceFactory = ActorRegistration.CreateActorService ?? CreateActorService;
 			// TODO: consider this further, is it really what should be done???
 
-			var actorService = actorServiceFactory(statefulServiceContext, actorTypeInformation, ActorStateProvider, stateManagerFactory);
+			var actorService = actorServiceFactory(statefulServiceContext, actorTypeInformation, ActorStateProvider,
+				stateManagerFactory);
 			if (actorService is FG.ServiceFabric.Actors.Runtime.ActorService)
 			{
+				var applicationUriBuilder = new ApplicationUriBuilder(statefulServiceContext.CodePackageActivationContext,
+					statefulServiceContext.CodePackageActivationContext.ApplicationName);
 				actorService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
 				actorService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
-				actorService.SetPrivateField("_applicationUriBuilder", FabricRuntime.ApplicationUriBuilder);
+				actorService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
 			}
-	
+
 			ServiceInstance = actorService;
 
 			Actors = new Dictionary<ActorId, Actor>();
@@ -146,13 +164,18 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		internal override bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
 		{
-			if(ActorRegistration.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind) return false;
+			if (ActorRegistration.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind) return false;
 
 			var partitionId = ActorRegistration.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
 
 			return serviceUri.ToString().Equals(this.ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase) &&
 			       ActorRegistration.ServiceRegistration.InterfaceTypes.Any(i => i == serviceInterfaceType) &&
 			       Partition.PartitionInformation.Id == partitionId;
+		}
+
+		public override string ToString()
+		{
+			return $"{nameof(MockActorServiceInstance)}: {ServiceUri}";
 		}
 	}
 }

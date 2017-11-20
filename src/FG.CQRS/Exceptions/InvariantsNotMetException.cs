@@ -5,16 +5,23 @@ using System.Security.Permissions;
 
 namespace FG.CQRS.Exceptions
 {
-    [Serializable]
-    public sealed class InvariantsNotMetException : AggregateRootException
-    {
-        public InvariantsNotMetException(string message) : base(message) { }
-        public InvariantsNotMetException(IEnumerable<string> messages) : base(string.Join(", ", messages)) { }
+	[Serializable]
+	public sealed class InvariantsNotMetException : AggregateRootException
+	{
+		public InvariantsNotMetException(string message) : base(message)
+		{
+		}
 
-        [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
-        private InvariantsNotMetException
-        (
-            SerializationInfo info,
-            StreamingContext context) : base(info, context) { }
-    }
+		public InvariantsNotMetException(IEnumerable<string> messages) : base(string.Join(", ", messages))
+		{
+		}
+
+		[SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+		private InvariantsNotMetException
+		(
+			SerializationInfo info,
+			StreamingContext context) : base(info, context)
+		{
+		}
+	}
 }

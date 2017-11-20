@@ -6,11 +6,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="3f0523e0-3fcd-446f-869d-4e2144ea4ee6|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="DbStoredActorService" />
-            <ServiceEndpoint Name="DbStoredActorServiceEndpoint" />
             <ReplicatorEndpoint Name="DbStoredActorServiceReplicatorEndpoint" />
             <ReplicatorConfigSection Name="DbStoredActorServiceReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="DbStoredActorServiceReplicatorSecurityConfig" />
             <StoreConfigSection Name="DbStoredActorServiceLocalStoreConfig" />
+            <ServiceEndpoint Name="DbStoredActorServiceEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>

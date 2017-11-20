@@ -6,44 +6,43 @@ using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.DbStoredActor.Interfaces
 {
-    public interface IDbStoredActor : IActor
-    {
-        Task<CountReadModel> GetCountAsync(CancellationToken cancellationToken);
-        Task SetCountAsync(int count, CancellationToken cancellationToken);
-    }
-    
-    [DataContract]
-    public class CountReadModel : IPersistedIdentity
-    {   
-        [DataMember]
-        public int Count { get; set; }
+	public interface IDbStoredActor : IActor
+	{
+		Task<CountReadModel> GetCountAsync(CancellationToken cancellationToken);
+		Task SetCountAsync(int count, CancellationToken cancellationToken);
+	}
 
-        [DataMember]
-        public string Id { get; set; }
-    }
+	[DataContract]
+	public class CountReadModel : IPersistedIdentity
+	{
+		[DataMember]
+		public int Count { get; set; }
 
-    [DataContract]
-    public class CountState : IPersistedIdentity
-    {
-        private CountState()
-        {
+		[DataMember]
+		public string Id { get; set; }
+	}
 
-        }
+	[DataContract]
+	public class CountState : IPersistedIdentity
+	{
+		private CountState()
+		{
+		}
 
-        public CountState(string id)
-        {
-            Id = id;
-        }
+		public CountState(string id)
+		{
+			Id = id;
+		}
 
-        [DataMember]
-        public int Count { get; private set; }
+		[DataMember]
+		public int Count { get; private set; }
 
-        [DataMember]
-        public string Id { get; private set; }
+		[DataMember]
+		public string Id { get; private set; }
 
-        public CountState UpdateCount(int count)
-        {
-            return new CountState(Id) { Count = count };
-        }
-    }
+		public CountState UpdateCount(int count)
+		{
+			return new CountState(Id) {Count = count};
+		}
+	}
 }

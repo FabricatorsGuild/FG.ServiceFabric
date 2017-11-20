@@ -1,32 +1,36 @@
 namespace FG.CQRS
 {
-    public abstract partial class AggregateRoot<TAggregateRootEventInterface>
-    {
-        public abstract class Component<TAggregateRoot, TComponentEventInterface> 
-            where TComponentEventInterface : class, TAggregateRootEventInterface
-            where TAggregateRoot : AggregateRoot<TAggregateRootEventInterface>
-        {
-            private readonly EventDispatcher<TComponentEventInterface> _eventDispatcher =
-                new EventDispatcher<TComponentEventInterface>();
-            private readonly TAggregateRoot _aggregateRoot;
+	public abstract partial class AggregateRoot<TAggregateRootEventInterface>
+	{
+		public abstract class Component<TAggregateRoot, TComponentEventInterface>
+			where TComponentEventInterface : class, TAggregateRootEventInterface
+			where TAggregateRoot : AggregateRoot<TAggregateRootEventInterface>
+		{
+			private readonly TAggregateRoot _aggregateRoot;
 
-            protected Component(TAggregateRoot aggregateRoot) { _aggregateRoot = aggregateRoot; }
+			private readonly EventDispatcher<TComponentEventInterface> _eventDispatcher =
+				new EventDispatcher<TComponentEventInterface>();
 
-            protected virtual void RaiseEvent<TDomainEvent>(TDomainEvent domainEvent) where TDomainEvent : TComponentEventInterface
-            {
-                _aggregateRoot.RaiseEvent(domainEvent);
-                
-            }
+			protected Component(TAggregateRoot aggregateRoot)
+			{
+				_aggregateRoot = aggregateRoot;
+			}
 
-            public void ApplyEvent(TComponentEventInterface @event)
-            {
-                _eventDispatcher.Dispatch(@event);
-            }
+			protected virtual void RaiseEvent<TDomainEvent>(TDomainEvent domainEvent)
+				where TDomainEvent : TComponentEventInterface
+			{
+				_aggregateRoot.RaiseEvent(domainEvent);
+			}
 
-            protected EventDispatcher<TComponentEventInterface>.RegistrationBuilder RegisterEventAppliers()
-            {
-                return _eventDispatcher.RegisterHandlers();
-            }
-        }
-    }
+			public void ApplyEvent(TComponentEventInterface @event)
+			{
+				_eventDispatcher.Dispatch(@event);
+			}
+
+			protected EventDispatcher<TComponentEventInterface>.RegistrationBuilder RegisterEventAppliers()
+			{
+				return _eventDispatcher.RegisterHandlers();
+			}
+		}
+	}
 }

@@ -2,9 +2,9 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class CustomServiceRequestHeaderTypeTemplateExtension : BaseTemplateExtension
-    {
-        private string Definition = @"{
+	public class CustomServiceRequestHeaderTypeTemplateExtension : BaseTemplateExtension
+	{
+		private string Definition = @"{
                   ""Name"": ""CustomServiceRequestHeader"",
                   ""CLRType"": ""FG.ServiceFabric.Services.Remoting.FabricTransport.CustomServiceRequestHeader"",
                   ""Arguments"": [
@@ -20,11 +20,12 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
                     }
                   ]
                 }";
-                
-        protected override string GetDefinition()
-        {
-            return Definition;
-		}
+
 		public override string Module => @"ServiceFabric";
+
+		protected override string GetDefinition()
+		{
+			return Definition;
+		}
 	}
 }

@@ -8,7 +8,6 @@ using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
-
 	public class MockableServiceRegistration : IMockableServiceRegistration
 	{
 		public MockableServiceRegistration(
@@ -20,7 +19,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			MockServiceDefinition serviceDefinition = null,
 			bool isStateful = false,
 			Uri serviceUri = null,
-			string serviceName= null)
+			string serviceName = null)
 		{
 			InterfaceTypes = interfaceTypes;
 			ImplementationType = implementationType;
@@ -33,9 +32,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 			Name = serviceName ?? implementationType.Name;
 		}
 
-		public Type[] InterfaceTypes{ get; }
+		public Type[] InterfaceTypes { get; }
 		public Type ImplementationType { get; }
-		
+
 		public CreateStateManager CreateStateManager { get; }
 		public MockServiceDefinition ServiceDefinition { get; set; }
 		public CreateStatefulService CreateStatefulService { get; }
@@ -44,5 +43,4 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 		public Uri ServiceUri { get; set; }
 		public string Name { get; set; }
 	}
-	
 }

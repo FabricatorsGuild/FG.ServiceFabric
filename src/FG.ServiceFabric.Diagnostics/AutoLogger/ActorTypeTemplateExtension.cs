@@ -2,9 +2,9 @@ using FG.Diagnostics.AutoLogger.Model;
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ActorTypeTemplateExtension : BaseTemplateExtension
-    {        
-        private string Definition = @"{
+	public class ActorTypeTemplateExtension : BaseTemplateExtension
+	{
+		private string Definition = @"{
               ""Name"": ""Actor"",
               ""CLRType"": ""Microsoft.ServiceFabric.Actors.Runtime.Actor"",
               ""Arguments"": [
@@ -65,10 +65,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
               ]
             }";
 
-        protected override string GetDefinition()
-        {
-            return Definition;
-		}
 		public override string Module => @"ServiceFabric";
+
+		protected override string GetDefinition()
+		{
+			return Definition;
+		}
 	}
 }

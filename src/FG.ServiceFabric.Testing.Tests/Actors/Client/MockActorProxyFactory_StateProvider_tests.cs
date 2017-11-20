@@ -6,24 +6,29 @@ using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
+using FG.ServiceFabric.Tests.Actor.WithInteralError;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
+
 // ReSharper disable InconsistentNaming
 
 namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 {
 	public class MockActorStateProvider_tests
 	{
-		private IActorDemoActorService _proxy;
+		protected MockFabricApplication _fabricApplication;
 		private MockFabricRuntime _fabricRuntime;
+		private IActorDemoActorService _proxy;
+		private string ApplicationName => @"Overlord";
 
 		[SetUp]
 		public async Task CreateActorsWithActorService()
 		{
-			_fabricRuntime = new MockFabricRuntime("Overlord");
+			_fabricRuntime = new MockFabricRuntime();
+			_fabricApplication = _fabricRuntime.RegisterApplication(ApplicationName);
 
-			_fabricRuntime.SetupActor<ActorDemo, ActorDemoActorService>(
+			_fabricApplication.SetupActor(
 				(service, actorId) => new ActorDemo(service, actorId),
 				(context, actorTypeInformation, stateProvider, stateManagerFactory) =>
 					new ActorDemoActorService(context, actorTypeInformation, stateProvider: stateProvider),
@@ -48,7 +53,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
 			_proxy = _fabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
-				_fabricRuntime.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
+				_fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri(), new ActorId("testivus"));
 		}
 
 
@@ -67,11 +72,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		[Test]
 		public async Task Should_be_able_to_get_actor_state_from_ActorService()
 		{
-			var result = await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
-			{
-				return _proxy.GetCountAsync(new ActorId("second"), CancellationToken.None);
-
-			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
+			var result = await ExecutionHelper.ExecuteWithRetriesAsync(
+				(ct) => { return _proxy.GetCountAsync(new ActorId("second"), CancellationToken.None); }, 3,
+				TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
 			result.Should().Be(2);
 		}
@@ -79,10 +82,9 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		[Test]
 		public async Task Should_be_able_to_get_all_actor_states_from_ActorService()
 		{
-			var result = await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
-			{
-				return _proxy.GetCountsAsync(CancellationToken.None);
-			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
+			var result = await ExecutionHelper.ExecuteWithRetriesAsync(
+				(ct) => { return _proxy.GetCountsAsync(CancellationToken.None); }, 3, TimeSpan.FromMilliseconds(3),
+				CancellationToken.None);
 
 			result.Should().BeEquivalentTo(new[] {1, 2, 3});
 		}
@@ -90,20 +92,17 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
 		[Test]
 		public async Task Should_be_able_to_remove_actor_from_ActorService()
 		{
-
 			await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
 			{
 				_proxy.RemoveAsync(new ActorId("first"), CancellationToken.None);
 				return Task.FromResult(true);
-
 			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
 
-			var result = await ExecutionHelper.ExecuteWithRetriesAsync((ct) =>
-			{
-				return _proxy.GetCountsAsync(CancellationToken.None);
-			}, 3, TimeSpan.FromMilliseconds(3), CancellationToken.None);
+			var result = await ExecutionHelper.ExecuteWithRetriesAsync(
+				(ct) => { return _proxy.GetCountsAsync(CancellationToken.None); }, 3, TimeSpan.FromMilliseconds(3),
+				CancellationToken.None);
 
 			result.Should().BeEquivalentTo(new[] {2, 3});
-		}		
+		}
 	}
 }

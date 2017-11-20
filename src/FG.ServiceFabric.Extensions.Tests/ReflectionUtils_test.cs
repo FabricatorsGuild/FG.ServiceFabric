@@ -2,10 +2,9 @@
 using NUnit.Framework;
 
 namespace FG.Common.Utils.Tests
-{ 
+{
 	public class ReflectionUtils_test
 	{
-		
 		[Test]
 		public void ActivateInternal_should_create_instance_from_default_ctor()
 		{
@@ -28,6 +27,4 @@ namespace FG.Common.Utils.Tests
 			instance.Should().BeOfType<ReflectionUtils.InternallyActivatedClass>();
 		}
 	}
-
-	
 }

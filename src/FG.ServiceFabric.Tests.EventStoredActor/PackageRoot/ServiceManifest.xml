@@ -6,11 +6,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="6472adba-aa23-4c21-abc6-48bf78efdfe3|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="IndexActorService" />
-            <ServiceEndpoint Name="IndexActorServiceEndpoint" />
             <ReplicatorEndpoint Name="IndexActorServiceReplicatorEndpoint" />
             <ReplicatorConfigSection Name="IndexActorServiceReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="IndexActorServiceReplicatorSecurityConfig" />
             <StoreConfigSection Name="IndexActorServiceLocalStoreConfig" />
+            <ServiceEndpoint Name="IndexActorServiceEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
@@ -20,11 +20,11 @@
         <Extension Name="__GeneratedServiceType__" GeneratedId="5061a75d-16e0-495b-9f44-c42c4257f80f|Persisted">
           <GeneratedNames xmlns="http://schemas.microsoft.com/2015/03/fabact-no-schema">
             <DefaultService Name="EventStoredActorService" />
-            <ServiceEndpoint Name="EventStoredActorServiceEndpoint" />
             <ReplicatorEndpoint Name="EventStoredActorServiceReplicatorEndpoint" />
             <ReplicatorConfigSection Name="EventStoredActorServiceReplicatorConfig" />
             <ReplicatorSecurityConfigSection Name="EventStoredActorServiceReplicatorSecurityConfig" />
             <StoreConfigSection Name="EventStoredActorServiceLocalStoreConfig" />
+            <ServiceEndpoint Name="EventStoredActorServiceEndpoint" />
           </GeneratedNames>
         </Extension>
       </Extensions>
