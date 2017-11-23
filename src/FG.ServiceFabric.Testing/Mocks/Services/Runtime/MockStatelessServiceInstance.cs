@@ -29,8 +29,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 			}
 
 
-			var statelessServiceContext =
-				FabricRuntime.BuildStatelessServiceContext(ServiceRegistration.GetApplicationName(), ServiceRegistration.Name);
+			var statelessServiceContext = FabricRuntime.BuildStatelessServiceContext(
+				applicationName: ServiceRegistration.GetApplicationName(), 
+				serviceName: ServiceRegistration.Name,
+				serviceManifest: this.ServiceManifest,
+				serviceConfig: this.ServiceConfig);
 			var serviceFactory = ServiceRegistration.CreateStatelessService ?? GetMockStatelessService;
 			// TODO: consider this further, is it really what should be done???
 

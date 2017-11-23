@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
+namespace FG.ServiceFabric.Fabric
 {
 	[Serializable]
 	public class PartitionEnumerationException : Exception

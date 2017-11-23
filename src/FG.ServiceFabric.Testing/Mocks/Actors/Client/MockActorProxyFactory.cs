@@ -264,13 +264,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 						$"Failed to activate an instance of Actor {actorRegistration.ImplementationType.Name} for ActorId {actorId}");
 				}
 
-				var mockableTarget =
-					(FG.ServiceFabric.Actors.Runtime.ActorBase) (target as FG.ServiceFabric.Actors.Runtime.ActorBase);
-				if (mockableTarget != null)
+				if (target is ServiceFabric.Actors.Runtime.ActorBase mockableTarget)
 				{
 					var applicationName = actorService.Context.CodePackageActivationContext.ApplicationName;
 					var applicationUriBuilder =
-						new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName), applicationName);
+						new ApplicationUriBuilder(_fabricRuntime.GetCodePackageContext(applicationName, instance.ServiceManifest, instance.ServiceConfig), applicationName);
 
 					mockableTarget.SetPrivateField("_serviceProxyFactoryFactory",
 						(Func<IServiceProxyFactory>) (() => _fabricRuntime.ServiceProxyFactory));

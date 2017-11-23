@@ -11,7 +11,8 @@
     <AssemblyName>FG.ServiceFabric.Persistence</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -158,9 +159,13 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.IStateProvider.cs" />
     <None Include="app.config" />
+    <Compile Include="DocumentDb\CosmosDb\ConnectionPolicySetting.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
+    <Compile Include="DocumentDb\CosmosDb\CosmosDbCollectionDefinition.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbSettingsProvider.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbStateSession.cs" />
+    <Compile Include="DocumentDb\CosmosDb\DocumentClientExtensions.cs" />
+    <Compile Include="DocumentDb\CosmosDb\ICosmosDbClientFactory.cs" />
     <Compile Include="DocumentDb\CosmosDb\StateWrapper.cs" />
     <Compile Include="DocumentDb\IDocumentDbStateReader.cs" />
     <Compile Include="DocumentDb\IDocumentDbStateSession.cs" />

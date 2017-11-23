@@ -6,16 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
+namespace FG.ServiceFabric.Fabric
 {
 	public class PartitionHelper
 	{
+		private readonly Func<IPartitionEnumerationManager> _partitionEnumerationManagerFactory;
 		private readonly IDictionary<Uri, Int64RangePartitionInformation[]> _int64Partitions;
 		private readonly object _lock = new object();
 		private readonly IDictionary<Uri, NamedPartitionInformation[]> _namedPartitions;
 
-		public PartitionHelper()
+		public PartitionHelper(Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
 		{
+			this._partitionEnumerationManagerFactory = partitionEnumerationManagerFactory;
 			_int64Partitions = new ConcurrentDictionary<Uri, Int64RangePartitionInformation[]>();
 			_namedPartitions = new ConcurrentDictionary<Uri, NamedPartitionInformation[]>();
 		}
@@ -28,13 +30,11 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 			foreach (var partition in partitions)
 			{
 				partitionsString.Append(delimiter);
-				var int64Partition = partition as Int64RangePartitionInformation;
-				if (int64Partition != null)
+				if (partition is Int64RangePartitionInformation int64Partition)
 				{
 					partitionsString.Append($"{int64Partition.LowKey}-{int64Partition.HighKey}");
 				}
-				var namedPartition = partition as NamedPartitionInformation;
-				if (namedPartition != null)
+				if (partition is NamedPartitionInformation namedPartition)
 				{
 					partitionsString.Append($"{namedPartition.Name}");
 				}
@@ -60,13 +60,12 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 
 			try
 			{
-				var fabricClient = new FabricClient();
-				var servicePartitionList = await fabricClient.QueryManager.GetPartitionListAsync(serviceUri);
+				var partitionEnumerationManager = _partitionEnumerationManagerFactory();
+				var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);
 				IList<NamedPartitionInformation> partitionKeys = new List<NamedPartitionInformation>(servicePartitionList.Count);
 				foreach (var partition in servicePartitionList)
 				{
-					var partitionInfo = partition.PartitionInformation as NamedPartitionInformation;
-					if (partitionInfo == null)
+					if (!(partition.PartitionInformation is NamedPartitionInformation partitionInfo))
 					{
 						throw new InvalidOperationException(
 							$"The service {serviceUri} should have a Named partition. Instead: {partition.PartitionInformation.Kind}");
@@ -108,14 +107,13 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 
 			try
 			{
-				var fabricClient = new FabricClient();
-				var servicePartitionList = await fabricClient.QueryManager.GetPartitionListAsync(serviceUri);
+				var partitionEnumerationManager = _partitionEnumerationManagerFactory();
+				var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);
 				IList<Int64RangePartitionInformation> partitionKeys =
 					new List<Int64RangePartitionInformation>(servicePartitionList.Count);
 				foreach (var partition in servicePartitionList)
 				{
-					var partitionInfo = partition.PartitionInformation as Int64RangePartitionInformation;
-					if (partitionInfo == null)
+					if (!(partition.PartitionInformation is Int64RangePartitionInformation partitionInfo))
 					{
 						throw new InvalidOperationException(
 							$"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");

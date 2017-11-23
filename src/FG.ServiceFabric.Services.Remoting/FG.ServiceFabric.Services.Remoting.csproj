@@ -143,9 +143,6 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Remoting\FabricTransport\ServiceRequestContextKeys.cs" />
     <Compile Include="Services\Remoting\FabricTransport\ServiceRequestContextWrapper.cs" />
     <Compile Include="Services\Remoting\FabricTransport\ServiceRequestHeader.cs" />
-    <Compile Include="Services\Remoting\Runtime\Client\IPartitionHelperLogger.cs" />
-    <Compile Include="Services\Remoting\Runtime\Client\PartitionEnumerationException.cs" />
-    <Compile Include="Services\Remoting\Runtime\Client\PartitionHelper.cs" />
     <Compile Include="Services\Remoting\Runtime\Client\ServiceProxyFactory.cs" />
     <Compile Include="Services\Remoting\Runtime\Client\ServiceProxyFactoryBase.cs" />
     <Compile Include="Services\Remoting\Runtime\ServiceListenerExtensions.cs" />

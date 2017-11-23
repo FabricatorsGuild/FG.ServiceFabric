@@ -8,16 +8,20 @@ using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.ServiceFabric.Testing.Mocks.Actors.Client;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
+using FG.ServiceFabric.Testing.Setup;
 using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
 	internal class MockServiceInstance : IMockServiceInstance
 	{
-		public MockFabricRuntime FabricRuntime { get; private set; }
+		protected MockFabricRuntime FabricRuntime { get; private set; }
 
 		public IMockableServiceRegistration ServiceRegistration { get; private set; }
 		public IMockableActorRegistration ActorRegistration { get; private set; }
+
+		public IServiceManifest ServiceManifest { get; private set; }
+		public IServiceConfig ServiceConfig { get; private set; }
 
 		public object ServiceInstance { get; set; }
 
@@ -29,8 +33,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 		public Partition Partition { get; private set; }
 		public Replica Replica { get; private set; }
 
-		public DateTime? RunAsyncStarted { get; set; }
-		public DateTime? RunAsyncEnded { get; set; }
+		public DateTime? RunAsyncStarted { get; private set; }
+		public DateTime? RunAsyncEnded { get; private set; }
 
 		internal virtual bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
 		{
@@ -99,7 +103,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		public static IEnumerable<MockServiceInstance> Register(
 			MockFabricRuntime fabricRuntime,
-			IMockableActorRegistration actorRegistration
+			IMockableActorRegistration actorRegistration,
+			IServiceManifest serviceManifest, 
+			IServiceConfig serviceConfig
 		)
 		{
 			var instances = new List<MockServiceInstance>();
@@ -114,7 +120,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 						FabricRuntime = fabricRuntime,
 						Partition = partition,
 						Replica = replica,
-						ServiceUri = actorRegistration.ServiceRegistration.ServiceUri
+						ServiceUri = actorRegistration.ServiceRegistration.ServiceUri,
+						ServiceManifest = serviceManifest,
+						ServiceConfig = serviceConfig,
 					};
 					instances.Add(instance);
 				}
@@ -132,7 +140,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 		public static IEnumerable<MockServiceInstance> Register(
 			MockFabricRuntime fabricRuntime,
-			IMockableServiceRegistration serviceRegistration
+			IMockableServiceRegistration serviceRegistration, 
+			IServiceManifest serviceManifest,
+			IServiceConfig serviceConfig
 		)
 		{
 			var instances = new List<MockServiceInstance>();
@@ -149,7 +159,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 							FabricRuntime = fabricRuntime,
 							Partition = partition,
 							Replica = replica,
-							ServiceUri = serviceRegistration.ServiceUri
+							ServiceUri = serviceRegistration.ServiceUri,
+							ServiceManifest = serviceManifest,
+							ServiceConfig = serviceConfig,
 						};
 					}
 					else
@@ -160,7 +172,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 							FabricRuntime = fabricRuntime,
 							Partition = partition,
 							Replica = replica,
-							ServiceUri = serviceRegistration.ServiceUri
+							ServiceUri = serviceRegistration.ServiceUri,
+							ServiceManifest = serviceManifest,
+							ServiceConfig = serviceConfig,
 						};
 					}
 					instances.Add(instance);

@@ -41,6 +41,18 @@ namespace FG.ServiceFabric.Utils
 			return new RegistrationBuilder(this);
 		}
 
+		private IEnumerable<KeyValuePair<string, string>> GetValuesFromSettingsFile(string section)
+		{
+			var settingsFile = _context.CodePackageActivationContext.GetConfigurationPackageObject("Config").Settings;
+			if (settingsFile.Sections.Contains(section))
+			{
+				var configSection = settingsFile.Sections[section];
+				foreach (var parameter in configSection.Parameters)
+				{
+					yield return new KeyValuePair<string, string>(parameter.Name, parameter.Value);
+				}
+			}
+		}
 
 		private string GetValueFromSettingsFile(string section, string key)
 		{
@@ -75,12 +87,33 @@ namespace FG.ServiceFabric.Utils
 				_settingsProvider = settingsProvider;
 			}
 
+			public RegistrationBuilder FromSettings(IEnumerable<string> sections, KeyNameBuilder keyNameBuilder = null)
+			{
+				foreach (var section in sections)
+				{
+					FromSettings(section, keyNameBuilder);
+				}
+				return this;
+			}
+
+			public RegistrationBuilder FromSettings(string section, KeyNameBuilder keyNameBuilder = null)
+			{
+				var parameters = _settingsProvider.GetValuesFromSettingsFile(section);
+				foreach (var parameter in parameters)
+				{
+					var namedKey = (keyNameBuilder ?? KeyNameBuilder.KeyNameOnly).GetKeyName(section, parameter.Key);
+					_settingsProvider._values.Add(namedKey, parameter.Value);
+				}
+
+				return this;
+			}
+
 			public RegistrationBuilder FromSettings(string section, string key, KeyNameBuilder keyNameBuilder = null)
 			{
 				var namedKey = (keyNameBuilder ?? KeyNameBuilder.KeyNameOnly).GetKeyName(section, key);
 				_settingsProvider._values.Add(namedKey, _settingsProvider.GetValueFromSettingsFile(section, key));
 				return this;
-			}
+			}			
 
 			public class KeyNameBuilder
 			{

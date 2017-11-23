@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Fabric;
 
-namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
+namespace FG.ServiceFabric.Fabric
 {
 	public interface IPartitionHelperLogger
 	{

@@ -31,15 +31,26 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IEnumerable<string>> GetActorReminders(string service, string partition, string actor);
 	}
 
+	public interface IDocumentDbDataManager
+	{
+		string GetCollectionName();
+
+		Task CreateCollection(string collectionName);
+
+		Task DestroyCollecton(string collectionName);
+	}
+
 	public class DocumentDbStateSessionManager :
 		StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession>, IStateSessionManager,
-		IStateQuerySessionManager
+		IStateQuerySessionManager,
+		IDocumentDbDataManager
 	{
 		private readonly string _collection;
 		private readonly string _collectionPrimaryKey;
 		private readonly ConnectionPolicySetting _connectionPolicySetting;
 		private readonly string _databaseName;
 		private readonly string _endpointUri;
+		private bool _collectionExists;
 
 		private readonly ICosmosDbClientFactory _factory;
 
@@ -62,6 +73,71 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			_collectionPrimaryKey = settingsProvider.PrimaryKey();
 		}
 
+
+		private async Task<string> GetDatabaseCollectionAsync(string databaseId, string collectionId)
+		{
+			try
+			{
+				var client = await CreateClient();
+
+				var collection = await client.ReadDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(databaseId, collectionId));
+
+				return collection.Resource.Id;
+			}
+			catch (DocumentClientException e)
+			{
+				if (e.Error.Code == "NotFound")
+				{
+					return "";
+				}
+				throw;
+			}
+			catch (Exception e)
+			{
+				throw;
+			}
+		}
+
+		string IDocumentDbDataManager.GetCollectionName()
+		{
+			return _collection;
+		}
+
+		async Task IDocumentDbDataManager.CreateCollection(string collectionName)
+		{
+			var client = await CreateClient();
+			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
+
+			_collectionExists = true;
+		}
+
+		async Task IDocumentDbDataManager.DestroyCollecton(string collectionName)
+		{
+			var client = await CreateClient();
+			await client.DestroyCollection(_databaseName, _collection);
+		}
+
+		private async Task< DocumentClient> CreateClient()
+		{
+			var client = await _factory.OpenAsync(
+				databaseName: _databaseName,
+				collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+				endpointUri: new Uri(_endpointUri),
+				primaryKey: _collectionPrimaryKey,
+				connectionPolicySetting: _connectionPolicySetting
+			);
+
+			if (!_collectionExists)
+			{
+
+				await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
+
+				_collectionExists = true;
+			}
+
+			return client;
+		}
+
 		IStateQuerySession IStateQuerySessionManager.CreateSession()
 		{
 			return new DocumentDbStateQuerySession(this);
@@ -82,12 +158,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			public DocumentDbStateSession(DocumentDbStateSessionManager manager, IStateSessionObject[] stateSessionObjects)
 			{
 				_manager = manager;
-				_documentClient = _manager._factory.OpenAsync( // TODO: Do proper init.
-					databaseName: _manager._databaseName,
-					collection: new CosmosDbCollectionDefinition(_manager._collection, $"/partitionKey"),
-					endpointUri: new Uri(_manager._endpointUri),
-					primaryKey: _manager._collectionPrimaryKey,
-					connectionPolicySetting: _manager._connectionPolicySetting).GetAwaiter().GetResult();
+				_documentClient = _manager.CreateClient().GetAwaiter().GetResult();
 
 				AttachObjects(stateSessionObjects);
 			}

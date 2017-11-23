@@ -121,8 +121,12 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
 			var actorTypeInformation = ActorTypeInformation.Get(ActorRegistration.ImplementationType);
 			var statefulServiceContext = FabricRuntime.BuildStatefulServiceContext(
-				ActorRegistration.ServiceRegistration.GetApplicationName(), ActorRegistration.ServiceRegistration.Name,
-				this.Partition.PartitionInformation, this.Replica.Id);
+				applicationName: ActorRegistration.ServiceRegistration.GetApplicationName(), 
+				serviceName: ActorRegistration.ServiceRegistration.Name,
+				partitionInformation: this.Partition.PartitionInformation, 
+				replicaId: this.Replica.Id,
+				serviceManifest: this.ServiceManifest,
+				serviceConfig: this.ServiceConfig);
 			ActorStateProvider = (ActorRegistration.CreateActorStateProvider ??
 			                      ((context, actorInfo) => (IActorStateProvider) new MockActorStateProvider(FabricRuntime)))
 				.Invoke(statefulServiceContext, actorTypeInformation);

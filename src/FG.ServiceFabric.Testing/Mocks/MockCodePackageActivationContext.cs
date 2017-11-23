@@ -5,11 +5,16 @@ using System.Fabric;
 using System.Fabric.Description;
 using System.Fabric.Health;
 using FG.Common.Utils;
+using FG.ServiceFabric.Testing.Setup;
 
 namespace FG.ServiceFabric.Testing.Mocks
 {
 	public class MockCodePackageActivationContext : ICodePackageActivationContext
 	{
+		private readonly IServiceManifest _serviceManifest;
+		private readonly IServiceConfig _serviceConfig;
+		private readonly object _lock = new object();
+
 		public MockCodePackageActivationContext(
 			string applicationName,
 			string applicationTypeName,
@@ -19,9 +24,11 @@ namespace FG.ServiceFabric.Testing.Mocks
 			string logDirectory,
 			string tempDirectory,
 			string workDirectory,
-			string serviceManifestName,
-			string serviceManifestVersion)
+			IServiceManifest serviceManifest,
+			IServiceConfig serviceConfig)
 		{
+			_serviceManifest = serviceManifest;
+			_serviceConfig = serviceConfig;
 			this.ApplicationName = applicationName;
 			this.ApplicationTypeName = applicationTypeName;
 			this.CodePackageName = codePackageName;
@@ -30,8 +37,8 @@ namespace FG.ServiceFabric.Testing.Mocks
 			this.LogDirectory = logDirectory;
 			this.TempDirectory = tempDirectory;
 			this.WorkDirectory = workDirectory;
-			this.ServiceManifestName = serviceManifestName;
-			this.ServiceManifestVersion = serviceManifestVersion;
+			this.ServiceManifestName = _serviceManifest.Name;
+			this.ServiceManifestVersion = _serviceManifest.Version;
 		}
 
 		private string ServiceManifetName { get; set; }
@@ -71,17 +78,45 @@ namespace FG.ServiceFabric.Testing.Mocks
 
 		public IList<string> GetConfigurationPackageNames()
 		{
-			return new List<string>() {"config"};
+			return new List<string>() {"Config"};
 		}
+
+		private ConfigurationPackage _configurationPackage;
 
 		public ConfigurationPackage GetConfigurationPackageObject(string packageName)
 		{
-			if (packageName == "config")
+			if (packageName.Equals("Config", StringComparison.InvariantCultureIgnoreCase))
 			{
-				var configurationPackage = ReflectionUtils.ActivateInternalCtor<ConfigurationPackage>();
+				lock (_lock)
+				{
+					if (_configurationPackage != null)
+					{
+						return _configurationPackage;
+					}
 
+					var configurationPackage = ReflectionUtils.ActivateInternalCtor<ConfigurationPackage>();
+					var configurationSettings = ReflectionUtils.ActivateInternalCtor<ConfigurationSettings>();
+					configurationPackage.SetPrivateProperty(() => configurationPackage.Settings, configurationSettings);
+					foreach (var serviceConfigSection in _serviceConfig.Sections)
+					{
+						var configurationSection = ReflectionUtils.ActivateInternalCtor<ConfigurationSection>();
+						configurationSection.SetPrivateProperty(() => configurationSection.Name, serviceConfigSection.Name);
+
+						var parameters = new MockConfigurationSectionParametersCollection();
+						foreach (var parameter in serviceConfigSection.Parameters)
+						{
+							var configParameter = ReflectionUtils.ActivateInternalCtor<ConfigurationProperty>();
+							configParameter.SetPrivateProperty(() => configParameter.Name, parameter.Value);
+
+							parameters.Add(configParameter);
+						}
+						configurationPackage.Settings.Sections.Add(configurationSection);
+					}
+					_configurationPackage = configurationPackage;
+
+					return _configurationPackage;
+				}
 			}
-
 			throw new NotImplementedException();
 		}
 
