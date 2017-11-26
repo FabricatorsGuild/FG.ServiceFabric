@@ -6,17 +6,17 @@ namespace FG.Common.Utils
 {
 	public class MiniId : IEquatable<string>, IEquatable<MiniId>
 	{
-		private static SHA1 _hasher;
+		private static readonly SHA1 Hasher;
 
 		static MiniId()
 		{
-			var sha1 = System.Security.Cryptography.SHA1.Create();
+			Hasher = System.Security.Cryptography.SHA1.Create();
 		}
 
 		public MiniId()
 		{
 			var guid = Guid.NewGuid().ToByteArray();
-			var hashBytes = _hasher.ComputeHash(guid);
+			var hashBytes = Hasher.ComputeHash(guid);
 			Id = System.Convert.ToBase64String(hashBytes).Substring(0, 6);
 		}
 
@@ -45,6 +45,16 @@ namespace FG.Common.Utils
 		public override int GetHashCode()
 		{
 			return Id.GetHashCode();
+		}
+
+		public static implicit operator string(MiniId id)
+		{
+			return id.Id;
+		}
+
+		public override string ToString()
+		{
+			return Id;
 		}
 	}
 }
