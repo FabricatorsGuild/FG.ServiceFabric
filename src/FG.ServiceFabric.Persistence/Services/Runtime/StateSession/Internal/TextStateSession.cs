@@ -1,17 +1,15 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
 using Microsoft.Azure.Documents;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 using Newtonsoft.Json;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
 	public abstract class TextStateSessionManager : StateSessionManagerBase<TextStateSessionManager.TextStateSession>,
 		IStateSessionManager

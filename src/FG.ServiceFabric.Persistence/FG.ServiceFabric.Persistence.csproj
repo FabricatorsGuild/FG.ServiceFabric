@@ -181,22 +181,22 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
       <SubType>Designer</SubType>
     </None>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSessionManagerWithTransactions.cs" />
-    <Compile Include="Services\Runtime\StateSession\FileSystemStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\InMemoryStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\InMemoryStateSessionManagerWithTransaction.cs" />
+    <Compile Include="Services\Runtime\StateSession\CosmosDb\DocumentDbStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\CosmosDb\DocumentDbStateSessionManagerWithTransactions.cs" />
+    <Compile Include="Services\Runtime\StateSession\FileSystem\FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSessionManagerWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
-    <Compile Include="Services\Runtime\StateSession\ReliableStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\ReliableState\ReliableStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
-    <Compile Include="Services\Runtime\StateSession\StateSessionManagerBase.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionManagerBase.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
-    <Compile Include="Services\Runtime\StateSession\TextStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\TextStateSessionManagerWithTransaction.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSessionManagerWithTransaction.cs" />
   </ItemGroup>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
 using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_InMemoryStateSession;

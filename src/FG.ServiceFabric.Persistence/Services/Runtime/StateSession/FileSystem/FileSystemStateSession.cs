@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Fabric;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FG.Common.Async;
+using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using Microsoft.ServiceFabric.Actors.Query;
-using Microsoft.ServiceFabric.Data;
-using Microsoft.ServiceFabric.Data.Collections;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 {
 	public class FileSystemStateSessionManager : TextStateSessionManagerWithTransaction
 	{

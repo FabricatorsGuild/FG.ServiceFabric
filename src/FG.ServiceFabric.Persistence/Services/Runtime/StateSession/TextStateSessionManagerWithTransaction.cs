@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 using Newtonsoft.Json;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
 	public abstract class TextStateSessionManagerWithTransaction :
 		StateSessionManagerBase<TextStateSessionManagerWithTransaction.TextStateSession>, IStateSessionManager

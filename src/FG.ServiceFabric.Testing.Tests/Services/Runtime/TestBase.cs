@@ -5,6 +5,7 @@ using System.Fabric;
 using System.Linq;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;

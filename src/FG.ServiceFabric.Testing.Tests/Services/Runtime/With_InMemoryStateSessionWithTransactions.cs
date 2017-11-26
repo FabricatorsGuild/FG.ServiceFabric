@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.FileSystem;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FluentAssertions;

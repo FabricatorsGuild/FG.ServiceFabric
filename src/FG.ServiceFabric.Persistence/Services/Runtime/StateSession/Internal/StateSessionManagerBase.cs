@@ -9,7 +9,7 @@ using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
 	internal class StateSessionBaseObject<TStateSession> : IStateSessionObject
 		where TStateSession : class, IStateSession

@@ -5,6 +5,7 @@ using System.Threading;
 using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Fabric;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Tests.Actor

@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
+using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using FG.ServiceFabric.Utils;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
@@ -12,7 +13,7 @@ using Microsoft.Azure.Documents.Linq;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
 	public class DocumentDbStateSessionManagerWithTransactions :
 		StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>, 

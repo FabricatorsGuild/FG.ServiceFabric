@@ -7,13 +7,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.Common.Utils;
-using FG.ServiceFabric.DocumentDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 {
 	public class ReliableStateSessionQueue<T> : IStateSessionQueue<T>
 	{

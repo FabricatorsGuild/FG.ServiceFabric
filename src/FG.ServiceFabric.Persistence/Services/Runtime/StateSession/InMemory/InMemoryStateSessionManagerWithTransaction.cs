@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using Microsoft.ServiceFabric.Actors.Query;
 
-namespace FG.ServiceFabric.Services.Runtime.StateSession
+namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 {
 	public class InMemoryStateSessionManagerWithTransaction : TextStateSessionManagerWithTransaction
 	{
