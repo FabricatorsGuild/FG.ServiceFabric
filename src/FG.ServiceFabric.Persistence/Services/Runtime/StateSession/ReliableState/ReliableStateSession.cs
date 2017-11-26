@@ -53,6 +53,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 		{
 			throw new NotImplementedException();
 		}
+
+		public string Schema => _reliableConcurrentQueue.Name.ToString();
 	}
 
 	public class ReliableStateSessionDictionary<T> : IStateSessionDictionary<T>
@@ -112,6 +114,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 		{
 			throw new NotImplementedException();
 		}
+
+		public string Schema => _reliableDictionary.Name.ToString();
 	}
 
 	public class ReliableStateSessionManager : IStateSessionManager

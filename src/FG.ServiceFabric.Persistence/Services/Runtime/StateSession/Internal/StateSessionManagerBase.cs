@@ -52,6 +52,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 					$"Cannot call methods on a StateSessionDictionary without a StateSession, call StateSessionManager.CreateSession() with this dictionary as an argument");
 			}
 		}
+
+		public string Schema => _schema;
 	}
 
 	internal class StateSessionBaseQueue<TStateSession, TValueType> : StateSessionBaseObject<TStateSession>,

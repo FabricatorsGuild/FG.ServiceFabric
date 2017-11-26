@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Fabric;
 using System.Linq;
 using System.Threading;
@@ -13,6 +14,7 @@ using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.a
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FG.ServiceFabric.Utils;
 using FluentAssertions;
+using Microsoft.Samples.Eventing;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Runtime;
@@ -31,22 +33,47 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				where TService : StatefulServiceDemoBase
 			{
 				private DocumentDbStateSessionManagerWithTransactions _stateSessionManager;
-				private CosmosDbForTestingSettingsProvider _settingsProvider;
-				protected string _collectionName = Guid.NewGuid().ToString();
+				private CosmosDbForTestingSettingsProvider _cosmosDbSettingsProvider;
+				protected string _collectionName = "App-tests";
+				private EventTraceWatcher _eventTraceWatcher;
 
 				public override IDictionary<string, string> State => GetState();
 
 				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
 					StatefulServiceContext context)
 				{
-					_settingsProvider = new CosmosDbForTestingSettingsProvider();
-					_settingsProvider.AppendCollectionName(_collectionName);
+					_cosmosDbSettingsProvider = new CosmosDbForTestingSettingsProvider("https://172.27.82.113:8081", "sfp-local1",
+						_collectionName,
+						"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
 					_stateSessionManager = new DocumentDbStateSessionManagerWithTransactions(
 						"StatefulServiceDemo",
 						Guid.NewGuid(),
 						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
-						_settingsProvider
+						_cosmosDbSettingsProvider
 					);
+
+					//var eventSourceType = typeof(IDocumentDbStateSessionLogger).Assembly.GetType("FG.ServiceFabric.FGServiceFabricPersistenceEventSource");
+					//_eventTraceWatcher = new EventTraceWatcher("DocumentDb", EventSource.GetGuid(eventSourceType));
+					//_eventTraceWatcher.EventArrived += delegate (object sender, EventArrivedEventArgs e)
+					//{
+					//	if (e.Error != null)
+					//	{
+					//		// Handle the exception 
+					//		Console.Error.WriteLine(e.Error);
+					//		Environment.Exit(-1);
+					//	}
+
+					//	// Dump the event name (e.g. URL_REWRITE_START, ABORT_REQUEST_ACTION, etc). 
+					//	Console.WriteLine("Event Name: " + e.EventId);
+
+					//	// Dump properties (e.g. RewriteURL, Pattern, etc). 
+					//	foreach (var p in e.Properties)
+					//	{
+					//		Console.WriteLine("\t" + p.Key + " -- " + p.Value);
+					//	}
+					//	Console.WriteLine();
+					//};
+					//_eventTraceWatcher.Start();
 
 					return _stateSessionManager;
 				}
@@ -73,6 +100,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					base.OnTearDown();
 
 					DestroyCollection();
+					//_eventTraceWatcher.Stop();
+					//_eventTraceWatcher.Dispose();
 				}
 			}
 
@@ -87,8 +116,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				public void Setup()
 				{
 					_sessionId = Guid.NewGuid().ToString();
-					var settingsProvider = new CosmosDbForTestingSettingsProvider();
-					settingsProvider.AppendCollectionName(_sessionId);
+					var settingsProvider = CosmosDbForTestingSettingsProvider.DefaultForCollection(_sessionId);
 					_settingsProvider = settingsProvider;
 				}
 

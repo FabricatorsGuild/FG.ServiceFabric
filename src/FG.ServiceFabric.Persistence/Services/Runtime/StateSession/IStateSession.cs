@@ -11,6 +11,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
 	public interface IStateSessionObject
 	{
+		string Schema { get; }
 	}
 
 	public interface IStateSessionQueue<T> : IStateSessionObject

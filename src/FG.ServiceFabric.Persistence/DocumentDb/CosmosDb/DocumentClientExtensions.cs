@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 
@@ -7,8 +9,10 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 {
 	internal static class DocumentClientExtensions
 	{
-		public static async Task EnsureStoreIsConfigured(this IDocumentClient @this, string databaseName,
-			CosmosDbCollectionDefinition collection)
+		public static async Task EnsureStoreIsConfigured(this IDocumentClient @this, 
+			string databaseName,
+			CosmosDbCollectionDefinition collection,
+			IDocumentDbStateSessionManagerLogger logger)
 		{
 			var currentDatabases = @this.CreateDatabaseQuery().AsEnumerable().ToList();
 
@@ -25,12 +29,15 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 
 			if (store != null)
 			{
-				await @this.CreateCollection(store, collection);
+				await @this.CreateCollection(store, collection, logger);
 			}
 		}
 
-		public static async Task CreateCollection(this IDocumentClient @this, Resource store,
-			CosmosDbCollectionDefinition collection)
+		public static async Task CreateCollection(
+			this IDocumentClient @this, 
+			Resource store,
+			CosmosDbCollectionDefinition collection,
+			IDocumentDbStateSessionManagerLogger logger)
 		{
 			
 
@@ -52,6 +59,7 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 				};
 				try
 				{
+					logger.CreatingCollection(collection.CollectionName);
 					await @this.CreateDocumentCollectionAsync(store.SelfLink, collectionSpec);
 				}
 				catch (DocumentClientException ex)
@@ -67,7 +75,21 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 
 		public static async Task DestroyCollection(this IDocumentClient @this, string databaseId, string collectionId)
 		{
-			var readDocumentCollectionFeedAsync = await @this.DeleteDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(databaseId, collectionId));
+			try
+			{
+				Console.WriteLine($"Destroying collection {collectionId} in database {databaseId}");
+				var readDocumentCollectionFeedAsync = await @this.DeleteDocumentCollectionAsync(UriFactory.CreateDocumentCollectionUri(databaseId, collectionId));
+			}
+			catch (DocumentClientException ex)
+			{
+				Console.WriteLine($"Failed to destroy collection {collectionId} in database {databaseId} - {ex.Message}");
+
+				if (ex.Error.Code == "NotFound")
+				{
+					return;
+				}
+				throw;
+			}
 		}
 	}
 }

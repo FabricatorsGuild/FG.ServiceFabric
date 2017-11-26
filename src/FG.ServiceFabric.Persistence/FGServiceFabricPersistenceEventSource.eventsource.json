@@ -1,0 +1,100 @@
+{
+	"Loggers": [
+		{
+			"Name": "IDocumentDbStateSessionManagerLogger",
+			"StartId": 1000,
+			"ImplicitArguments": [
+				{
+					"Name": "managerInstance",
+					"Type": "string"
+				}
+			],
+			"OverrideArguments": []
+		},
+		{
+			"Name": "IDocumentDbStateSessionLogger",
+			"StartId": 5000,
+					"ImplicitArguments": [
+						{
+							"Name": "managerInstance",
+							"Type": "string"
+						},
+						{
+							"Name": "sessionInstance",
+							"Type": "string"
+						}
+					],
+			"OverrideArguments": []
+		}
+	],
+  "Name": "FGServiceFabricPersistenceEventSource",
+  "ProviderName": "FG-ServiceFabric",
+  "Keywords": [
+    "DocumentDbStateSessionManager"
+  ],
+	"TypeTemplates": [
+		{
+			"Name": "Exception",
+			"CLRType": "System.Exception",
+			"Arguments": [
+				{
+					"Name": "message",
+					"Type": "string",
+					"Assignment": "$this.Message"
+				},
+				{
+					"Name": "source",
+					"Type": "string",
+					"Assignment": "$this.Source"
+				},
+				{
+					"Name": "exceptionTypeName",
+					"Type": "string",
+					"Assignment": "$this.GetType().FullName"
+				},
+				{
+					"Name": "exception",
+					"Type": "string",
+					"Assignment": "$this.AsJson()"
+				}
+			]
+		},
+		{
+			"Name": "IStateSessionObject",
+			"CLRType": "FG.ServiceFabric.Services.Runtime.StateSession.IStateSessionObject",
+			"Arguments": [
+				{
+					"Name": "type",
+					"Type": "string",
+					"Assignment": "$this.GetType().Name"
+				},
+				{
+					"Name": "name",
+					"Type": "string",
+					"Assignment": "$this.Schema"
+				}
+			]
+		},
+		{
+			"Name": "IStateSessionObject",
+			"CLRType": "Microsoft.Azure.Documents.Error",
+			"Arguments": [
+				{
+					"Name": "code",
+					"Type": "string",
+					"Assignment": "$this.Code"
+				},
+				{
+					"Name": "message",
+					"Type": "string",
+					"Assignment": "$this.Message"
+				}
+			]
+		}
+	],
+  "Settings": {
+    "Modules": [
+    ],
+    "AutogenerateLoggerInterfaces": true
+  }
+}

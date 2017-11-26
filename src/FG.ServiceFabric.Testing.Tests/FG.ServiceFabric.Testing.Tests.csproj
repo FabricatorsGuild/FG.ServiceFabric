@@ -11,7 +11,8 @@
     <AssemblyName>FG.ServiceFabric.Testing.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -52,6 +53,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Samples.Eventing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5a45e476945314cc, processorArchitecture=MSIL">
+      <HintPath>..\..\..\FG.Samples\src\FG.Samples.ServiceFabricPeople\packages\EventTraceWatcher.1.0.0\lib\net20\Microsoft.Samples.Eventing.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />

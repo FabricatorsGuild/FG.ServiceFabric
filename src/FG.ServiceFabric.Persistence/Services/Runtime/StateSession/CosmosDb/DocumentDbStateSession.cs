@@ -42,11 +42,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		Task DestroyCollecton(string collectionName);
 	}
 
+	[Obsolete("Use DocumentDbStateSessionWithTransactions instead", true)]
 	public class DocumentDbStateSessionManager :
 		StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession>, IStateSessionManager,
 		IStateQuerySessionManager,
 		IDocumentDbDataManager
 	{
+		private readonly string _managerInstance;
+		private readonly IDocumentDbStateSessionManagerLogger _logger;
 		private readonly string _collection;
 		private readonly string _collectionPrimaryKey;
 		private readonly ConnectionPolicySetting _connectionPolicySetting;
@@ -62,9 +65,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			string partitionKey,
 			ISettingsProvider settingsProvider,
 			ICosmosDbClientFactory factory = null,
-			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps) :
+			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps,
+			ILoggerFactory loggerFactory = null) :
 			base(serviceName, partitionId, partitionKey)
 		{
+			_managerInstance = new FG.Common.Utils.MiniId();
+			
+			_logger = loggerFactory?.CreateLogger(this) ?? new DocumentDbStateSessionManagerLogger(_managerInstance);
 			_connectionPolicySetting = connectionPolicySetting;
 
 			_factory = factory ?? new CosmosDbClientFactory();
@@ -75,6 +82,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			_collectionPrimaryKey = settingsProvider.PrimaryKey();
 		}
 
+		public string InstanceName => _managerInstance;
 
 		private async Task<string> GetDatabaseCollectionAsync(string databaseId, string collectionId)
 		{
@@ -137,7 +145,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		async Task IDocumentDbDataManager.CreateCollection(string collectionName)
 		{
 			var client = await CreateClient();
-			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
+			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
 
 			_collectionExists = true;
 		}
@@ -161,7 +169,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			if (!_collectionExists)
 			{
 
-				await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
+				await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
 
 				_collectionExists = true;
 			}
@@ -182,13 +190,24 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
 		public sealed class DocumentDbStateSession : IStateSession
 		{
+			private readonly string _sessionInstance;
+			private readonly IDocumentDbStateSessionLogger _logger;
+
 			private readonly DocumentClient _documentClient;
 			private readonly DocumentDbStateSessionManager _manager;
 			private IEnumerable<IStateSessionObject> _attachedObjects;
 
-			public DocumentDbStateSession(DocumentDbStateSessionManager manager, IStateSessionObject[] stateSessionObjects)
+			public DocumentDbStateSession(
+				DocumentDbStateSessionManager manager, 
+				IStateSessionObject[] stateSessionObjects,
+				ILoggerFactory loggerFactory = null)
 			{
 				_manager = manager;
+				_sessionInstance = new FG.Common.Utils.MiniId();
+
+				_logger = loggerFactory?.CreateLogger(_manager, this) ?? new DocumentDbStateSessionLogger(_manager._managerInstance, _sessionInstance);
+
+				_logger.StartingSession(stateSessionObjects.AsList());
 				_documentClient = _manager.CreateClient().GetAwaiter().GetResult();
 
 				AttachObjects(stateSessionObjects);
@@ -235,6 +254,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return Task.FromResult(new ConditionalValue<T>(false, default(T)));
 					}
+					_logger.DocumentClientException(nameof(TryGetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
 					throw new StateSessionException($"TryGetValueAsync for {schemaKey} failed", dcex);
 				}
 				catch (Exception ex)
@@ -261,6 +281,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						throw new KeyNotFoundException($"State with {schema}:{key} does not exist");
 					}
+					_logger.DocumentClientException(nameof(GetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
 					throw new StateSessionException($"GetValueAsync for {schemaKey} failed", dcex);
 				}
 				catch (Exception ex)
@@ -282,6 +303,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
+					_logger.DocumentClientException(nameof(SetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
 					throw new StateSessionException($"SetValueAsync for {id} failed", dcex);
 				}
 				catch (Exception ex)
@@ -303,6 +325,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
+					_logger.DocumentClientException(nameof(SetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
 					throw new StateSessionException($"SetValueAsync for {id} failed", dcex);
 				}
 				catch (Exception ex)
@@ -327,6 +350,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
+					_logger.DocumentClientException(nameof(RemoveAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
 					throw new StateSessionException($"RemoveAsync for {schemaKey} failed", dcex);
 				}
 				catch (Exception ex)
@@ -353,6 +377,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 						document,
 						new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
 					await SetQueueInfo(schema, stateQueueInfo);
+				}
+				catch (DocumentClientException dcex)
+				{
+					_logger.DocumentClientException(nameof(EnqueueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
+					throw new StateSessionException($"EnqueueAsync for {schema} failed", dcex);
 				}
 				catch (Exception ex)
 				{

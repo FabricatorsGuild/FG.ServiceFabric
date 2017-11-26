@@ -9,12 +9,16 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 	{
 		private readonly IDictionary<string, string> _settings = new Dictionary<string, string>();
 
-		public CosmosDbForTestingSettingsProvider()
+		public static CosmosDbForTestingSettingsProvider DefaultForCollection(string collection) => new CosmosDbForTestingSettingsProvider("https://172.27.82.113:8081", "sfp-local1",
+			collection,
+			"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
+
+		public CosmosDbForTestingSettingsProvider(string endpointUri, string databaseName, string collection, string primaryKey)
 		{
-			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}", "https://172.27.95.75:8081");
-			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}", "sfp");
-			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}", "tests");
-			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
+			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}", endpointUri);
+			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}", databaseName);
+			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}", collection);
+			_settings.Add($"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}", primaryKey);
 		}
 
 		public bool Contains(string key)

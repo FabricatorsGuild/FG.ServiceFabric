@@ -21,7 +21,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		IStateQuerySessionManager,
 		IDocumentDbDataManager
 	{
+		private object _lock = new object();
+
 		private readonly string _managerInstance;
+		private readonly IDocumentDbStateSessionManagerLogger _logger;
 		private readonly string _collection;
 		private readonly string _collectionPrimaryKey;
 		private readonly ConnectionPolicySetting _connectionPolicySetting;
@@ -41,6 +44,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			base(serviceName, partitionId, partitionKey)
 		{
 			_managerInstance = new FG.Common.Utils.MiniId();
+			_logger = new DocumentDbStateSessionManagerLogger(_managerInstance);
 			_connectionPolicySetting = connectionPolicySetting;
 
 			_factory = factory ?? new CosmosDbClientFactory();
@@ -49,7 +53,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			_databaseName = settingsProvider.DatabaseName();
 			_endpointUri = settingsProvider.EndpointUri();
 			_collectionPrimaryKey = settingsProvider.PrimaryKey();
+
+			_logger.StartingManager(serviceName, partitionId, partitionKey, _endpointUri, _databaseName, _collection);
 		}
+
+		public string InstanceName => _managerInstance;
 
 		string IDocumentDbDataManager.GetCollectionName()
 		{
@@ -88,18 +96,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		async Task IDocumentDbDataManager.CreateCollection(string collectionName)
 		{
 			var client = await CreateClient();
-			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
+
+			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
 
 			_collectionExists = true;
 		}
 
 		async Task IDocumentDbDataManager.DestroyCollecton(string collectionName)
-		{
-			var client = await CreateClient();
-			await client.DestroyCollection(_databaseName, _collection);
-		}
-
-		private async Task<DocumentClient> CreateClient()
 		{
 			var client = await _factory.OpenAsync(
 				databaseName: _databaseName,
@@ -108,13 +111,27 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				primaryKey: _collectionPrimaryKey,
 				connectionPolicySetting: _connectionPolicySetting
 			);
+			await client.DestroyCollection(_databaseName, _collection);
+		}
 
-			if (!_collectionExists)
+		private async Task<DocumentClient> CreateClient()
+		{
+			_logger.CreatingClient();
+			var client = await _factory.OpenAsync(
+				databaseName: _databaseName,
+				collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+				endpointUri: new Uri(_endpointUri),
+				primaryKey: _collectionPrimaryKey,
+				connectionPolicySetting: _connectionPolicySetting
+			);
+
+			lock (_lock)
 			{
-
-				await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"));
-
-				_collectionExists = true;
+				if (!_collectionExists)
+				{
+					client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter().GetResult();
+					_collectionExists = true;
+				}
 			}
 
 			return client;
@@ -164,7 +181,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 							})
 						.Where(d => d.Id == schemaKey);
 
-					return Task.FromResult(documentCollectionQuery.Any());
+					// ReSharper disable once UnusedVariable - cannot use Any() on DocumentQueryException
+					foreach (var document in documentCollectionQuery)
+					{
+						return Task.FromResult(true);
+					}
+					return Task.FromResult(false);
 				}
 				catch (DocumentClientException dcex)
 				{
