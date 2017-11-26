@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Azure.Documents.Client;
+using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.DocumentDb.CosmosDb
 {
@@ -37,7 +38,12 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 					throw new ArgumentOutOfRangeException(nameof(connectionPolicySetting), connectionPolicySetting, null);
 			}
 
-			var documentClient = new DocumentClient(endpointUri, primaryKey, connectionPolicy);
+			var documentClient = new DocumentClient( 
+				serviceEndpoint: endpointUri, 
+				authKeyOrResourceToken: primaryKey, 
+				connectionPolicy: connectionPolicy, 
+				serializerSettings: new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.Auto }
+				);
 			await documentClient.OpenAsync();
 			return documentClient;
 		}
