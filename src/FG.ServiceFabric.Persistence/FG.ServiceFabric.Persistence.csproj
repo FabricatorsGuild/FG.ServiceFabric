@@ -182,6 +182,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     </None>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Runtime\StateSession\DocumentDbStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\DocumentDbStateSessionManagerWithTransactions.cs" />
     <Compile Include="Services\Runtime\StateSession\FileSystemStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemoryStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemoryStateSessionManagerWithTransaction.cs" />

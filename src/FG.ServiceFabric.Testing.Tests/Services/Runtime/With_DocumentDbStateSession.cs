@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
+using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_InMemoryStateSession;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FG.ServiceFabric.Utils;
 using FluentAssertions;
@@ -18,37 +19,68 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
+
 	// ReSharper disable InconsistentNaming
 	namespace With_StateSessionManager
 	{
 		namespace and_DocumentDbStateSessionManagerWithTransaction
 		{
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public abstract class TestBaseForDocumentDbStateSessionManager<TService> : TestBase<TService>
 				where TService : StatefulServiceDemoBase
 			{
-				public override IDictionary<string, string> State => null;
+				private DocumentDbStateSessionManagerWithTransactions _stateSessionManager;
+				private CosmosDbForTestingSettingsProvider _settingsProvider;
+				protected string _collectionName = Guid.NewGuid().ToString();
+
+				public override IDictionary<string, string> State => GetState();
 
 				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
 					StatefulServiceContext context)
 				{
-					return new DocumentDbStateSessionManager(
+					_settingsProvider = new CosmosDbForTestingSettingsProvider();
+					_settingsProvider.AppendCollectionName(_collectionName);
+					_stateSessionManager = new DocumentDbStateSessionManagerWithTransactions(
 						"StatefulServiceDemo",
 						Guid.NewGuid(),
-						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter()
-							.GetResult(),
-						new CosmosDbForTestingSettingsProvider()
+						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
+						_settingsProvider
 					);
+
+					return _stateSessionManager;
+				}
+
+				private IDictionary<string, string> GetState()
+				{
+					if (_stateSessionManager is IDocumentDbDataManager dataManager)
+					{
+						return dataManager.GetCollectionDataAsync(_collectionName).GetAwaiter().GetResult();
+					}
+					return new Dictionary<string, string>();
+				}
+
+				protected void DestroyCollection()
+				{
+					if (_stateSessionManager is IDocumentDbDataManager dataManager)
+					{
+						dataManager.DestroyCollecton(_collectionName).GetAwaiter().GetResult();
+					}
+				}
+
+				protected override void OnTearDown()
+				{
+					base.OnTearDown();
+
+					DestroyCollection();
 				}
 			}
 
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class StateSession_transacted_scope
 			{
 				private string _sessionId;
-				private ISettingsProvider _settingsProvider;
+				private CosmosDbForTestingSettingsProvider _settingsProvider;
+				private DocumentDbStateSessionManagerWithTransactions _stateSessionManager;
 
 				[SetUp]
 				public void Setup()
@@ -62,16 +94,22 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				[TearDown]
 				public void Teardown()
 				{
+					if (_stateSessionManager is IDocumentDbDataManager dataManager)
+					{
+						dataManager.DestroyCollecton(_settingsProvider.CollectionName).GetAwaiter().GetResult();
+					}
 				}
 
-				public static IStateSessionManager CreateStateManager()
+				public IStateSessionManager CreateStateManager()
 				{
-					return new DocumentDbStateSessionManager(
+					_stateSessionManager =  new DocumentDbStateSessionManagerWithTransactions(
 						"StatefulServiceDemo",
 						Guid.NewGuid(),
 						"range-0",
-						new CosmosDbForTestingSettingsProvider()
+						_settingsProvider
 					);
+
+					return _stateSessionManager;
 				}
 
 				[Test]
@@ -183,31 +221,38 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_simple_counter_state : TestBaseForDocumentDbStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo>
 			{
-				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
-
 				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo
 					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				{
-					var service =
-						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context,
-							stateSessionManager);
+					var service = new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.StatefulServiceDemo(context, stateSessionManager);
 					return service;
 				}
 
-				[Test]
-				public void _should_persist_state_stored()
+				private async Task RunWork()
 				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
+
+				[Test]
+				public async Task _should_persist_state_stored()
+				{
+					await RunWork();
 					State.Should().HaveCount(2);
 				}
 			}
 
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_multiple_states : TestBaseForDocumentDbStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.StatefulServiceDemo>
 			{
@@ -222,16 +267,28 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					return service;
 				}
 
-				[Test]
-				public void _should_persist_state_stored()
+				private async Task RunWork()
 				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
+
+				[Test]
+				public async Task _should_persist_state_stored()
+				{
+					await RunWork();
 					State.Should().HaveCount(4);
 				}
 			}
 
 
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_polymorphic_states : TestBaseForDocumentDbStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.StatefulServiceDemo>
 			{
@@ -246,15 +303,29 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					return service;
 				}
 
-				[Test]
-				public void _should_persist_state_stored()
+				private async Task RunWork()
 				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
+
+				[Test]
+				public async Task _should_persist_state_stored()
+				{
+					await RunWork();
 					State.Should().HaveCount(2);
 				}
 
 				[Test]
 				public async Task _should_be_able_to_read_persisted_state()
 				{
+					await RunWork();
 					foreach (var service in this.Services)
 					{
 						var serviceState = await service.GetStateAsync(CancellationToken.None);
@@ -276,8 +347,138 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
-			[Ignore(
-				"Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
+			public class Service_with_simple_dictionary : TestBaseForDocumentDbStateSessionManager<
+				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo>
+			{
+				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
+
+				protected override FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo
+					CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+				{
+					var service =
+						new FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context,
+							stateSessionManager);
+					return service;
+				}
+
+				[Test]
+				public async Task _should_persist_added_item()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+
+					// items and queue info state
+					State.Should().HaveCount(1);
+				}
+
+				[Test]
+				public async Task _should_persist_added_items()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					// items and queue info state
+					State.Should().HaveCount(5);
+				}
+
+				[Test]
+				public async Task _should_persist_added_item_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+						{new KeyValuePair<string, string>("a", "A")});
+				}
+
+				[Test]
+				public async Task _should_persist_added_items_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+					{
+						new KeyValuePair<string, string>("a", "A"),
+						new KeyValuePair<string, string>("b", "B"),
+						new KeyValuePair<string, string>("c", "C"),
+						new KeyValuePair<string, string>("d", "D"),
+						new KeyValuePair<string, string>("e", "E"),
+					});
+				}
+
+				[Test]
+				public async Task _should_persist_added_and_removed_items_and_enumerate_all()
+				{
+					State.Should().HaveCount(0);
+
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Add("a", "A");
+					await statefulServiceDemo.Add("b", "B");
+					await statefulServiceDemo.Add("c", "C");
+					await statefulServiceDemo.Add("d", "D");
+					await statefulServiceDemo.Add("e", "E");
+
+					await statefulServiceDemo.Remove("b");
+					await statefulServiceDemo.Remove("d");
+
+					await statefulServiceDemo.Add("f", "F");
+					await statefulServiceDemo.Add("g", "G");
+
+					// items and queue info state
+					var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+					keyValuePairs.Should().BeEquivalentTo(new KeyValuePair<string, string>[]
+					{
+						new KeyValuePair<string, string>("a", "A"),
+						new KeyValuePair<string, string>("c", "C"),
+						new KeyValuePair<string, string>("e", "E"),
+						new KeyValuePair<string, string>("f", "F"),
+						new KeyValuePair<string, string>("g", "G"),
+					});
+				}
+			}
+
+			//[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_simple_queue_enqueued : TestBaseForDocumentDbStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{

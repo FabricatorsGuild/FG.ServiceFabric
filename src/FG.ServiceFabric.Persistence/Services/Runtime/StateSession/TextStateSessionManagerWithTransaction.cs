@@ -188,11 +188,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			protected override Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
-				return Task.FromResult(
-					Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
+				var actorStateSchemaPrefix = $"{schemaKeyPrefix}ACTORSTATE-";
+
+				return Task.FromResult((IEnumerable<string>)
+					Find(actorStateSchemaPrefix, key, int.MaxValue, null, cancellationToken)
 						.Items
-						.Select(id => id.Substring(schemaKeyPrefix.Length, id.Length - schemaKeyPrefix.Length - key.Length - 1))
-						.Distinct());
+						.Select(id => id.Substring(actorStateSchemaPrefix.Length, id.Length - actorStateSchemaPrefix.Length - key.Length - 1))
+						.Distinct()
+						.ToArray());
 			}
 
 			protected override void Dispose(bool disposing)

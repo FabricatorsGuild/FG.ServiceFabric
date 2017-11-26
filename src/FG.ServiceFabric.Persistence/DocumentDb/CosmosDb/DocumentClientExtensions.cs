@@ -50,8 +50,18 @@ namespace FG.ServiceFabric.DocumentDb.CosmosDb
 					Id = collection.CollectionName,
 					PartitionKey = partitionKeyDefinition,
 				};
-
-				await @this.CreateDocumentCollectionAsync(store.SelfLink, collectionSpec);
+				try
+				{
+					await @this.CreateDocumentCollectionAsync(store.SelfLink, collectionSpec);
+				}
+				catch (DocumentClientException ex)
+				{
+					if (ex.Error.Code == "Conflict")
+					{
+						return;						
+					}
+					throw;
+				}
 			}
 		}
 

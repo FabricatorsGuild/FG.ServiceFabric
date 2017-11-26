@@ -35,6 +35,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 	{
 		string GetCollectionName();
 
+		Task<IDictionary<string, string>> GetCollectionDataAsync(string collectionName);
+
 		Task CreateCollection(string collectionName);
 
 		Task DestroyCollecton(string collectionName);
@@ -101,6 +103,35 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		string IDocumentDbDataManager.GetCollectionName()
 		{
 			return _collection;
+		}
+
+		async Task<IDictionary<string, string>> IDocumentDbDataManager.GetCollectionDataAsync(string collectionName)
+		{
+			try
+			{
+				var client = await CreateClient();
+				var dict = new Dictionary<string, string>();
+				var feedResponse = await client.ReadDocumentFeedAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection));
+
+				foreach (var document in feedResponse)
+				{
+					dict.Add(document.Id, document.ToString());
+				}
+
+				return dict;
+			}
+			catch (DocumentClientException e)
+			{
+				if (e.Error.Code == "NotFound")
+				{
+					return null;
+				}
+				throw;
+			}
+			catch (Exception e)
+			{
+				throw;
+			}
 		}
 
 		async Task IDocumentDbDataManager.CreateCollection(string collectionName)

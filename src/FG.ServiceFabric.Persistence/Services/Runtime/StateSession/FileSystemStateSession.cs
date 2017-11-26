@@ -141,7 +141,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var results = new List<string>();
 				var nextMarker = continuationToken?.Marker ?? "";
-				var files = System.IO.Directory.GetFiles(CommonPath, $"{idPrefix}*").OrderBy(f => f);
+				var files = System.IO.Directory.GetFiles(CommonPath, $"{idPrefix}*{key}*").OrderBy(f => f);
 				var resultCount = 0;
 				foreach (var file in files)
 				{

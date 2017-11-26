@@ -277,14 +277,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				var continuationToken = Current.Key != null ? new ContinuationToken(_continuationKey) : null;
 
-				var findNext =
-					await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, continuationToken, cancellationToken);
+				if (Current.Key != null && _continuationKey == null)
+				{
+					Current = default(KeyValuePair<string, TValueType>);
+					return false;
+				}
+
+				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, continuationToken, cancellationToken);
 				var nextKey = findNext.Items.FirstOrDefault();
 				if (nextKey != null)
 				{
 					var value = await _session.GetValueAsync<TValueType>(_schema, nextKey, cancellationToken);
 					Current = new KeyValuePair<string, TValueType>(nextKey, value);
-					_continuationKey = findNext.ContinuationToken.Marker as string ?? "";
+					_continuationKey = findNext.ContinuationToken?.Marker as string;
 					return true;
 				}
 				else
@@ -825,7 +830,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 			public Task CommitAsync()
 			{
-				return CommitinternalAsync(_transactedChanges.Values);
+				var changes = _transactedChanges.Values.ToArray();
+				_transactedChanges.Clear();
+				return CommitinternalAsync(changes);
 			}
 
 			public Task AbortAsync()

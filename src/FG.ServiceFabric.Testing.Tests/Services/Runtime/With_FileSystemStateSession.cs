@@ -283,10 +283,22 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							stateSessionManager);
 					return service;
 				}
+				private async Task RunWork()
+				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_counter_state.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
 
 				[Test]
-				public void _should_persist_state_stored()
+				public async Task _should_persist_state_stored()
 				{
+					await RunWork();
 					State.Should().HaveCount(2);
 				}
 			}
@@ -304,10 +316,22 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							stateSessionManager);
 					return service;
 				}
+				private async Task RunWork()
+				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_multiple_states.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
 
 				[Test]
-				public void _should_persist_state_stored()
+				public async Task _should_persist_state_stored()
 				{
+					await RunWork();
 					State.Should().HaveCount(4);
 				}
 			}
@@ -327,15 +351,29 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					return service;
 				}
 
-				[Test]
-				public void _should_persist_state_stored()
+				private async Task RunWork()
 				{
+					foreach (var partitionKey in new[] { long.MinValue, long.MaxValue - 10 })
+					{
+						var statefulServiceDemo = _fabricApplication.FabricRuntime.ServiceProxyFactory
+							.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_polymorphic_array_state.IStatefulServiceDemo>(
+								new Uri("fabric:/overlord/StatefulServiceDemo"), new ServicePartitionKey(partitionKey));
+
+						await statefulServiceDemo.RunWork();
+					}
+				}
+
+				[Test]
+				public async Task _should_persist_state_stored()
+				{
+					await RunWork();
 					State.Should().HaveCount(2);
 				}
 
 				[Test]
 				public async Task _should_be_able_to_read_persisted_state()
 				{
+					await RunWork();
 					foreach (var service in this.Services)
 					{
 						var serviceState = await service.GetStateAsync(CancellationToken.None);

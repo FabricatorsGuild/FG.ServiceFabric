@@ -4,6 +4,7 @@ using System.Fabric;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using Microsoft.ServiceFabric.Data;
 using Microsoft.ServiceFabric.Data.Collections;
 using Microsoft.ServiceFabric.Services.Communication.Runtime;
@@ -43,7 +44,12 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 	namespace With_simple_counter_state
 	{
-		public sealed class StatefulServiceDemo : StatefulServiceDemoBase
+		public interface IStatefulServiceDemo : IService
+		{
+			Task RunWork();
+		}
+
+		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
 		{
 			private readonly IStateSessionManager _stateSessionManager;
 
@@ -55,22 +61,23 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 			protected override async Task RunAsync(CancellationToken cancellationToken)
 			{
+
+				OnRunAsyncLoop(0);
+			}
+
+			public async Task RunWork()
+			{
+				var cancellationToken = CancellationToken.None;
 				await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
 
-				var i = 0;
-				while (true)
+				cancellationToken.ThrowIfCancellationRequested();
+
+				using (var session = _stateSessionManager.CreateSession())
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					using (var session = _stateSessionManager.CreateSession())
-					{
-						var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
-						var value = result.HasValue ? result.Value : 0;
-						await session.SetValueAsync("myDictionary", "Counter", value++, null, cancellationToken);
-					}
-
-					OnRunAsyncLoop(i);
-					i++;
+					var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
+					var value = result.HasValue ? result.Value : 0;
+					await session.SetValueAsync("myDictionary", "Counter", value++, null, cancellationToken);
+					await session.CommitAsync();
 				}
 			}
 		}
@@ -78,7 +85,12 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 	namespace With_multiple_states
 	{
-		public sealed class StatefulServiceDemo : StatefulServiceDemoBase
+		public interface IStatefulServiceDemo : IService
+		{
+			Task RunWork();
+		}
+
+		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
 		{
 			private readonly IStateSessionManager _stateSessionManager;
 
@@ -88,38 +100,46 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				_stateSessionManager = stateSessionManager;
 			}
 
-			protected override async Task RunAsync(CancellationToken cancellationToken)
+			protected override Task RunAsync(CancellationToken cancellationToken)
 			{
+				OnRunAsyncLoop(1);
+				return Task.FromResult(true);
+			}
+
+			public async Task RunWork()
+			{
+				var cancellationToken = CancellationToken.None;
 				var myDictionary = await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
 				var dictionary2 = await _stateSessionManager.OpenDictionary<string>("myDictionary2", cancellationToken);
 
 				using (var session = _stateSessionManager.CreateSession(myDictionary, dictionary2))
 				{
 					await dictionary2.SetValueAsync("theValue", "is hello", null, cancellationToken);
-					//await session.SetValueAsync("myDictionary2", "theValue", "is hello", null, cancellationToken);
+					await session.CommitAsync();
 				}
+				cancellationToken.ThrowIfCancellationRequested();
 
-				var i = 0;
-				while (true)
+				using (var session = _stateSessionManager.CreateSession())
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					using (var session = _stateSessionManager.CreateSession())
-					{
-						var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
-						var value = result.HasValue ? result.Value : 0;
-						await session.SetValueAsync("myDictionary", "Counter", value++, null, cancellationToken);
-					}
-
-					OnRunAsyncLoop(i);
-					i++;
+					var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
+					var value = result.HasValue ? result.Value : 0;
+					await session.SetValueAsync("myDictionary", "Counter", value++, null, cancellationToken);
+					await session.CommitAsync();
 				}
+
+
 			}
 		}
 	}
 
+
 	namespace With_polymorphic_array_state
 	{
+		public interface IStatefulServiceDemo : IService
+		{
+			Task RunWork();
+		}
+
 		public class ArrayState
 		{
 			public IInnerStateItem[] Items { get; set; }
@@ -142,7 +162,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			public string Name { get; set; }
 		}
 
-		public sealed class StatefulServiceDemo : StatefulServiceDemoBase
+		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
 		{
 			private readonly IStateSessionManager _stateSessionManager;
 
@@ -152,8 +172,29 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				_stateSessionManager = stateSessionManager;
 			}
 
-			protected override async Task RunAsync(CancellationToken cancellationToken)
+			protected override Task RunAsync(CancellationToken cancellationToken)
+			{				
+				OnRunAsyncLoop(0);
+
+				return Task.FromResult(true);
+			}
+
+			public async Task<ArrayState> GetStateAsync(CancellationToken cancellationToken)
 			{
+				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
+
+				using (var session = _stateSessionManager.CreateSession())
+				{
+					var stateValue = await session.GetValueAsync<ArrayState>("myDictionary2", "theValue", cancellationToken);
+
+					return stateValue;
+				}
+			}
+
+			public async Task RunWork()
+			{
+				var cancellationToken = CancellationToken.None;
+
 				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
 
 				using (var session = _stateSessionManager.CreateSession())
@@ -169,20 +210,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 
 					await session.SetValueAsync("myDictionary2", "theValue", state, null, cancellationToken);
-				}
-
-				OnRunAsyncLoop(0);
-			}
-
-			public async Task<ArrayState> GetStateAsync(CancellationToken cancellationToken)
-			{
-				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
-
-				using (var session = _stateSessionManager.CreateSession())
-				{
-					var stateValue = await session.GetValueAsync<ArrayState>("myDictionary2", "theValue", cancellationToken);
-
-					return stateValue;
+					await session.CommitAsync();
 				}
 			}
 		}
