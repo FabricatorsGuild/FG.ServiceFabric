@@ -2,6 +2,7 @@
 using System.Fabric;
 using FG.ServiceFabric.Fabric;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 
 namespace FG.ServiceFabric.Tests.Persistence
