@@ -21,6 +21,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		IStateQuerySessionManager,
 		IDocumentDbDataManager
 	{
+		private readonly string _managerInstance;
 		private readonly string _collection;
 		private readonly string _collectionPrimaryKey;
 		private readonly ConnectionPolicySetting _connectionPolicySetting;
@@ -39,6 +40,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps) :
 			base(serviceName, partitionId, partitionKey)
 		{
+			_managerInstance = new FG.Common.Utils.MiniId();
 			_connectionPolicySetting = connectionPolicySetting;
 
 			_factory = factory ?? new CosmosDbClientFactory();
