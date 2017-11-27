@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>$version$-beta9</version>
+    <version>$version$-RC</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -12,7 +12,7 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric fabric transport remoting</tags>
     <dependencies>
-      <dependency id="FG.Common" version="$version$-beta9" />
+      <dependency id="FG.Common" version="$version$-RC" />
     </dependencies>
   </metadata>
 </package>
