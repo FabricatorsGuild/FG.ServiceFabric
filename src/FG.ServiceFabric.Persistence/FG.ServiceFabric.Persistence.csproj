@@ -11,7 +11,8 @@
     <AssemblyName>FG.ServiceFabric.Persistence</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp></NuGetPackageImportStamp>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -55,7 +56,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
@@ -236,7 +236,6 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
   </ItemGroup>
-  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />
 </Project>

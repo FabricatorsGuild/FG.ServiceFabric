@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Fabric;
 using System.Linq;
 using System.Threading;
@@ -9,15 +8,9 @@ using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
-using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_InMemoryStateSession;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
-using FG.ServiceFabric.Utils;
 using FluentAssertions;
-using Microsoft.Samples.Eventing;
-using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Services.Client;
-using Microsoft.ServiceFabric.Services.Runtime;
 using NUnit.Framework;
 
 namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
@@ -35,7 +28,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				private DocumentDbStateSessionManagerWithTransactions _stateSessionManager;
 				private CosmosDbForTestingSettingsProvider _cosmosDbSettingsProvider;
 				protected string _collectionName = "App-tests";
-				private EventTraceWatcher _eventTraceWatcher;
 
 				public override IDictionary<string, string> State => GetState();
 
@@ -48,32 +40,10 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					_stateSessionManager = new DocumentDbStateSessionManagerWithTransactions(
 						"StatefulServiceDemo",
 						Guid.NewGuid(),
-						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter().GetResult(),
+						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter()
+							.GetResult(),
 						_cosmosDbSettingsProvider
 					);
-
-					//var eventSourceType = typeof(IDocumentDbStateSessionLogger).Assembly.GetType("FG.ServiceFabric.FGServiceFabricPersistenceEventSource");
-					//_eventTraceWatcher = new EventTraceWatcher("DocumentDb", EventSource.GetGuid(eventSourceType));
-					//_eventTraceWatcher.EventArrived += delegate (object sender, EventArrivedEventArgs e)
-					//{
-					//	if (e.Error != null)
-					//	{
-					//		// Handle the exception 
-					//		Console.Error.WriteLine(e.Error);
-					//		Environment.Exit(-1);
-					//	}
-
-					//	// Dump the event name (e.g. URL_REWRITE_START, ABORT_REQUEST_ACTION, etc). 
-					//	Console.WriteLine("Event Name: " + e.EventId);
-
-					//	// Dump properties (e.g. RewriteURL, Pattern, etc). 
-					//	foreach (var p in e.Properties)
-					//	{
-					//		Console.WriteLine("\t" + p.Key + " -- " + p.Value);
-					//	}
-					//	Console.WriteLine();
-					//};
-					//_eventTraceWatcher.Start();
 
 					return _stateSessionManager;
 				}
@@ -100,8 +70,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					base.OnTearDown();
 
 					DestroyCollection();
-					//_eventTraceWatcher.Stop();
-					//_eventTraceWatcher.Dispose();
 				}
 			}
 

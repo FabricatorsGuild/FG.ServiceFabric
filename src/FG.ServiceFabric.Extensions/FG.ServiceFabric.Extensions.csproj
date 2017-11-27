@@ -194,12 +194,10 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Utils\ServiceConfigSettingsProvider.cs" />
     <Compile Include="Utils\SettingsProviderBase.cs" />
   </ItemGroup>
-  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />

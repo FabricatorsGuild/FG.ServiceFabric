@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.Common.Utils;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using FG.ServiceFabric.Utils;
@@ -43,7 +44,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps) :
 			base(serviceName, partitionId, partitionKey)
 		{
-			_managerInstance = new FG.Common.Utils.MiniId();
+			_managerInstance = new MiniId();
 			_logger = new DocumentDbStateSessionManagerLogger(_managerInstance);
 			_connectionPolicySetting = connectionPolicySetting;
 

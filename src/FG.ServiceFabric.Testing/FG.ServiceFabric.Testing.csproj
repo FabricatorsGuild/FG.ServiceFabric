@@ -233,10 +233,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.28\build\Microsoft.Diagnostics.Tracing.EventRegister.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.28\build\Microsoft.Diagnostics.Tracing.EventRegister.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

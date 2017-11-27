@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
-using FG.ServiceFabric.Tests.EventStoredActor;
 using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
