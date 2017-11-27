@@ -11,8 +11,7 @@
     <AssemblyName>FG.ServiceFabric.Persistence</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <NuGetPackageImportStamp></NuGetPackageImportStamp>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -58,6 +57,7 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
   </Target>
   <PropertyGroup>
     <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
@@ -90,54 +90,54 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
       <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.18.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.8.219\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.8.232\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.219\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.232\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Data.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.219\lib\net45\Microsoft.ServiceFabric.Data.Interfaces.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.232\lib\net45\Microsoft.ServiceFabric.Data.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Diagnostics, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.Diagnostics.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.Diagnostics.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.FabricTransport, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.FabricTransport.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.FabricTransport.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.FabricTransport.V2, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\lib\net45\Microsoft.ServiceFabric.FabricTransport.V2.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.FabricTransport.V2.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Internal, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Internal.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Internal.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Internal.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Internal.Strings.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Internal.Strings.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Preview, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\Microsoft.ServiceFabric.Preview.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Preview.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Services, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.2.8.219\lib\net45\Microsoft.ServiceFabric.Services.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Services.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.219\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Fabric, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Fabric.Management.ServiceModel, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Management.ServiceModel.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Management.ServiceModel.dll</HintPath>
     </Reference>
     <Reference Include="System.Fabric.Management.ServiceModel.XmlSerializers, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Management.ServiceModel.XmlSerializers.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Management.ServiceModel.XmlSerializers.dll</HintPath>
     </Reference>
     <Reference Include="System.Fabric.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.219\lib\net45\System.Fabric.Strings.dll</HintPath>
+      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Strings.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -158,31 +158,6 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Actors\Runtime\StateSession\Metadata\ActorStateMetadata.cs" />
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\StateSessionActorStateProvider.IStateProvider.cs" />
-    <Compile Include="DocumentDbStateSessionLogger.cs">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>LoggerImplementation</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Compile>
-    <Compile Include="DocumentDbStateSessionManagerLogger.cs">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>LoggerImplementation</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Compile>
-    <Compile Include="FGServiceFabricPersistenceEventSource.cs">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>EventSource</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Compile>
-    <Compile Include="FGServiceFabricPersistenceEventSource.IDocumentDbStateSessionLogger.cs">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>EventSourceLoggerPartial</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Compile>
-    <Compile Include="FGServiceFabricPersistenceEventSource.IDocumentDbStateSessionManagerLogger.cs">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>EventSourceLoggerPartial</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Compile>
     <None Include="app.config" />
     <Compile Include="DocumentDb\CosmosDb\ConnectionPolicySetting.cs" />
     <Compile Include="DocumentDb\CosmosDb\CosmosDbClientFactory.cs" />
@@ -199,13 +174,43 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="DocumentDb\IStateMetadata.cs" />
     <Compile Include="DocumentDb\StateMetadata.cs" />
     <Compile Include="DocumentDb\Testing\InMemoryStateWriter.cs" />
+    <Compile Include="DocumentDbStateSessionLogger.cs">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>LoggerImplementation</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Compile>
+    <Compile Include="DocumentDbStateSessionManagerLogger.cs">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>LoggerImplementation</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Compile>
     <None Include="FG.ServiceFabric.Persistence.nuspec">
       <SubType>Designer</SubType>
     </None>
+    <Compile Include="FGServiceFabricPersistenceEventSource.cs">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>EventSource</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Compile>
     <None Include="FGServiceFabricPersistenceEventSource.eventsource.json">
       <AutoGenerated>DefaultGeneratedEventSourceDefinition</AutoGenerated>
       <Hash>597c77dcbdddbaefbfbdefbfbd00330c4befbfbd3cefbfbd</Hash>
     </None>
+    <Content Include="FGServiceFabricPersistenceEventSource.eventsource.output.json">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>ProjectSummary</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Content>
+    <Compile Include="FGServiceFabricPersistenceEventSource.IDocumentDbStateSessionLogger.cs">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>EventSourceLoggerPartial</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Compile>
+    <Compile Include="FGServiceFabricPersistenceEventSource.IDocumentDbStateSessionManagerLogger.cs">
+      <AutoGen>true</AutoGen>
+      <AutoGenerated>EventSourceLoggerPartial</AutoGenerated>
+      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
+    </Compile>
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
@@ -219,6 +224,9 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\StateSession\FileSystem\FileSystemStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSessionManagerWithTransaction.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionManagerBase.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSessionManagerWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
@@ -226,18 +234,9 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\StateSession\ReliableState\ReliableStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
-    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionManagerBase.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />
-    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSession.cs" />
-    <Compile Include="Services\Runtime\StateSession\Internal\TextStateSessionManagerWithTransaction.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="FGServiceFabricPersistenceEventSource.eventsource.output.json">
-      <AutoGen>true</AutoGen>
-      <AutoGenerated>ProjectSummary</AutoGenerated>
-      <DependentUpon>FGServiceFabricPersistenceEventSource.eventsource.json</DependentUpon>
-    </Content>
   </ItemGroup>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.211\build\Microsoft.ServiceFabric.Actors.targets')" />
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />
+  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />
 </Project>
