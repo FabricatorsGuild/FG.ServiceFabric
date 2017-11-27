@@ -121,6 +121,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SchemaStateKey_tests.cs" />
     <Compile Include="Service_fabric_ServiceName_tests.cs" />
     <Compile Include="StateSessionInitilaizer.cs" />
   </ItemGroup>

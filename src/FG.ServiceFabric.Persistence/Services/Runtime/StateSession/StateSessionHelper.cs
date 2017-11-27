@@ -256,7 +256,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		public class SchemaStateKey
 		{
 			private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
-				@"(?'service'[a-zA-Z0-9\-\.]+)_(?'partition'[a-zA-Z0-9\-]+)_(?'schema'[a-zA-Z0-9]+)_(?'key'.+)",
+				@"(?'service'[a-zA-Z0-9\-\.]+)_(?'partition'[a-zA-Z0-9\-]+)_(?'schema'[a-zA-Z0-9\-]+)_(?'key'.+)",
 				RegexOptions.Compiled);
 
 			public SchemaStateKey(string serviceName, string partitionKey, string schema = null, string key = null)
@@ -267,10 +267,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 				Key = key;
 			}
 
-			public string ServiceName { get; set; }
-			public string PartitionKey { get; set; }
-			public string Schema { get; set; }
-			public string Key { get; set; }
+			public string ServiceName { get; private set; }
+			public string PartitionKey { get; private set; }
+			public string Schema { get; private set; }
+			public string Key { get; private set; }
 
 			public static SchemaStateKey Parse(string schemaStateKey)
 			{
