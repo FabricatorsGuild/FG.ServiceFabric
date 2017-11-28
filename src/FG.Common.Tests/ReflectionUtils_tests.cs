@@ -29,7 +29,7 @@ namespace FG.Common.Tests
 			{
 				var miniId = new MiniId();
 				
-				Console.WriteLine(miniId);
+				//Console.WriteLine(miniId);
 			});
 
 			var stopwatchElapsed = stopwatch.Elapsed;
