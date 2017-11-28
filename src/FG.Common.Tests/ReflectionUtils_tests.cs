@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +11,32 @@ using NUnit.Framework;
 
 namespace FG.Common.Tests
 {
+	public class MiniId_tests
+	{
+		[Test]
+		public void Should_be_able_to_do_multiple_MiniId_concurrently()
+		{
+			var stopwatch = new Stopwatch();
+			stopwatch.Start();
+
+			var tasks = new List<int>();
+			for (int i = 0; i < 1000000; i++)
+			{
+				tasks.Add(i);
+			}
+
+			Parallel.ForEach(tasks, (task) =>
+			{
+				var miniId = new MiniId();
+				
+				Console.WriteLine(miniId);
+			});
+
+			var stopwatchElapsed = stopwatch.Elapsed;
+			Console.WriteLine(stopwatchElapsed.TotalMilliseconds);
+		}
+	}
+
 	public class Data
 	{
 	}

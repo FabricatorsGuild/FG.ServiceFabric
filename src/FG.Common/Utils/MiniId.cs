@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -6,18 +8,27 @@ namespace FG.Common.Utils
 {
 	public class MiniId : IEquatable<string>, IEquatable<MiniId>
 	{
-		private static readonly SHA1 Hasher;
-
-		static MiniId()
+		private static char[] _values = new char[]
 		{
-			Hasher = System.Security.Cryptography.SHA1.Create();
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+			'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+			'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+		};
+
+		private static char[] Build(byte[] bytes)
+		{
+			var values = new char[8];
+			for (int i = 0; i < 8; i++)
+			{
+				values[i] = _values[((int) bytes[i] % 45)];
+			}
+			return values;
 		}
 
 		public MiniId()
 		{
 			var guid = Guid.NewGuid().ToByteArray();
-			var hashBytes = Hasher.ComputeHash(guid);
-			Id = System.Convert.ToBase64String(hashBytes).Substring(0, 6);
+			Id = new string(Build(guid));
 		}
 
 		public string Id { get; private set; }
