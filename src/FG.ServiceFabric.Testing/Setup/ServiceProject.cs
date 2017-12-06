@@ -131,13 +131,11 @@ namespace FG.ServiceFabric.Testing.Setup
 				additionallyLoadedAssemblies.Add(Assembly.LoadFrom(assemblyFileToLoad.Assemblyfile));
 			}
 
-			var serviceProjectAssemblyResolver = new ServiceProjectAssemblyResolver();
-			AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => serviceProjectAssemblyResolver.Resolve(args.Name);
 
 			foreach (var serviceProject in serviceProjects)
 			{
-
-				serviceProjectAssemblyResolver.ServiceProject = serviceProject;
+				var serviceProjectAssemblyResolver = new ServiceProjectAssemblyResolver {ServiceProject = serviceProject};
+				AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => serviceProjectAssemblyResolver.Resolve(args.Name);
 
 				var assemblyReference = referencedAssemblies.FirstOrDefault(a => a.Name == serviceProject.Name);
 				Assembly assembly;

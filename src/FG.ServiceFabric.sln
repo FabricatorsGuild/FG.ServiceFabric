@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests", "FG.ServiceFabric.Tests\FG.ServiceFabric.Tests.csproj", "{343070B9-EA99-472D-92BE-A17119C57BCA}"
 EndProject
@@ -54,6 +54,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Actors.Remoting.Tests", "FG.ServiceFabric.Actors.Remoting.Tests\FG.ServiceFabric.Actors.Remoting.Tests.csproj", "{AAA9ED00-4071-4148-9297-824130CE6A19}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.StatefulService", "FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj", "{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersistancePerformanceTestBench", "PersistancePerformanceTestBench\PersistancePerformanceTestBench.csproj", "{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -257,6 +259,14 @@ Global
 		{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}.Release|Any CPU.ActiveCfg = Release|x64
 		{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}.Release|x64.ActiveCfg = Release|x64
 		{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}.Release|x64.Build.0 = Release|x64
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Debug|x64.Build.0 = Debug|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Release|x64.ActiveCfg = Release|Any CPU
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -277,6 +287,7 @@ Global
 		{C3B564E2-FBB9-47B2-B820-4CC63BF66AE2} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{AAA9ED00-4071-4148-9297-824130CE6A19} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+		{0FA85908-BEC9-472E-BD4C-A2A2163C3D99} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A87FB6F-8593-4692-94BF-D245981DD263}

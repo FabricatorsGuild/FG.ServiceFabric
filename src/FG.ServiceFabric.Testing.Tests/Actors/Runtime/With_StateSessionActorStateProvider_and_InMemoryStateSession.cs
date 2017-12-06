@@ -115,16 +115,16 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					State.Keys.Should().HaveCount(2);
 
-					var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId("testivus"));
+					var actorIdSchemaKey = (ActorIdStateKey) new ActorId("testivus");
 					var actorIdKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorIdStateSchemaName));
 					var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 					actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
-					actorIdState.Key.Should().Be(actorIdSchemaKey);
+					actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
 					actorIdState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
 					actorIdState.PartitionKey.Should().Be("range-1");
 					actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
 					actorIdState.ActorId.GetStringId().Should().Be("testivus");
-					actorIdState.State.Should().Be(actorIdSchemaKey);
+					actorIdState.State.Should().Be(actorIdSchemaKey.Key);
 
 					var actorStateKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorStateSchemaName));
 					var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
@@ -151,12 +151,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					{
 						using (var session = stateSessionManager.CreateSession())
 						{
-							var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId("testivus"));
-							await session.SetValueAsync(StateSessionHelper.ActorIdStateSchemaName, actorIdSchemaKey, actorIdSchemaKey,
-								new ActorStateValueMetadata(StateWrapperType.ActorId, new ActorId("testivus")));
+							var actorId = new ActorId("testivus");
+							var actorIdSchemaKey = (ActorIdStateKey)actorId;
+							await session.SetValueAsync(actorIdSchemaKey.Schema, actorIdSchemaKey.Key, actorIdSchemaKey.Key,
+								new ActorStateValueMetadata(StateWrapperType.ActorId, actorId));
 
-							await session.SetValueAsync(StateSessionHelper.GetActorStateSchemaName("count"), actorIdSchemaKey, 5,
-								new ActorStateValueMetadata(StateWrapperType.ActorState, new ActorId("testivus")));
+							var actorStateKey = new ActorStateKey(actorId, "count");
+							await session.SetValueAsync(actorStateKey.Schema, actorStateKey.Key, 5,
+								new ActorStateValueMetadata(StateWrapperType.ActorState, actorId));
 						}
 					}
 					await base.SetUpStates(stateSessionManager);
@@ -170,16 +172,17 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					i.Should().Be(5);
 
-					var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId("testivus"));
+					var actorId = new ActorId("testivus");
+					var actorIdSchemaKey = (ActorIdStateKey)actorId;
 					var actorIdKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorIdStateSchemaName));
 					var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 					actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
-					actorIdState.Key.Should().Be(actorIdSchemaKey);
+					actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
 					actorIdState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
 					actorIdState.PartitionKey.Should().Be("range-1");
 					actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
 					actorIdState.ActorId.GetStringId().Should().Be("testivus");
-					actorIdState.State.Should().Be(actorIdSchemaKey);
+					actorIdState.State.Should().Be(actorIdSchemaKey.Key.ToString());
 
 					var actorStateKey = State.Keys.Single(k => k.Contains(StateSessionHelper.ActorStateSchemaName));
 					var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
@@ -208,19 +211,20 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
 						var i = await actorProxy.GetCountAsync();
 
-						var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId($"testivus-{j}"));
+						var actorId = new ActorId($"testivus-{j}");
+						var actorIdSchemaKey = (ActorIdStateKey)actorId;
 						var actorIdKey = State.Keys.Single(k =>
-							k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
+							k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
 						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 						actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
-						actorIdState.Key.Should().Be(actorIdSchemaKey);
+						actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
 						actorIdState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
 						actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
 						actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
-						actorIdState.State.Should().Be(actorIdSchemaKey);
+						actorIdState.State.Should().Be(actorIdSchemaKey.Key);
 
 						var actorStateKey = State.Keys.Single(k =>
-							k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey));
+							k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
 						var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
 						actorState.Schema.Should().StartWith(StateSessionHelper.ActorStateSchemaName);
 						actorState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
@@ -277,16 +281,17 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				{
 					for (var j = 0; j < 100; j++)
 					{
-						var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId($"testivus-{j}"));
+						var actorId = new ActorId($"testivus-{j}");
+						var actorIdSchemaKey = (ActorIdStateKey)actorId;
 						var actorIdKey = State.Keys.Single(k =>
-							k.Contains(StateSessionHelper.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey));
+							k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
 						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 						actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
-						actorIdState.Key.Should().Be(actorIdSchemaKey);
+						actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
 						actorIdState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");
 						actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
 						actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
-						actorIdState.State.Should().Be(actorIdSchemaKey);
+						actorIdState.State.Should().Be(actorIdSchemaKey.Key);
 
 
 						CheckActorState<int>($"testivus-{j}", "state1", (value) => value.Should().Be(1));
@@ -344,10 +349,11 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 				private void CheckActorState<T>(string actorName, string stateName, Action<T> checkValue)
 				{
-					var actorIdSchemaKey = StateSessionHelper.GetActorIdSchemaKey(new ActorId(actorName));
-
+					var actorId = new ActorId(actorName);
+					var actorIdSchemaKey = (ActorIdStateKey)actorId;
+					
 					var actorStateKey = State.Keys.Single(k =>
-						k.Contains(StateSessionHelper.ActorStateSchemaName) && k.Contains(actorIdSchemaKey) && k.Contains(stateName));
+						k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key) && k.Contains(stateName));
 					var actorState = GetState<ActorStateWrapper<T>>(actorStateKey);
 					actorState.Schema.Should().StartWith(StateSessionHelper.ActorStateSchemaName);
 					actorState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");

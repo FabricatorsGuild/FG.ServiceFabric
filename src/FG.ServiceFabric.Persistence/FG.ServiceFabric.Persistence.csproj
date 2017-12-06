@@ -224,6 +224,10 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\StateSession\FileSystem\FileSystemStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSessionManagerWithTransaction.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\IStateSessionManagerInternals.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionBaseDictionary.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionBaseObject.cs" />
+    <Compile Include="Services\Runtime\StateSession\Internal\StateSessionBaseQueue.cs" />
     <Compile Include="Services\Runtime\StateSession\Internal\StateSessionManagerBase.cs" />
     <Compile Include="Services\Runtime\StateSession\Internal\TextStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\Internal\TextStateSessionManagerWithTransaction.cs" />
@@ -232,6 +236,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
     <Compile Include="Services\Runtime\StateSession\ReliableState\ReliableStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\RwLock.cs" />
+    <Compile Include="Services\Runtime\StateSession\SchemaStateKey.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionException.cs" />
     <Compile Include="Services\Runtime\StateSession\StateSessionHelper.cs" />
     <Compile Include="Services\Runtime\StateSession\StateWrapper.cs" />

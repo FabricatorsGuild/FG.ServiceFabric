@@ -68,10 +68,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 			return UnescapeFileName(key);
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager,
+		protected override TextStateSession CreateSessionInternal(
+			StateSessionManagerBase<TextStateSession> manager,
+			bool readOnly,
 			IStateSessionObject[] stateSessionObjects)
 		{
-			return new FileSystemStateSession(this, stateSessionObjects);
+			return new FileSystemStateSession(this, readOnly, stateSessionObjects);
 		}
 
 
@@ -83,8 +85,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 
 			public FileSystemStateSession(
 				FileSystemStateSessionManager manager,
+				bool readOnly,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, stateSessionObjects)
+				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;
 

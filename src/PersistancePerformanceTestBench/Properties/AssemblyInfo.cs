@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("FG.ServiceFabric.Persistence")]
-[assembly: AssemblyDescription("External persistance utilities")]
+[assembly: AssemblyTitle("PersistancePerformanceTestBench")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Fabricators Guild")]
-[assembly: AssemblyProduct("FG.ServiceFabric.Persistence")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("PersistancePerformanceTestBench")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -19,7 +19,18 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 
-[assembly: InternalsVisibleTo("FG.ServiceFabric.Testing.Tests")]
-
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("61ce425b-f4b5-4981-8cf9-9a5c901add2b")]
+[assembly: Guid("0fa85908-bec9-472e-bd4c-a2a2163c3d99")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version
+//      Build Number
+//      Revision
+//
+// You can specify all the values or you can default the Build and Revision Numbers
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]

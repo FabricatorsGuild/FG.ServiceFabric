@@ -29,8 +29,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 			protected TextStateSession(
 				TextStateSessionManagerWithTransaction manager,
+				bool readOnly,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, stateSessionObjects)
+				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;
 			}
@@ -41,7 +42,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			{
 				return Read(id, checkExistsOnly: true) != null;
 			}
-			//protected abstract bool Contains(string id);
 
 			protected abstract string Read(string id, bool checkExistsOnly = false);
 
@@ -53,7 +53,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken());
 
-			protected override Task<bool> ContainsInternal(string id, string schema, string key,
+			protected override Task<bool> ContainsInternal(SchemaStateKey id,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
@@ -90,12 +90,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+					throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
 				}
 			}
 
-			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema,
-				string key, CancellationToken cancellationToken = new CancellationToken())
+			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
+				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
@@ -119,7 +119,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task SetValueInternalAsync(string id, string schema, string key, StateWrapper value,
+			protected override Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value,
 				Type valueType, CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
@@ -149,7 +149,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task RemoveInternalAsync(string id, string schema, string key,
+			protected override Task RemoveInternalAsync(SchemaStateKey id,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try

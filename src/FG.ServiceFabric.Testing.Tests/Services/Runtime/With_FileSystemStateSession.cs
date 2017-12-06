@@ -167,43 +167,75 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				{
 					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
 
-					var session1 = manager.CreateSession();
-					var session2 = manager.CreateSession();
 
-					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
-						CancellationToken.None);
+					var tasks = new List<Task>();
+					var task = new Task(async () => await SessionAWorker(manager));
+					task.Start();
+					tasks.Add(task);
+
+					task = new Task(async () => await SessionBWorker(manager));
+					task.Start();
+					tasks.Add(task);
+
+					await Task.WhenAll(tasks);
+				}
+
+
+				private async Task SessionBWorker(IStateSessionManager manager)
+				{
+					var session2 = manager.CreateSession();
 
 					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null,
 						CancellationToken.None);
 
-					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 					var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
-
-					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
 					var session2ValueBPreCommit = await session2.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 
-					session1ValueBPreCommit.HasValue.Should().Be(false);
 					session2ValueAPreCommit.HasValue.Should().Be(false);
 
-					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
 					session2ValueBPreCommit.Value.Should().Be("Value from session2 schema values key b");
 
-					await session1.CommitAsync();
 					await session2.CommitAsync();
 
-					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
-					var session2ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session2ValueAPostCommit = await session2.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session2ValueBPostCommit = await session2.GetValueAsync<string>("values", "b", CancellationToken.None);
 
-					session1ValueBPostCommit.Should().Be("Value from session2 schema values key b");
-					session2ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+					session2ValueAPostCommit.Should().Be("Value from session2 schema values key a");
+					session2ValueBPostCommit.Should().Be("Value from session2 schema values key b");
 				}
+
+
+
+				private async Task SessionAWorker(IStateSessionManager manager)
+				{
+					var session1 = manager.CreateSession();
+
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
+						CancellationToken.None);
+
+					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+
+					session1ValueBPreCommit.HasValue.Should().Be(false);
+
+					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
+
+					await session1.CommitAsync();
+
+					var session1ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
+
+					session1ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+					session1ValueBPostCommit.Should().Be("Value from session1 schema values key a");
+				}
+
 
 				[Test]
 				public async Task should_not_be_included_in_FindBykey()
 				{
 					var manager = new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
 
-					var session1 = manager.CreateSession();
+					var session1 = manager.CreateSession(readOnly: false);
 
 					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
 						CancellationToken.None);
@@ -426,10 +458,10 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// items and queue info state
 					State.Should().HaveCount(6);
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 0; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
 							.HaveCount(1, $"Expected _myQueue_{i} to be there");
 					}
 				}
@@ -450,13 +482,13 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var longs = await statefulServiceDemo.Dequeue(3);
 					longs.Should().BeEquivalentTo(new long[] {1, 2, 3});
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 3; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
-							.HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_QUEUE{i} to be there");
 
-						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
+						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Key;
 						var state = GetState<StateWrapper<long>>(key);
 						state.State.Should().Be(i + 1);
 					}
@@ -478,7 +510,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var longs = await statefulServiceDemo.Dequeue(5);
 
 					State.Should().HaveCount(1);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					// Peek should show empty
 					var hasMore = await statefulServiceDemo.Peek();
@@ -504,7 +536,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -517,7 +549,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
 						  ""state"": {
 							""HeadKey"": 4,
 							""TailKey"": 5
@@ -527,7 +559,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueuItem"",
-						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}");
 
 					// Enqueue 5 items
@@ -540,7 +572,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -553,7 +585,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("Overlord-StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
 						  ""state"": {
 							""HeadKey"": %%HEAD%%,
 							""TailKey"": %%TAIL%%
@@ -563,7 +595,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueuItem"",
-						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""Overlord-StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}".Replace("%%HEAD%%", (long.MaxValue - 1).ToString()).Replace("%%TAIL%%", (long.MaxValue).ToString()));
 
 					// Enqueue 5 items
@@ -576,7 +608,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);

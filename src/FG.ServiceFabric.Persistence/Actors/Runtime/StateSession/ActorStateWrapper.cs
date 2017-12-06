@@ -21,8 +21,8 @@ namespace FG.ServiceFabric.Actors.Runtime.StateSession
 		[JsonProperty("actorId")]
 		private string ActorIdValue
 		{
-			get { return StateSessionHelper.GetActorIdSchemaKey(ActorId); }
-			set { ActorId = StateSessionHelper.TryGetActorIdFromSchemaKey(value); }
+			get => ActorSchemaKey.GetActorIdSchemaKey(ActorId);
+			set => ActorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(value);
 		}
 
 		[JsonIgnore]

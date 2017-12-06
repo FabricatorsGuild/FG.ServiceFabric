@@ -59,9 +59,10 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				_stateSessionManager = stateSessionManager;
 			}
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
 			protected override async Task RunAsync(CancellationToken cancellationToken)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 			{
-
 				OnRunAsyncLoop(0);
 			}
 
@@ -247,7 +248,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 				await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.CreateSession(readOnly: false))
 				{
 					for (int i = 0; i < count; i++)
 					{
@@ -263,7 +264,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 				await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
 
 				var longs = new long[count];
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.CreateSession(readOnly: false))
 				{
 					for (int i = 0; i < count; i++)
 					{
@@ -349,8 +350,6 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 		public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
 		{
 			private readonly IStateSessionManager _stateSessionManager;
-
-			private long _internalCounter = 1L;
 
 			public StatefulServiceDemo(StatefulServiceContext context, IStateSessionManager stateSessionManager)
 				: base(context, stateSessionManager)

@@ -12,6 +12,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 	public interface IStateSessionObject
 	{
 		string Schema { get; }
+		bool IsReadOnly { get; }
 	}
 
 	public interface IStateSessionQueue<T> : IStateSessionObject
@@ -53,11 +54,21 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IStateSessionQueue<T>> OpenQueue<T>(string schema,
 			CancellationToken cancellationToken = default(CancellationToken));
 
+		Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema, bool readOnly,
+			CancellationToken cancellationToken = default(CancellationToken));
+
+		Task<IStateSessionQueue<T>> OpenQueue<T>(string schema, bool readOnly,
+			CancellationToken cancellationToken = default(CancellationToken));
+
+		IStateSession CreateSession(bool readOnly, params IStateSessionObject[] stateSessionObjects);
+
 		IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects);
 	}
 
 	public interface IStateSession : IDisposable
 	{
+		bool IsReadOnly { get; }
+
 		Task<bool> Contains<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
 		Task<bool> Contains(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
 

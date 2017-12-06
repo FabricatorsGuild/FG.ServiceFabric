@@ -11,6 +11,7 @@ using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_InMemoryStateSession;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors.Query;
@@ -97,35 +98,66 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
-					var session1 = manager.CreateSession();
-					var session2 = manager.CreateSession();
 
-					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
-						CancellationToken.None);
+					var tasks = new List<Task>();
+					var task = new Task(async () => await SessionAWorker(manager));
+					task.Start();
+					tasks.Add(task);
+
+					task = new Task(async () => await SessionBWorker(manager));
+					task.Start();
+					tasks.Add(task);
+
+					await Task.WhenAll(tasks);					
+				}
+
+
+				private async Task SessionBWorker(IStateSessionManager manager)
+				{
+					var session2 = manager.CreateSession();
 
 					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null,
 						CancellationToken.None);
 
-					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 					var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
-
-					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
 					var session2ValueBPreCommit = await session2.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 
-					session1ValueBPreCommit.HasValue.Should().Be(false);
 					session2ValueAPreCommit.HasValue.Should().Be(false);
 
-					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
 					session2ValueBPreCommit.Value.Should().Be("Value from session2 schema values key b");
 
-					await session1.CommitAsync();
 					await session2.CommitAsync();
 
-					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
-					var session2ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session2ValueAPostCommit = await session2.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session2ValueBPostCommit = await session2.GetValueAsync<string>("values", "b", CancellationToken.None);
 
-					session1ValueBPostCommit.Should().Be("Value from session2 schema values key b");
-					session2ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+					session2ValueAPostCommit.Should().Be("Value from session2 schema values key a");
+					session2ValueBPostCommit.Should().Be("Value from session2 schema values key b");
+				}
+
+
+
+				private async Task SessionAWorker(IStateSessionManager manager)
+				{
+					var session1 = manager.CreateSession();
+
+					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
+						CancellationToken.None);
+
+					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+
+					session1ValueBPreCommit.HasValue.Should().Be(false);
+
+					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
+
+					await session1.CommitAsync();
+
+					var session1ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
+					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
+
+					session1ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+					session1ValueBPostCommit.Should().Be("Value from session1 schema values key a");
 				}
 
 				[Test]
@@ -135,7 +167,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
-					var session1 = manager.CreateSession();
+					var session1 = manager.CreateSession(readOnly: false);
 
 					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
 						CancellationToken.None);
@@ -404,7 +436,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 			}
 
 
-			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManagerWithTransaction<
+			public class Service_with_simple_queue_enqueued : TestBaseInMemoryStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.StatefulServiceDemo>
 			{
 				private IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
@@ -433,11 +465,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// items and queue info state
 					State.Should().HaveCount(6);
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 0; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
-							.HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_QUEUE-{i} to be there");
 					}
 				}
 
@@ -455,15 +487,15 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					// Dequeue 3 items
 					var longs = await statefulServiceDemo.Dequeue(3);
-					longs.Should().BeEquivalentTo(new long[] {1, 2, 3});
+					longs.Should().BeEquivalentTo(new long[] { 1, 2, 3 });
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 3; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
-							.HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_QUEUE-{i} to be there");
 
-						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
+						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Key;
 						var state = GetState<StateWrapper<long>>(key);
 						state.State.Should().Be(i + 1);
 					}
@@ -485,7 +517,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var longs = await statefulServiceDemo.Dequeue(5);
 
 					State.Should().HaveCount(1);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					// Peek should show empty
 					var hasMore = await statefulServiceDemo.Peek();
@@ -511,30 +543,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
-
-					var item = await statefulServiceDemo.Dequeue(1);
-					item.Single().Should().Be(6L);
-				}
-
-				[Test]
-				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
-				{
-					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
-						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
-							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
-
-					// Enqueue 5 items
-					await statefulServiceDemo.Enqueue(5);
-
-					// Dequeue 3 items
-					var longs = await statefulServiceDemo.Dequeue(5);
-
-					// Enqueue 5 items
-					await statefulServiceDemo.Enqueue(3);
-
-					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -550,7 +559,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(1);
 					await statefulServiceDemo.Dequeue(1);
 
-					State.Single().Key.Should().Be(@"fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info");
+					State.Single().Key.Should().Be(@"fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO");
 					State.Single().Value.TrimInternalWhitespace(true).Replace("\r\n", "").Should().Be(@"{
 						  ""state"": {
 							""HeadKey"": 0,
@@ -559,10 +568,46 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
 						  ""partitionKey"": ""range-0"",
 						  ""schema"": ""myQueue"",
+						  ""key"": ""QUEUEINFO"",
+						  ""type"": ""ReliableQueueItem"",
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
+						}".TrimInternalWhitespace(true));
+				}
+
+				[Test]
+				public async Task _should_be_able_to_enqueue_new_items_when_queue_info_is_loaded_from_prior_state()
+				{
+					var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
+							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
+
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
+						  ""state"": {
+							""HeadKey"": 4,
+							""TailKey"": 5
+						  },
+						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
+						  ""partitionKey"": ""range-0"",
+						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueueItem"",
-						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
-						}".TrimInternalWhitespace(true));
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
+						}");
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(5);
+
+					// Dequeue 3 items
+					var longs = await statefulServiceDemo.Dequeue(5);
+
+					// Enqueue 5 items
+					await statefulServiceDemo.Enqueue(3);
+
+					State.Should().HaveCount(4);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
+
+					var item = await statefulServiceDemo.Dequeue(1);
+					item.Single().Should().Be(6L);
 				}
 
 				[Test]
@@ -572,7 +617,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
 						  ""state"": {
 							""HeadKey"": %%HEAD%%,
 							""TailKey"": %%TAIL%%
@@ -582,7 +627,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueueItem"",
-						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}".Replace("%%HEAD%%", (long.MaxValue - 1).ToString()).Replace("%%TAIL%%", (long.MaxValue).ToString()));
 
 					// Enqueue 5 items
@@ -595,7 +640,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -715,7 +760,6 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					length.Should().Be(6);
 				}
 
-
 				[Test]
 				public async Task _should_be_able_to_enumerate_all_enqueued_items()
 				{
@@ -729,7 +773,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] {1, 2, 3, 4, 5});
+					all.Should().Equal(new long[] { 1, 2, 3, 4, 5 });
 				}
 
 				[Test]
@@ -768,7 +812,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] {4, 5});
+					all.Should().Equal(new long[] { 4, 5 });
 				}
 
 				[Test]
@@ -781,32 +825,32 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // 1 2 3 4 5
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {1, 2, 3, 4, 5});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 1, 2, 3, 4, 5 });
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(3); // _ _ _ 4 5
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {4, 5});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5 });
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // _ _ _ 4 5 6 7 8 9 10
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {4, 5, 6, 7, 8, 9, 10});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 4, 5, 6, 7, 8, 9, 10 });
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(2); // _ _ _ _ _ 6 7 8 9 10
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {6, 7, 8, 9, 10});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10 });
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Enqueue(5); // _ _ _ _ _ 6 7 8 9 10 11 12 13 14 15
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 });
 
 					// Enqueue 5 items
 					await statefulServiceDemo.Dequeue(3); // _ _ _ _ _ _ _ _ 9 10 11 12 13 14 15
-					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] {9, 10, 11, 12, 13, 14, 15});
+					(await statefulServiceDemo.EnumerateAll()).Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
 
 					// Enumerate all
 					var all = await statefulServiceDemo.EnumerateAll();
 
-					all.Should().Equal(new long[] {9, 10, 11, 12, 13, 14, 15});
+					all.Should().Equal(new long[] { 9, 10, 11, 12, 13, 14, 15 });
 				}
 			}
 		}

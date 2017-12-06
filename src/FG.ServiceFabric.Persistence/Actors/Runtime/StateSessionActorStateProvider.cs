@@ -37,16 +37,16 @@ namespace FG.ServiceFabric.Actors.Runtime
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-			var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
+			var key = new ActorIdStateKey(actorId);
 
 			var existingActor = await GetSession()
-				.TryGetValueAsync<string>(StateSessionHelper.ActorIdStateSchemaName, key, cancellationToken);
+				.TryGetValueAsync<string>(key.Schema, key.Key, cancellationToken);
 			if (!existingActor.HasValue)
 			{
-				var actorIdState = StateSessionHelper.GetActorIdSchemaKey(actorId);
+				var actorIdState = key.Key;
 				// e.g.: servicename_partition1_ACTORID_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
 				var metadata = new ActorStateValueMetadata(StateWrapperType.ActorId, actorId);
-				await GetSession().SetValueAsync(StateSessionHelper.ActorIdStateSchemaName, key, actorIdState, metadata,
+				await GetSession().SetValueAsync(key.Schema, key.Key, actorIdState, metadata,
 					cancellationToken);
 			}
 		}
@@ -70,11 +70,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-			var schemaName = StateSessionHelper.GetActorStateSchemaName(actorStateName);
-			var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
+			var key = new ActorStateKey(actorId, actorStateName);
 
 			// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-			var state = await GetSession().GetValueAsync<T>(schemaName, key, cancellationToken);
+			var state = await GetSession().GetValueAsync<T>(key.Schema, key.Key, cancellationToken);
 			return state;
 		}
 
@@ -85,8 +84,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 			foreach (var actorStateChange in stateChanges)
 			{
-				var schemaName = StateSessionHelper.GetActorStateSchemaName(actorStateChange.StateName);
-				var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
+				var key = new ActorStateKey(actorId, actorStateChange.StateName);
 
 				switch (actorStateChange.ChangeKind)
 				{
@@ -95,14 +93,14 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 						// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
 						var metadata = new ActorStateValueMetadata(StateWrapperType.ActorState, actorId);
-						await GetSession().SetValueAsync(schemaName, key, actorStateChange.Type, actorStateChange.Value, metadata,
+						await GetSession().SetValueAsync(key.Schema, key.Key, actorStateChange.Type, actorStateChange.Value, metadata,
 							cancellationToken);
 
 						break;
 					case (StateChangeKind.Remove):
 
 						// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-						await GetSession().RemoveAsync(schemaName, key, cancellationToken);
+						await GetSession().RemoveAsync(key.Schema, key.Key, cancellationToken);
 
 						break;
 					case (StateChangeKind.None):
@@ -117,11 +115,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-			var schemaName = StateSessionHelper.GetActorStateSchemaName(actorStateName);
-			var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
+			var key = new ActorStateKey(actorId, actorStateName);
 
 			// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-			return GetSession().Contains(schemaName, key, cancellationToken);
+			return GetSession().Contains(key.Schema, key.Key, cancellationToken);
 		}
 
 		public async Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = default(CancellationToken))
@@ -131,13 +128,13 @@ namespace FG.ServiceFabric.Actors.Runtime
 			// Save to database
 			try
 			{
-				var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
+				var key = new ActorIdStateKey(actorId);
 
-				var schemaNames = await GetSession().EnumerateSchemaNamesAsync(key, cancellationToken);
+				var schemaNames = await GetSession().EnumerateSchemaNamesAsync(key.Key, cancellationToken);
 				foreach (var schemaName in schemaNames)
 				{
 					// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-					await GetSession().RemoveAsync(schemaName, key, cancellationToken);
+					await GetSession().RemoveAsync(schemaName, key.Key, cancellationToken);
 				}
 				await GetSession().CommitAsync();
 			}
@@ -155,8 +152,9 @@ namespace FG.ServiceFabric.Actors.Runtime
 			// Save to database
 			try
 			{
-				var key = StateSessionHelper.GetActorIdSchemaKey(actorId);
-				var baseSchemaNames = await GetSession().EnumerateSchemaNamesAsync(key, cancellationToken);
+				var key = new ActorIdStateKey(actorId);
+
+				var baseSchemaNames = await GetSession().EnumerateSchemaNamesAsync(key.Key, cancellationToken);
 
 				// e.g.: servicename_partition1_ACTORSTATE-xyz_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
 				return baseSchemaNames
@@ -182,7 +180,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 				var result = await GetSession()
 					.FindByKeyPrefixAsync<string>(schemaName, null, numItemsToReturn, continuationToken, cancellationToken);
 				// e.g.: servicename_partition1_ACTORID_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-				var actorIds = result.Items.Select(StateSessionHelper.TryGetActorIdFromSchemaKey).ToArray();
+				var actorIds = result.Items.Select(ActorSchemaKey.TryGetActorIdFromSchemaKey).ToArray();
 				return new PagedResult<ActorId>() {Items = actorIds, ContinuationToken = result.ContinuationToken};
 			}
 			catch (Exception ex)
@@ -202,15 +200,14 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 			try
 			{
-				var schemaName = StateSessionHelper.ActorReminderSchemaName;
-				var stateName = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminder.Name);
+				var key = new ActorReminderStateKey(actorId, reminder.Name);
 
 				var actorReminderData = new ActorReminderData(actorId, reminder.Name, reminder.DueTime, reminder.Period,
 					reminder.State, DateTime.UtcNow);
 
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
 				var metadata = new ActorStateValueMetadata(StateWrapperType.ActorReminder, actorId);
-				await GetSession().SetValueAsync(schemaName, stateName, actorReminderData, metadata, cancellationToken);
+				await GetSession().SetValueAsync(key.Schema, key.Key, actorReminderData, metadata, cancellationToken);
 				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)
@@ -226,11 +223,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 			try
 			{
-				var schemaName = StateSessionHelper.ActorReminderSchemaName;
-				var stateName = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminderName);
+				var key = new ActorReminderStateKey(actorId, reminderName);
 
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
-				await GetSession().RemoveAsync(schemaName, stateName, cancellationToken);
+				await GetSession().RemoveAsync(key.Schema, key.Key, cancellationToken);
 				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)
@@ -251,11 +247,10 @@ namespace FG.ServiceFabric.Actors.Runtime
 					var actorId = reminderNamesByActor.Key;
 					foreach (var actorReminderName in reminderNamesByActor.Value)
 					{
-						var schemaName = StateSessionHelper.ActorReminderSchemaName;
-						var stateName = StateSessionHelper.GetActorReminderSchemaKey(actorId, actorReminderName);
+						var key = new ActorReminderStateKey(actorId, actorReminderName);
 
 						// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
-						await GetSession().RemoveAsync(schemaName, stateName, cancellationToken);
+						await GetSession().RemoveAsync(key.Schema, key.Key, cancellationToken);
 					}
 				}
 				await GetSession().CommitAsync();
@@ -314,13 +309,12 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 			try
 			{
-				var schemaName = StateSessionHelper.ActorReminderCompletedSchemaName;
-				var key = StateSessionHelper.GetActorReminderSchemaKey(actorId, reminder.Name);
+				var key = new ActorReminderStateKey(actorId, reminder.Name);
 
 				var reminderCompletedState = new ActorReminderCompletedData(actorId, reminder.Name, DateTime.UtcNow);
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
 				var metadata = new ActorStateValueMetadata(StateWrapperType.ActorReminderCompleted, actorId);
-				await GetSession().SetValueAsync(schemaName, key, reminderCompletedState, metadata, cancellationToken);
+				await GetSession().SetValueAsync(key.Schema, key.Key, reminderCompletedState, metadata, cancellationToken);
 				await GetSession().CommitAsync();
 			}
 			catch (Exception ex)

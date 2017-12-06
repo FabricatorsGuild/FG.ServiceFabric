@@ -23,10 +23,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 			_storage = state ?? new ConcurrentDictionary<string, string>();
 		}
 
-		protected override TextStateSession CreateSessionInternal(StateSessionManagerBase<TextStateSession> manager,
+		protected override TextStateSession CreateSessionInternal(
+			StateSessionManagerBase<TextStateSession> manager,
+			bool readOnly,
 			IStateSessionObject[] stateSessionObjects)
 		{
-			return new InMemoryStateSession(this, stateSessionObjects);
+			return new InMemoryStateSession(this, readOnly, stateSessionObjects);
 		}
 
 
@@ -36,8 +38,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
 			public InMemoryStateSession(
 				InMemoryStateSessionManager manager,
+				bool readOnly,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, stateSessionObjects)
+				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;
 			}

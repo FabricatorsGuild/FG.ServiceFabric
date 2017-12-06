@@ -336,11 +336,11 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					// items and queue info state
 					State.Should().HaveCount(6);
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 0; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
-							.HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_QUEUE-{i} to be there");
 					}
 				}
 
@@ -360,13 +360,13 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var longs = await statefulServiceDemo.Dequeue(3);
 					longs.Should().BeEquivalentTo(new long[] {1, 2, 3});
 
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 					for (int i = 3; i < 5; i++)
 					{
-						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Should()
-							.HaveCount(1, $"Expected _myQueue_{i} to be there");
+						State.Where(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Should()
+							.HaveCount(1, $"Expected _myQueue_QUEUE-{i} to be there");
 
-						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_{i}")).Key;
+						var key = State.Single(s => s.Key.Contains("range-0") && s.Key.Contains($"_myQueue_QUEUE-{i}")).Key;
 						var state = GetState<StateWrapper<long>>(key);
 						state.State.Should().Be(i + 1);
 					}
@@ -388,7 +388,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					var longs = await statefulServiceDemo.Dequeue(5);
 
 					State.Should().HaveCount(1);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					// Peek should show empty
 					var hasMore = await statefulServiceDemo.Peek();
@@ -414,7 +414,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -430,7 +430,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(1);
 					await statefulServiceDemo.Dequeue(1);
 
-					State.Single().Key.Should().Be(@"fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info");
+					State.Single().Key.Should().Be(@"fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO");
 					State.Single().Value.TrimInternalWhitespace(true).Replace("\r\n", "").Should().Be(@"{
 						  ""state"": {
 							""HeadKey"": 0,
@@ -439,9 +439,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
 						  ""partitionKey"": ""range-0"",
 						  ""schema"": ""myQueue"",
-						  ""key"": ""queue-info"",
+						  ""key"": ""QUEUEINFO"",
 						  ""type"": ""ReliableQueueItem"",
-						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}".TrimInternalWhitespace(true));
 				}
 
@@ -452,7 +452,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
 						  ""state"": {
 							""HeadKey"": 4,
 							""TailKey"": 5
@@ -462,7 +462,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueueItem"",
-						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}");
 
 					// Enqueue 5 items
@@ -475,7 +475,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);
@@ -488,7 +488,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						.CreateServiceProxy<FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_queue_enqueued.IStatefulServiceDemo>(
 							_fabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"), new ServicePartitionKey(int.MinValue));
 
-					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info", @"{
+					State.Add("fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO", @"{
 						  ""state"": {
 							""HeadKey"": %%HEAD%%,
 							""TailKey"": %%TAIL%%
@@ -498,7 +498,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueueItem"",
-						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_queue-info""
+						  ""id"": ""fabric:/Overlord/StatefulServiceDemo_range-0_myQueue_QUEUEINFO""
 						}".Replace("%%HEAD%%", (long.MaxValue - 1).ToString()).Replace("%%TAIL%%", (long.MaxValue).ToString()));
 
 					// Enqueue 5 items
@@ -511,7 +511,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await statefulServiceDemo.Enqueue(3);
 
 					State.Should().HaveCount(4);
-					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_queue-info")).Should().HaveCount(1);
+					State.Where(s => s.Key.Contains("range-0") && s.Key.Contains("_myQueue_QUEUEINFO")).Should().HaveCount(1);
 
 					var item = await statefulServiceDemo.Dequeue(1);
 					item.Single().Should().Be(6L);

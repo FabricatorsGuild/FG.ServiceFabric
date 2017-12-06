@@ -88,8 +88,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				throw;
 			}
-			catch (Exception e)
+			catch (Exception)
 			{
+				// TODO: inject logger and log this
 				throw;
 			}
 		}
@@ -144,16 +145,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		{
 			private readonly DocumentClient _documentClient;
 			private readonly DocumentDbStateSessionManagerWithTransactions _manager;
-			private IEnumerable<IStateSessionObject> _attachedObjects;
 
-			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionObject[] stateSessionObjects) 
-				: base(manager, stateSessionObjects)
+			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, bool readOnly, IStateSessionObject[] stateSessionObjects) 
+				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;
 				_documentClient = _manager.CreateClient().GetAwaiter().GetResult();				
 			}
-
-			private IStateSessionManagerInternals _managerInternals => _manager;
 
 			private string DatabaseName => _manager._databaseName;
 			private string DatabaseCollection => _manager._collection;
@@ -167,10 +165,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			}
 
 
-			protected override Task<bool> ContainsInternal(string id, string schema, string key,
+			protected override Task<bool> ContainsInternal(SchemaStateKey id,
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
-				var schemaKey = _managerInternals.GetSchemaStateKey(schema, key);
 				try
 				{
 					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
@@ -180,7 +177,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 								PartitionKey = new PartitionKey(ServicePartitionKey),
 								MaxItemCount = 1
 							})
-						.Where(d => d.Id == schemaKey);
+						.Where(d => d.Id == id);
 
 					// ReSharper disable once UnusedVariable - cannot use Any() on DocumentQueryException
 					foreach (var document in documentCollectionQuery)
@@ -195,11 +192,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return Task.FromResult(false);
 					}
-					throw new StateSessionException($"ContainsInternal for {id} failed", dcex);
+					throw new StateSessionException($"ContainsInternal for {id} failed, {dcex.Message}", dcex); 
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"ContainsInternal for {id} failed", ex);
+					throw new StateSessionException($"ContainsInternal for {id} failed, {ex.Message}", ex);
 				}
 			}
 
@@ -245,7 +242,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 						{
 							resultCount++;
 
-							var schemaStateKey = StateSessionHelper.SchemaStateKey.Parse(documentId.Id);
+							var schemaStateKey = SchemaStateKey.Parse(documentId.Id);
 							results.Add(schemaStateKey.Key);
 
 							if (resultCount >= maxNumResults)
@@ -261,11 +258,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed", dcex);
+					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed", ex);
+					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {ex.Message}", ex);
 				}
 			}
 
@@ -297,18 +294,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed", dcex);
+					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed", ex);
+					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {ex.Message}", ex);
 				}
 			}
 
-			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(string id, string schema, string key,
+			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
 				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var schemaKey = _managerInternals.GetSchemaStateKey(schema, key);
+			{				
 				try
 				{
 					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
@@ -318,7 +314,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 								PartitionKey = new PartitionKey(ServicePartitionKey),
 								MaxItemCount = 1
 							})
-						.Where(d => d.Id == schemaKey);
+						.Where(d => d.Id == id);
 
 					foreach (var document in documentCollectionQuery)
 					{
@@ -332,11 +328,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
 					}
-					throw new StateSessionException($"TryGetValueAsync for {schemaKey} failed", dcex);
+					throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"TryGetValueAsync for {schemaKey} failed", ex);
+					throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
 				}
 			}
 
@@ -356,15 +352,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						throw new KeyNotFoundException($"State with {id} does not exist");
 					}
-					throw new StateSessionException($"GetValueAsync for {id} failed", dcex);
+					throw new StateSessionException($"GetValueAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+					throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
 				}
 			}
 
-			protected override async Task SetValueInternalAsync(string id, string schema, string key, StateWrapper value, Type valueType,
+			protected override async Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value, Type valueType,
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
 				try
@@ -375,15 +371,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"SetValueAsync for {id} failed", dcex);
+					throw new StateSessionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
-					throw new StateSessionException($"SetValueAsync for {id} failed", ex);
+					throw new StateSessionException($"SetValueAsync for {id} failed, {ex.Message}", ex);
 				}
 			}
 
-			protected override async Task RemoveInternalAsync(string id, string schema, string key,
+			protected override async Task RemoveInternalAsync(SchemaStateKey id,
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
 				try
@@ -452,9 +448,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			throw new NotImplementedException();
 		}
 
-		protected override DocumentDbStateSession CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager, IStateSessionObject[] stateSessionObjects)
+		protected override DocumentDbStateSession CreateSessionInternal(
+			StateSessionManagerBase<DocumentDbStateSession> manager, 
+			bool readOnly, 
+			IStateSessionObject[] stateSessionObjects)
 		{
-			return new DocumentDbStateSession(this, stateSessionObjects);
+			return new DocumentDbStateSession(this, readOnly, stateSessionObjects);
 		}
 	}
 }
