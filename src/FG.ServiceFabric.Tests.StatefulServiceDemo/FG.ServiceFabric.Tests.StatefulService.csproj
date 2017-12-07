@@ -55,7 +55,7 @@
       <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj">
-      <Project>{c3b564e2-fbb9-47b2-b820-4cc63bf66ae2}</Project>
+      <Project>{C3B564E2-FBB9-47B2-B820-4CC63BF66AE2}</Project>
       <Name>FG.ServiceFabric.Tests.Persistence</Name>
     </ProjectReference>
   </ItemGroup>
