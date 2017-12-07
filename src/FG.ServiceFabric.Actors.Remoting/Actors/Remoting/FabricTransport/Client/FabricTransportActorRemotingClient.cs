@@ -29,7 +29,7 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport.Client
 			_logger = logger;
 		}
 
-		internal IServiceRemotingClient InnerClient => base.InnerClient;
+		internal new IServiceRemotingClient InnerClient => base.InnerClient;
 
 		private string GetActorMethodName(ActorMessageHeaders actorMessageHeaders)
 		{

@@ -10,14 +10,13 @@ namespace FG.ServiceFabric.Services.Runtime
 {
 	public abstract class StatelessService : Microsoft.ServiceFabric.Services.Runtime.StatelessService
 	{
-		private Func<IActorClientLogger> _actorClientLoggerFactory;
+		private readonly Func<IActorClientLogger> _actorClientLoggerFactory;
 		private IActorProxyFactory _actorProxyFactory;
 		private ApplicationUriBuilder _applicationUriBuilder;
-		private Func<IServiceClientLogger> _serviceClientLoggerFactory;
+		private readonly Func<IServiceClientLogger> _serviceClientLoggerFactory;
 		private IServiceProxyFactory _serviceProxyFactory;
-		private CancellationTokenSource _tokenSource = null;
 
-		public StatelessService(StatelessServiceContext serviceContext,
+		protected StatelessService(StatelessServiceContext serviceContext,
 			Func<IActorClientLogger> actorClientLoggerFactory = null,
 			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext)
 		{

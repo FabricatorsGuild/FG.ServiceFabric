@@ -217,7 +217,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				_manager = manager;
 
 				IsReadOnly = readOnly;
-				Console.WriteLine($"Accuiring {(IsReadOnly ? "Read" : "Write")} lock on thread {Thread.CurrentThread.ManagedThreadId}");
 				_rwLock = IsReadOnly ? _managerInternals.Lock.AcquireReadLock() : _managerInternals.Lock.AcquireWriteLock();
 			}
 
