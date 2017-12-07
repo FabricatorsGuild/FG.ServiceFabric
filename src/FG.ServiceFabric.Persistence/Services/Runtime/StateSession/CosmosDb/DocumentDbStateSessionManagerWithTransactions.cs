@@ -24,6 +24,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 	{
 		private object _lock = new object();
 
+		private DocumentClient _client;
+
 		private readonly string _managerInstance;
 		private readonly IDocumentDbStateSessionManagerLogger _logger;
 		private readonly string _collection;
@@ -69,7 +71,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		{
 			try
 			{
-				var client = await CreateClient();
+				var client = GetClient();
 				var dict = new Dictionary<string, string>();
 				var feedResponse = await client.ReadDocumentFeedAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection));
 
@@ -97,7 +99,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
 		async Task IDocumentDbDataManager.CreateCollection(string collectionName)
 		{
-			var client = await CreateClient();
+			var client = GetClient();
 
 			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
 
@@ -116,29 +118,39 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			await client.DestroyCollection(_databaseName, _collection);
 		}
 
-		private async Task<DocumentClient> CreateClient()
+		private DocumentClient CreateClient()
 		{
 			_logger.CreatingClient();
-			var client = await _factory.OpenAsync(
-				databaseName: _databaseName,
-				collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
-				endpointUri: new Uri(_endpointUri),
-				primaryKey: _collectionPrimaryKey,
-				connectionPolicySetting: _connectionPolicySetting
-			);
-
 			lock (_lock)
 			{
+				_client = _factory.OpenAsync(
+					databaseName: _databaseName,
+					collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+					endpointUri: new Uri(_endpointUri),
+					primaryKey: _collectionPrimaryKey,
+					connectionPolicySetting: _connectionPolicySetting
+				).GetAwaiter().GetResult();
+
+			
 				if (!_collectionExists)
 				{
-					client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter().GetResult();
+					_client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter().GetResult();
 					_collectionExists = true;
 				}
 			}
 
-			return client;
+			return _client;
 		}
 
+		private DocumentClient GetClient()
+		{
+			if (_client == null)
+			{				
+				_client = CreateClient();
+			}
+
+			return _client;
+		}
 
 		public sealed class DocumentDbStateSession : StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>.StateSessionBase<
 			DocumentDbStateSessionManagerWithTransactions>, IStateSession
@@ -150,7 +162,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;
-				_documentClient = _manager.CreateClient().GetAwaiter().GetResult();				
+				_documentClient = _manager.GetClient();
 			}
 
 			private string DatabaseName => _manager._databaseName;

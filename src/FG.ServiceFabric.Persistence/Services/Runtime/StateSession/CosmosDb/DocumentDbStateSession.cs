@@ -17,31 +17,6 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
-	public interface IStateQuerySessionManager
-	{
-		IStateQuerySession CreateSession();
-	}
-
-	public interface IStateQuerySession
-	{
-		Task<IEnumerable<string>> GetServices();
-		Task<IEnumerable<string>> GetPartitions(string service);
-		Task<IEnumerable<string>> GetStates(string service, string partition);
-		Task<IEnumerable<string>> GetActors(string service, string partition);
-		Task<IEnumerable<string>> GetActorReminders(string service, string partition, string actor);
-	}
-
-	public interface IDocumentDbDataManager
-	{
-		string GetCollectionName();
-
-		Task<IDictionary<string, string>> GetCollectionDataAsync(string collectionName);
-
-		Task CreateCollection(string collectionName);
-
-		Task DestroyCollecton(string collectionName);
-	}
-
 	[Obsolete("Use DocumentDbStateSessionWithTransactions instead", true)]
 	public class DocumentDbStateSessionManager :
 		StateSessionManagerBase<DocumentDbStateSessionManager.DocumentDbStateSession>, IStateSessionManager,

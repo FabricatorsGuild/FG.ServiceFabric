@@ -344,6 +344,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				}
 			}
 
+			[Ignore("Only run these tests with a live Cosmos Db or a Cosmos Db emulator, change the settings to connect to the instance")]
 			public class Service_with_simple_dictionary : TestBaseForDocumentDbStateSessionManager<
 				FG.ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo>
 			{
