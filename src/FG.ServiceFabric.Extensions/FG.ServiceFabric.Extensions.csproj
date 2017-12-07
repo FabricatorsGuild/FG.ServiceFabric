@@ -11,25 +11,8 @@
     <AssemblyName>FG.ServiceFabric.Extensions</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp></NuGetPackageImportStamp>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
@@ -51,8 +34,8 @@
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>md $(ProjectPath)\..\..\..\nugetfeed
-$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nugetfeed</PostBuildEvent>
+    <PostBuildEvent>if not exist "$(SolutionDir)..\nugetfeed" md "$(SolutionDir)..\nugetfeed"
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
@@ -185,11 +168,6 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory ./../../../../nuget
     <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManagerSessionException.cs" />
     <Compile Include="Services\Runtime\StatefulService.cs" />
     <Compile Include="Services\Runtime\StatelessService.cs" />
-    <Compile Include="Services\Runtime\WrappedReliableDictionary.cs" />
-    <Compile Include="Services\Runtime\WrappedStatefulServiceStateManager.cs" />
-    <Compile Include="Services\Runtime\WrappedStatefulServiceStateManagerSession.cs" />
-    <Compile Include="Services\Runtime\WrappedStateManagerReplica.cs" />
-    <Compile Include="Services\Runtime\WrappedStateProviderReplica.cs" />
     <Compile Include="Utils\ISettingsProvider.cs" />
     <Compile Include="Utils\ServiceConfigSettingsProvider.cs" />
     <Compile Include="Utils\SettingsProviderBase.cs" />
