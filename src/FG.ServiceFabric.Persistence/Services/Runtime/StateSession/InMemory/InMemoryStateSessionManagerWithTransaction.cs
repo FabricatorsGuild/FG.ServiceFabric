@@ -26,10 +26,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
 		protected override TextStateSession CreateSessionInternal
 			(StateSessionManagerBase<TextStateSession> manager,
-			bool readOnly,
+			IStateSessionReadOnlyObject[] stateSessionObjects)
+		{
+			return new InMemoryStateSession(this, stateSessionObjects);
+		}
+
+		protected override TextStateSession CreateSessionInternal
+		(StateSessionManagerBase<TextStateSession> manager,
 			IStateSessionObject[] stateSessionObjects)
 		{
-			return new InMemoryStateSession(this, readOnly, stateSessionObjects);
+			return new InMemoryStateSession(this, stateSessionObjects);
 		}
 
 		private sealed class InMemoryStateSession : TextStateSession, IStateSession
@@ -38,33 +44,43 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
 			public InMemoryStateSession(
 				InMemoryStateSessionManagerWithTransaction manager,
-				bool readOnly,
+				IStateSessionReadOnlyObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
+			{
+				_manager = manager;
+			}
+			public InMemoryStateSession(
+				InMemoryStateSessionManagerWithTransaction manager,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, readOnly, stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 			}
 
 			private IDictionary<string, string> Storage => _manager._storage;
 
-			protected override string Read(string id, bool checkExistsOnly = false)
+			protected override async Task<string> ReadAsync(string id, bool checkExistsOnly = false)
 			{
 				if (Storage.ContainsKey(id))
 				{
 					// Quick return not-null value if check for existance only
+					await Task.Delay(1);
 					return checkExistsOnly ? "" : Storage[id];
 				}
-				return null;
+				await Task.Delay(1);
+				return (string)null;
 			}
 
-			protected override void Delete(string id)
+			protected override async Task DeleteAsync(string id)
 			{
 				Storage.Remove(id);
+				await Task.Delay(1);
 			}
 
-			protected override void Write(string id, string content)
+			protected override async Task WriteAsync(string id, string content)
 			{
 				Storage[id] = content;
+				await Task.Delay(1);
 			}
 
 			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,

@@ -5,7 +5,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
 	public static class StateSessionObjectExtensions
 	{
-		public static string AsList(this IStateSessionObject[] stateSessionObjects)
+		public static string AsList(this IStateSessionReadOnlyObject[] stateSessionObjects)
 		{
 			var stringBuilder = new StringBuilder();
 			var delimiter = "";

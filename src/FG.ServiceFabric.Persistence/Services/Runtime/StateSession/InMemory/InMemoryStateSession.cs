@@ -25,12 +25,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
 		protected override TextStateSession CreateSessionInternal(
 			StateSessionManagerBase<TextStateSession> manager,
-			bool readOnly,
-			IStateSessionObject[] stateSessionObjects)
+			IStateSessionReadOnlyObject[] stateSessionObjects)
 		{
-			return new InMemoryStateSession(this, readOnly, stateSessionObjects);
+			return new InMemoryStateSession(this, true, stateSessionObjects);
 		}
 
+		protected override TextStateSession CreateSessionInternal(
+			StateSessionManagerBase<TextStateSession> manager,
+			IStateSessionObject[] stateSessionObjects)
+		{
+			return new InMemoryStateSession(this, false, stateSessionObjects);
+		}
 
 		private sealed class InMemoryStateSession : TextStateSession, IStateSession
 		{
@@ -39,7 +44,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 			public InMemoryStateSession(
 				InMemoryStateSessionManager manager,
 				bool readOnly,
-				IStateSessionObject[] stateSessionObjects)
+				IStateSessionReadOnlyObject[] stateSessionObjects)
 				: base(manager, readOnly, stateSessionObjects)
 			{
 				_manager = manager;

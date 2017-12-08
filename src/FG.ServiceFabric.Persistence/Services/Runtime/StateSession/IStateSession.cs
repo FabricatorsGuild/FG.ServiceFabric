@@ -9,44 +9,52 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public interface IStateSessionObject
+	public interface IStateSessionReadOnlyObject
 	{
 		string Schema { get; }
 		bool IsReadOnly { get; }
 	}
 
-	public interface IStateSessionQueue<T> : IStateSessionObject
+	public interface IStateSessionObject : IStateSessionReadOnlyObject
 	{
-		Task EnqueueAsync(T value, CancellationToken cancellationToken = default(CancellationToken));
-		Task EnqueueAsync(T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken));
-		Task<ConditionalValue<T>> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken));
+	}
+
+	public interface IStateSessionReadOnlyQueue<T> : IStateSessionReadOnlyObject
+	{
 		Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken));
 		Task<IAsyncEnumerable<T>> CreateEnumerableAsync();
 		Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));
 	}
 
-	public interface IStateSessionDictionary<T> : IStateSessionObject
+	public interface IStateSessionQueue<T> : IStateSessionReadOnlyQueue<T>, IStateSessionObject
+	{
+		Task EnqueueAsync(T value, CancellationToken cancellationToken = default(CancellationToken));
+		Task EnqueueAsync(T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken));
+		Task<ConditionalValue<T>> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken));
+	}
+
+	public interface IStateSessionReadOnlyDictionary<T> : IStateSessionReadOnlyObject
 	{
 		Task<bool> Contains(string key, CancellationToken cancellationToken = default(CancellationToken));
 
 		Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string keyPrefix, int maxNumResults = 100000,
 			ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
-
 		Task<ConditionalValue<T>> TryGetValueAsync(string key,
 			CancellationToken cancellationToken = default(CancellationToken));
-
 		Task<T> GetValueAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
-		Task SetValueAsync(string key, T value, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task SetValueAsync(string key, T value, IValueMetadata metadata,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task RemoveAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
 		Task<IAsyncEnumerable<KeyValuePair<string, T>>> CreateEnumerableAsync();
 		Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));
 	}
 
-	public interface IStateSessionManager
+	public interface IStateSessionDictionary<T> : IStateSessionReadOnlyDictionary<T>, IStateSessionObject
+	{
+		Task SetValueAsync(string key, T value, CancellationToken cancellationToken = default(CancellationToken));
+		Task SetValueAsync(string key, T value, IValueMetadata metadata,
+			CancellationToken cancellationToken = default(CancellationToken));
+		Task RemoveAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
+	}
+
+	public interface IStateSessionWritableManager
 	{
 		Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema,
 			CancellationToken cancellationToken = default(CancellationToken));
@@ -54,21 +62,26 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		Task<IStateSessionQueue<T>> OpenQueue<T>(string schema,
 			CancellationToken cancellationToken = default(CancellationToken));
 
-		Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema, bool readOnly,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<IStateSessionQueue<T>> OpenQueue<T>(string schema, bool readOnly,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		IStateSession CreateSession(bool readOnly, params IStateSessionObject[] stateSessionObjects);
-
 		IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects);
+
 	}
 
-	public interface IStateSession : IDisposable
+	public interface IStateSessionManager
 	{
-		bool IsReadOnly { get; }
+		Task<IStateSessionReadOnlyDictionary<T>> OpenDictionary<T>(string schema,
+			CancellationToken cancellationToken = default(CancellationToken));
 
+		Task<IStateSessionReadOnlyQueue<T>> OpenQueue<T>(string schema,
+			CancellationToken cancellationToken = default(CancellationToken));
+		
+		IStateSessionReader CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects);
+
+		IStateSessionWritableManager Writable { get; }
+	}
+
+
+	public interface IStateSessionReader : IDisposable
+	{
 		Task<bool> Contains<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
 		Task<bool> Contains(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
 
@@ -86,6 +99,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
 
+		Task<ConditionalValue<T>> PeekAsync<T>(string schema,
+			CancellationToken cancellationToken = default(CancellationToken));
+
+		Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken);
+		Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken);
+	}
+
+	public interface IStateSession : IStateSessionReader
+	{
+
 		Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata,
 			CancellationToken cancellationToken = default(CancellationToken));
 
@@ -100,12 +123,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 		Task<ConditionalValue<T>> DequeueAsync<T>(string schema,
 			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<ConditionalValue<T>> PeekAsync<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken);
-		Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken);
 		Task CommitAsync();
 		Task AbortAsync();
 	}

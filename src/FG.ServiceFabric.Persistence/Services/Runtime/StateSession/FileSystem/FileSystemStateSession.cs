@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -70,12 +71,18 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 
 		protected override TextStateSession CreateSessionInternal(
 			StateSessionManagerBase<TextStateSession> manager,
-			bool readOnly,
 			IStateSessionObject[] stateSessionObjects)
 		{
-			return new FileSystemStateSession(this, readOnly, stateSessionObjects);
+			return new FileSystemStateSession(this, stateSessionObjects);
 		}
 
+
+		protected override TextStateSession CreateSessionInternal(
+			StateSessionManagerBase<TextStateSession> manager,
+			IStateSessionReadOnlyObject[] stateSessionObjects)
+		{
+			return new FileSystemStateSession(this, stateSessionObjects);
+		}
 
 		private class FileSystemStateSession : TextStateSession, IStateSession
 		{
@@ -85,9 +92,23 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 
 			public FileSystemStateSession(
 				FileSystemStateSessionManager manager,
-				bool readOnly,
+				IStateSessionReadOnlyObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
+			{
+				_manager = manager;
+
+				lock (_lock)
+				{
+					if (!System.IO.Directory.Exists(CommonPath))
+					{
+						System.IO.Directory.CreateDirectory(CommonPath);
+					}
+				}
+			}
+			public FileSystemStateSession(
+				FileSystemStateSessionManager manager,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, readOnly, stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 
@@ -109,31 +130,36 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 				return filePath;
 			}
 
-			protected override string Read(string id, bool checkExistsOnly = false)
+			protected override Task<string> ReadAsync(string id, bool checkExistsOnly = false)
 			{
 				var filePath = GetFilePath(id);
 				if (System.IO.File.Exists(filePath))
 				{
 					if (checkExistsOnly)
 					{
-						return "";
+						return Task.FromResult("");
 					}
+					
 					// Quick return not-null value if check for existance only
-					return System.IO.File.ReadAllText(filePath);
+					return Task.FromResult(System.IO.File.ReadAllText(filePath));
 				}
 				return null;
 			}
 
-			protected override void Delete(string id)
+			protected override Task DeleteAsync(string id)
 			{
 				var filePath = GetFilePath(id);
 				System.IO.File.Delete(filePath);
+
+				return Task.FromResult(true);
 			}
 
-			protected override void Write(string id, string content)
+			protected override Task WriteAsync(string id, string content)
 			{
 				var filePath = GetFilePath(id);
 				System.IO.File.WriteAllText(filePath, content);
+
+				return Task.FromResult(true);
 			}
 
 			protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,

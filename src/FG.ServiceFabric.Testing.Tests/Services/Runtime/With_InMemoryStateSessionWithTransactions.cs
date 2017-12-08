@@ -60,7 +60,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
-					var session1 = manager.CreateSession();
+					var session1 = manager.Writable.CreateSession();
 
 					var keys = new List<string>();
 					for (int i = (int) 'a'; i <= (int) 'z'; i++)
@@ -114,50 +114,54 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 				private async Task SessionBWorker(IStateSessionManager manager)
 				{
-					var session2 = manager.CreateSession();
+					using (var session2 = manager.Writable.CreateSession())
+					{
 
-					await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null,
+						await session2.SetValueAsync<string>("values", "b", "Value from session2 schema values key b", null,
 						CancellationToken.None);
 
-					var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
-					var session2ValueBPreCommit = await session2.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+						var session2ValueAPreCommit = await session2.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+						var session2ValueBPreCommit = await session2.TryGetValueAsync<string>("values", "b", CancellationToken.None);
 
-					session2ValueAPreCommit.HasValue.Should().Be(false);
+						session2ValueAPreCommit.HasValue.Should().Be(false);
 
-					session2ValueBPreCommit.Value.Should().Be("Value from session2 schema values key b");
+						session2ValueBPreCommit.Value.Should().Be("Value from session2 schema values key b");
 
-					await session2.CommitAsync();
+						await session2.CommitAsync();
+					}
+					using (var session2 = manager.CreateSession())
+					{
+						var session2ValueBPostCommit = await session2.GetValueAsync<string>("values", "b", CancellationToken.None);
 
-					var session2ValueAPostCommit = await session2.GetValueAsync<string>("values", "a", CancellationToken.None);
-					var session2ValueBPostCommit = await session2.GetValueAsync<string>("values", "b", CancellationToken.None);
-
-					session2ValueAPostCommit.Should().Be("Value from session2 schema values key a");
-					session2ValueBPostCommit.Should().Be("Value from session2 schema values key b");
+						session2ValueBPostCommit.Should().Be("Value from session2 schema values key b");
+					}
 				}
 
 
 
 				private async Task SessionAWorker(IStateSessionManager manager)
 				{
-					var session1 = manager.CreateSession();
+					using (var session1 = manager.Writable.CreateSession())
+					{
 
-					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
-						CancellationToken.None);
+						await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
+							CancellationToken.None);
 
-					var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
-					var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
+						var session1ValueBPreCommit = await session1.TryGetValueAsync<string>("values", "b", CancellationToken.None);
+						var session1ValueAPreCommit = await session1.TryGetValueAsync<string>("values", "a", CancellationToken.None);
 
-					session1ValueBPreCommit.HasValue.Should().Be(false);
+						session1ValueBPreCommit.HasValue.Should().Be(false);
 
-					session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
+						session1ValueAPreCommit.Value.Should().Be("Value from session1 schema values key a");
 
-					await session1.CommitAsync();
+						await session1.CommitAsync();
+					}
+					using (var session1 = manager.Writable.CreateSession())
+					{
+						var session1ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
 
-					var session1ValueAPostCommit = await session1.GetValueAsync<string>("values", "a", CancellationToken.None);
-					var session1ValueBPostCommit = await session1.GetValueAsync<string>("values", "b", CancellationToken.None);
-
-					session1ValueAPostCommit.Should().Be("Value from session1 schema values key a");
-					session1ValueBPostCommit.Should().Be("Value from session1 schema values key a");
+						session1ValueAPostCommit.Should().Be("Value from session1 schema values key a");
+					}
 				}
 
 				[Test]
@@ -167,7 +171,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
-					var session1 = manager.CreateSession(readOnly: false);
+					var session1 = manager.Writable.CreateSession();
 
 					await session1.SetValueAsync<string>("values", "a", "Value from session1 schema values key a", null,
 						CancellationToken.None);
@@ -210,7 +214,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 
 					var manager = new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", state);
 
-					var session1 = manager.CreateSession();
+					var session1 = manager.Writable.CreateSession();
 
 					var schemas = new[] {"a-series", "b-series", "c-series"};
 					foreach (var schema in schemas)

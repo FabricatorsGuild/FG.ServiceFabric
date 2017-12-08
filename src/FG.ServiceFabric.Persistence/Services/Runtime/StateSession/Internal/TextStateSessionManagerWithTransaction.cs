@@ -29,25 +29,33 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 			protected TextStateSession(
 				TextStateSessionManagerWithTransaction manager,
-				bool readOnly,
 				IStateSessionObject[] stateSessionObjects)
-				: base(manager, readOnly, stateSessionObjects)
+				: base(manager, stateSessionObjects)
+			{
+				_manager = manager;
+			}
+
+			protected TextStateSession(
+				TextStateSessionManagerWithTransaction manager,
+				IStateSessionReadOnlyObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 			}
 
 			private IStateSessionManagerInternals _managerInternals => _manager;
 
-			private bool ContainsByRead(string id)
+			private async Task<bool> ContainsByReadAsync(string id)
 			{
-				return Read(id, checkExistsOnly: true) != null;
+				var value = await ReadAsync(id, checkExistsOnly: true);
+				return value != null;
 			}
 
-			protected abstract string Read(string id, bool checkExistsOnly = false);
+			protected abstract Task<string> ReadAsync(string id, bool checkExistsOnly = false);
 
-			protected abstract void Delete(string id);
+			protected abstract Task DeleteAsync(string id);
 
-			protected abstract void Write(string id, string content);
+			protected abstract Task WriteAsync(string id, string content);
 
 			protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
 				ContinuationToken continuationToken = null,
@@ -58,10 +66,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			{
 				try
 				{
-					lock (_lock)
-					{
-						return Task.FromResult(ContainsByRead(id));
-					}
+					return ContainsByReadAsync(id);
 				}
 				catch (Exception ex)
 				{
@@ -69,24 +74,21 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+			protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
 					StateWrapper<T> value = null;
-					lock (_lock)
+					var stringValue = await ReadAsync(id);
+					if (stringValue == null)
 					{
-						var stringValue = Read(id);
-						if (stringValue == null)
-						{
-							throw new KeyNotFoundException($"State with {id} does not exist");
-						}
-
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
-							new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
+						throw new KeyNotFoundException($"State with {id} does not exist");
 					}
-					return Task.FromResult(value);
+
+					value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
+						new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
+					return value;
 				}
 				catch (Exception ex)
 				{
@@ -94,24 +96,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
+			protected override async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
-					StateWrapper<T> value;
-					lock (_lock)
+					var stringValue = await ReadAsync(id);
+					if (stringValue == null)
 					{
-						var stringValue = Read(id);
-						if (stringValue == null)
-						{
-							return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
-						}
-
-						value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
-							new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
+						return new ConditionalValue<StateWrapper<T>>(false, null);
 					}
-					return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, value));
+
+					var value = Newtonsoft.Json.JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
+						new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
+					return new ConditionalValue<StateWrapper<T>>(true, value);
 				}
 				catch (Exception ex)
 				{
@@ -119,29 +117,24 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value,
+			protected override async Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value,
 				Type valueType, CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
-					lock (_lock)
+					if (value == null)
 					{
-						if (value == null)
+						if (await ContainsByReadAsync(id))
 						{
-							if (ContainsByRead(id))
-							{
-								Delete(id);
-							}
-						}
-						else
-						{
-							var stringValue = JsonConvert.SerializeObject(value,
-								new JsonSerializerSettings() {TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented});
-							Write(id, stringValue);
+							await DeleteAsync(id);
 						}
 					}
-
-					return Task.FromResult(true);
+					else
+					{
+						var stringValue = JsonConvert.SerializeObject(value,
+							new JsonSerializerSettings() {TypeNameHandling = TypeNameHandling.Auto, Formatting = Formatting.Indented});
+						await WriteAsync(id, stringValue);
+					}
 				}
 				catch (Exception ex)
 				{
@@ -149,20 +142,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				}
 			}
 
-			protected override Task RemoveInternalAsync(SchemaStateKey id,
+			protected override async Task RemoveInternalAsync(SchemaStateKey id,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
 				try
 				{
-					lock (_lock)
+					if (await ContainsByReadAsync(id))
 					{
-						if (ContainsByRead(id))
-						{
-							Delete(id);
-						}
+						await DeleteAsync(id);
 					}
-
-					return Task.FromResult(true);
 				}
 				catch (Exception ex)
 				{

@@ -137,10 +137,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		
 		protected override DocumentDbStateSession CreateSessionInternal(
 			StateSessionManagerBase<DocumentDbStateSession> manager,
-			bool readOnly, 
 			IStateSessionObject[] stateSessionObjects)
 		{
-			return new DocumentDbStateSession(this, readOnly, stateSessionObjects);
+			return new DocumentDbStateSession(this, false, stateSessionObjects);
+		}
+
+		protected override DocumentDbStateSession CreateSessionInternal(
+			StateSessionManagerBase<DocumentDbStateSession> manager,
+			IStateSessionReadOnlyObject[] stateSessionObjects)
+		{
+			return new DocumentDbStateSession(this, true, stateSessionObjects);
 		}
 
 		public sealed class DocumentDbStateSession : IStateSession
@@ -150,12 +156,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
 			private readonly DocumentClient _documentClient;
 			private readonly DocumentDbStateSessionManager _manager;
-			private IEnumerable<IStateSessionObject> _attachedObjects;
+			private IEnumerable<IStateSessionReadOnlyObject> _attachedObjects;
 
 			public DocumentDbStateSession(
 				DocumentDbStateSessionManager manager, 
 				bool readOnly,
-				IStateSessionObject[] stateSessionObjects,
+				IStateSessionReadOnlyObject[] stateSessionObjects,
 				ILoggerFactory loggerFactory = null)
 			{
 				_manager = manager;
@@ -622,7 +628,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 			}
 
-			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
+			private void AttachObjects(IEnumerable<IStateSessionReadOnlyObject> stateSessionObjects)
 			{
 				_attachedObjects = stateSessionObjects;
 				foreach (var stateSessionObject in _attachedObjects)

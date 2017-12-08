@@ -36,12 +36,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		{
 			private readonly object _lock = new object();
 			private readonly TextStateSessionManager _manager;
-			private IEnumerable<IStateSessionObject> _attachedObjects;
+			private IEnumerable<IStateSessionReadOnlyObject> _attachedObjects;
 
 			protected TextStateSession(
 				TextStateSessionManager manager,
 				bool readOnly,
-				IStateSessionObject[] stateSessionObjects)
+				IStateSessionReadOnlyObject[] stateSessionObjects)
 			{
 				IsReadOnly = readOnly;
 				_manager = manager;
@@ -433,7 +433,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				return System.Uri.UnescapeDataString(key.Replace("{", "%7B").Replace("}", "%7D"));
 			}
 
-			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
+			private void AttachObjects(IEnumerable<IStateSessionReadOnlyObject> stateSessionObjects)
 			{
 				_attachedObjects = stateSessionObjects;
 				foreach (var stateSessionObject in _attachedObjects)

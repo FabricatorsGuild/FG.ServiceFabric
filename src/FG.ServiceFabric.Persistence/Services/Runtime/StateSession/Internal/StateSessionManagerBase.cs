@@ -12,9 +12,23 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
-	public abstract class StateSessionManagerBase<TStateSession> : IStateSessionManager, IStateSessionManagerInternals
+	public abstract class StateSessionManagerBase<TStateSession> : IStateSessionManager, IStateSessionWritableManager, IStateSessionManagerInternals
 		where TStateSession : class, IStateSession
 	{
+		public class StateChange
+		{
+			public StateChange(StateChangeType changeType, StateWrapper value, Type valueType)
+			{
+				ChangeType = changeType;
+				Value = value;
+				ValueType = valueType;
+			}
+
+			public StateChangeType ChangeType { get; set; }
+			public StateWrapper Value { get; set; }
+			public Type ValueType { get; set; }
+		}
+
 		public enum StateChangeType
 		{
 			None = 0,
@@ -26,9 +40,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 		private readonly IDictionary<string, QueueInfo> _openQueues = new ConcurrentDictionary<string, QueueInfo>();
 
-		private readonly RwLock _lock = new RwLock();
+		private readonly Nito.AsyncEx.AsyncReaderWriterLock _lock = new Nito.AsyncEx.AsyncReaderWriterLock();
 
-		RwLock IStateSessionManagerInternals.Lock => _lock;
+		Nito.AsyncEx.AsyncReaderWriterLock IStateSessionManagerInternals.Lock => _lock;
 
 		protected StateSessionManagerBase(
 			string serviceName,
@@ -44,68 +58,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		protected string PartitionKey { get; }
 		protected string ServiceName { get; }
 
-		protected internal IStateSessionManagerInternals _managerInternals => (IStateSessionManagerInternals) this;
+		#region Internals
 
-
-		public Task<IStateSessionDictionary<T>> OpenDictionary<T>(
-			string schema,
-			CancellationToken cancellationToken = new CancellationToken())
-		{
-			var dictionary =
-				(IStateSessionDictionary<T>)
-				new StateSessionBaseDictionary<StateSessionManagerBase<TStateSession>, TStateSession, T>(this, schema, readOnly: false);
-			return Task.FromResult(dictionary);
-		}
-
-		public Task<IStateSessionDictionary<T>> OpenDictionary<T>(
-			string schema, 
-			bool readOnly, 
-			CancellationToken cancellationToken = new CancellationToken())
-		{
-			var dictionary =
-				(IStateSessionDictionary<T>)
-				new StateSessionBaseDictionary<StateSessionManagerBase<TStateSession>, TStateSession, T>(this, schema, readOnly: readOnly);
-			return Task.FromResult(dictionary);
-		}
-
-		public Task<IStateSessionQueue<T>> OpenQueue<T>(
-			string schema,
-			bool readOnly, 
-			CancellationToken cancellationToken = new CancellationToken())
-		{
-			if (!_openQueues.ContainsKey(schema))
-			{
-				_openQueues.Add(schema, null);
-			}
-			var queue = (IStateSessionQueue<T>)new StateSessionBaseQueue<TStateSession, T>(this, schema, readOnly: readOnly);
-			return Task.FromResult(queue);
-		}
-
-		public Task<IStateSessionQueue<T>> OpenQueue<T>(
-			string schema,
-			CancellationToken cancellationToken = new CancellationToken())
-		{
-			if (!_openQueues.ContainsKey(schema))
-			{
-				_openQueues.Add(schema, null);
-			}
-			var queue = (IStateSessionQueue<T>) new StateSessionBaseQueue<TStateSession, T>(this, schema, readOnly: false);
-			return Task.FromResult(queue);
-		}
-
-
-		public IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects)
-		{
-			var readOnly = stateSessionObjects.All(o => o.IsReadOnly);
-			var session = CreateSessionInternal(this, readOnly, stateSessionObjects);
-			return session;
-		}
-
-		public IStateSession CreateSession(bool readOnly, params IStateSessionObject[] stateSessionObjects)
-		{		
-			var session = CreateSessionInternal(this, readOnly, stateSessionObjects);
-			return session;
-		}
+		private IStateSessionManagerInternals Internals => (IStateSessionManagerInternals) this;
 
 		IDictionary<string, QueueInfo> IStateSessionManagerInternals.OpenQueues => _openQueues;
 
@@ -113,10 +68,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		{
 			return new SchemaStateKey(ServiceName, PartitionKey, key?.Schema, key?.Key);
 		}
-		
+
 		IServiceMetadata IStateSessionManagerInternals.GetMetadata()
 		{
-			return new ServiceMetadata() {ServiceName = ServiceName, PartitionKey = PartitionKey};
+			return new ServiceMetadata() { ServiceName = ServiceName, PartitionKey = PartitionKey };
 		}
 
 		IValueMetadata IStateSessionManagerInternals.GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type)
@@ -134,7 +89,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 		StateWrapper IStateSessionManagerInternals.BuildWrapper(IValueMetadata valueMetadata, SchemaStateKey key)
 		{
-			var serviceMetadata = _managerInternals.GetMetadata();
+			var serviceMetadata = Internals.GetMetadata();
 			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
 			valueMetadata.Key = key.Key;
 			valueMetadata.Schema = key.Schema;
@@ -145,15 +100,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		StateWrapper IStateSessionManagerInternals.BuildWrapper(IValueMetadata metadata, SchemaStateKey key,
 			Type valueType, object value)
 		{
-			return (StateWrapper) this.CallGenericMethod(
+			return (StateWrapper)this.CallGenericMethod(
 				$"{typeof(IStateSessionManagerInternals).FullName}.{nameof(IStateSessionManagerInternals.BuildWrapperGeneric)}",
-				new Type[] {valueType},
-				_managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), key, value);
+				new Type[] { valueType },
+				Internals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), key, value);
 		}
 
 		StateWrapper<T> IStateSessionManagerInternals.BuildWrapperGeneric<T>(IValueMetadata valueMetadata, SchemaStateKey key, T value)
 		{
-			var serviceMetadata = _managerInternals.GetMetadata();
+			var serviceMetadata = Internals.GetMetadata();
 			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
 			valueMetadata.Key = key.Key;
 			valueMetadata.Schema = key.Schema;
@@ -171,6 +126,67 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			return GetUnescapedKeyInternal(key);
 		}
 
+		#endregion
+
+		public Task<IStateSessionReadOnlyDictionary<T>> OpenDictionary<T>(string schema,
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var dictionary =
+				(IStateSessionReadOnlyDictionary<T>)
+				new StateSessionBaseReadOnlyDictionary<StateSessionManagerBase<TStateSession>, TStateSession, T>(this, schema, readOnly: false);
+			return Task.FromResult(dictionary);
+		}
+		
+		Task<IStateSessionDictionary<T>> IStateSessionWritableManager.OpenDictionary<T>(
+			string schema, 
+			CancellationToken cancellationToken = new CancellationToken())
+		{
+			var dictionary =
+				(IStateSessionDictionary<T>)
+				new StateSessionBaseDictionary<StateSessionManagerBase<TStateSession>, TStateSession, T>(this, schema, readOnly: false);
+			return Task.FromResult(dictionary);
+		}
+
+		Task<IStateSessionQueue<T>> IStateSessionWritableManager.OpenQueue<T>(
+			string schema,
+			CancellationToken cancellationToken = new CancellationToken())
+		{
+			if (!_openQueues.ContainsKey(schema))
+			{
+				_openQueues.Add(schema, null);
+			}
+			var queue = (IStateSessionQueue<T>)new StateSessionBaseQueue<TStateSession, T>(this, schema, readOnly: false);
+			return Task.FromResult(queue);
+		}
+
+		public Task<IStateSessionReadOnlyQueue<T>> OpenQueue<T>(
+			string schema,
+			CancellationToken cancellationToken = new CancellationToken())
+		{
+			if (!_openQueues.ContainsKey(schema))
+			{
+				_openQueues.Add(schema, null);
+			}
+			var queue = (IStateSessionReadOnlyQueue<T>) new StateSessionBaseReadOnlyQueue<TStateSession, T>(this, schema, readOnly: false);
+			return Task.FromResult(queue);
+		}
+
+		#region  Writable
+		public IStateSessionWritableManager Writable => (IStateSessionWritableManager)this;
+		IStateSession IStateSessionWritableManager.CreateSession(params IStateSessionObject[] stateSessionObjects)
+		{
+			var session = CreateSessionInternal(this, stateSessionObjects);
+			return session;
+		}
+
+		#endregion
+
+		public IStateSessionReader CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects)
+		{		
+			var session = CreateSessionInternal(this, stateSessionObjects);
+			return session;
+		}
+
 		protected virtual string GetEscapedKeyInternal(string key)
 		{
 			return key;
@@ -181,22 +197,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			return key;
 		}
 
-		protected abstract TStateSession CreateSessionInternal(StateSessionManagerBase<TStateSession> manager, 
-			bool readOnly, IStateSessionObject[] stateSessionObjects);
+		protected abstract TStateSession CreateSessionInternal(StateSessionManagerBase<TStateSession> manager,
+			IStateSessionReadOnlyObject[] stateSessionObjects);
+		protected abstract TStateSession CreateSessionInternal(StateSessionManagerBase<TStateSession> manager,
+			IStateSessionObject[] stateSessionObjects);
 
-		public class StateChange
-		{
-			public StateChange(StateChangeType changeType, StateWrapper value, Type valueType)
-			{
-				ChangeType = changeType;
-				Value = value;
-				ValueType = valueType;
-			}
-
-			public StateChangeType ChangeType { get; set; }
-			public StateWrapper Value { get; set; }
-			public Type ValueType { get; set; }
-		}
 
 		public abstract class StateSessionBase<TStateSessionManager> : IStateSession
 			where TStateSessionManager : class, IStateSessionManagerInternals, IStateSessionManager
@@ -207,17 +212,31 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			private readonly IDictionary<string, StateChange> _transactedChanges =
 				new ConcurrentDictionary<string, StateChange>();
 
-			private IEnumerable<IStateSessionObject> _attachedObjects;
+			private IEnumerable<IStateSessionReadOnlyObject> _attachedObjects;
 
-			private readonly IDisposable _rwLock;
+			private IDisposable _rwLock;
 
-			protected StateSessionBase(TStateSessionManager manager, bool readOnly, IEnumerable<IStateSessionObject> stateSessionObjects)
+			protected StateSessionBase(TStateSessionManager manager, IEnumerable<IStateSessionReadOnlyObject> stateSessionObjects)
 			{
 				AttachObjects(stateSessionObjects);
 				_manager = manager;
 
-				IsReadOnly = readOnly;
-				_rwLock = IsReadOnly ? _managerInternals.Lock.AcquireReadLock() : _managerInternals.Lock.AcquireWriteLock();
+				IsReadOnly = true;
+				AquireLock().GetAwaiter().GetResult();
+			}
+
+			protected StateSessionBase(TStateSessionManager manager, IEnumerable<IStateSessionObject> stateSessionObjects)
+			{
+				AttachObjects(stateSessionObjects);
+				_manager = manager;
+
+				IsReadOnly = false;
+				AquireLock().GetAwaiter().GetResult();				
+			}
+
+			private async Task AquireLock()
+			{
+				_rwLock = IsReadOnly ? await _managerInternals.Lock.ReaderLockAsync() : await _managerInternals.Lock.WriterLockAsync();
 			}
 
 			public bool IsReadOnly { get; }
@@ -358,6 +377,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			public Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata,
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
+				CheckIsNotReadOnly();
+
 				var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
 
 				var valueType = typeof(T);
@@ -371,6 +392,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			public Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metadata,
 				CancellationToken cancellationToken = new CancellationToken())
 			{
+				CheckIsNotReadOnly();
+
 				var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
 				var document = _managerInternals.BuildWrapper(
 					_managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id,
@@ -507,7 +530,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 				return Task.FromResult(true);
 			}
 
-			private void AttachObjects(IEnumerable<IStateSessionObject> stateSessionObjects)
+			private void AttachObjects(IEnumerable<IStateSessionReadOnlyObject> stateSessionObjects)
 			{
 				_attachedObjects = stateSessionObjects;
 				var stateSession = this as TStateSession;

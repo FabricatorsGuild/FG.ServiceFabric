@@ -55,7 +55,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 		private IStateSession GetSession()
 		{
-			return _stateSession ?? (_stateSession = _stateSessionManager.CreateSession());
+			return _stateSession ?? (_stateSession = _stateSessionManager.Writable.CreateSession());
 		}
 
 

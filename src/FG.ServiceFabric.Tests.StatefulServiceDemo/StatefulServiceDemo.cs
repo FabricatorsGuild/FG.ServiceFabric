@@ -73,7 +73,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 				cancellationToken.ThrowIfCancellationRequested();
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.Writable.CreateSession())
 				{
 					var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
 					var value = result.HasValue ? result.Value : 0;
@@ -110,17 +110,17 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			public async Task RunWork()
 			{
 				var cancellationToken = CancellationToken.None;
-				var myDictionary = await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
-				var dictionary2 = await _stateSessionManager.OpenDictionary<string>("myDictionary2", cancellationToken);
+				var myDictionary = await _stateSessionManager.Writable.OpenDictionary<long>("myDictionary", cancellationToken);
+				var dictionary2 = await _stateSessionManager.Writable.OpenDictionary<string>("myDictionary2", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession(myDictionary, dictionary2))
+				using (var session = _stateSessionManager.Writable.CreateSession(myDictionary, dictionary2))
 				{
 					await dictionary2.SetValueAsync("theValue", "is hello", null, cancellationToken);
 					await session.CommitAsync();
 				}
 				cancellationToken.ThrowIfCancellationRequested();
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.Writable.CreateSession())
 				{
 					var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
 					var value = result.HasValue ? result.Value : 0;
@@ -198,7 +198,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 
 				await _stateSessionManager.OpenDictionary<ArrayState>("myDictionary2", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.Writable.CreateSession())
 				{
 					var state = new ArrayState()
 					{
@@ -246,9 +246,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			{
 				var cancellationToken = CancellationToken.None;
 
-				await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
+				var myQueue = await _stateSessionManager.Writable.OpenQueue<long>("myQueue", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession(readOnly: false))
+				using (var session = _stateSessionManager.Writable.CreateSession(myQueue))
 				{
 					for (int i = 0; i < count; i++)
 					{
@@ -261,10 +261,10 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			{
 				var cancellationToken = CancellationToken.None;
 
-				await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
+				var myQueue = await _stateSessionManager.Writable.OpenQueue<long>("myQueue", cancellationToken);
 
 				var longs = new long[count];
-				using (var session = _stateSessionManager.CreateSession(readOnly: false))
+				using (var session = _stateSessionManager.Writable.CreateSession(myQueue))
 				{
 					for (int i = 0; i < count; i++)
 					{
@@ -279,9 +279,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			{
 				var cancellationToken = CancellationToken.None;
 
-				await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
+				var myQueue = await _stateSessionManager.OpenQueue<long>("myQueue", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession())
+				using (var session = _stateSessionManager.CreateSession(myQueue))
 				{
 					var value = await session.PeekAsync<long>("myQueue", cancellationToken);
 
@@ -361,9 +361,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			{
 				var cancellationToken = CancellationToken.None;
 
-				var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+				var myDict = await _stateSessionManager.Writable.OpenDictionary<string>("myDict", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession(myDict))
+				using (var session = _stateSessionManager.Writable.CreateSession(myDict))
 				{
 					await myDict.SetValueAsync(key, value, cancellationToken);
 					await session.CommitAsync();
@@ -374,9 +374,9 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
 			{
 				var cancellationToken = CancellationToken.None;
 
-				var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+				var myDict = await _stateSessionManager.Writable.OpenDictionary<string>("myDict", cancellationToken);
 
-				using (var session = _stateSessionManager.CreateSession(myDict))
+				using (var session = _stateSessionManager.Writable.CreateSession(myDict))
 				{
 					await myDict.RemoveAsync(key, cancellationToken);
 					await session.CommitAsync();

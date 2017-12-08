@@ -122,7 +122,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 		public bool IsReadOnly { get; }
 	}
 
-	public class ReliableStateSessionManager : IStateSessionManager
+	public class ReliableStateSessionManager : IStateSessionManager, IStateSessionWritableManager
 	{
 		private readonly IDictionary<string, IReliableState> _reliableDictionaries =
 			new ConcurrentDictionary<string, IReliableState>();
@@ -140,7 +140,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 
 		internal IReliableStateManager StateManager => _stateManager;
 
-		public async Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema,
+		public async Task<IStateSessionReadOnlyDictionary<T>> OpenDictionary<T>(string schema,
 			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
@@ -153,6 +153,22 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
 
 			return new ReliableStateSessionDictionary<T>(reliableDictionary2, readOnly: false);
+		}
+
+		Task<IStateSessionQueue<T>> IStateSessionWritableManager.OpenQueue<T>(string schema, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		IStateSessionReader IStateSessionManager.CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects)
+		{
+			return CreateSession(stateSessionObjects);
+		}
+
+
+		IStateSession IStateSessionWritableManager.CreateSession(params IStateSessionObject[] stateSessionObjects)
+		{
+			return CreateSession(stateSessionObjects);
 		}
 
 		public async Task<IStateSessionDictionary<T>> OpenDictionary<T>(
@@ -172,7 +188,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 			return new ReliableStateSessionDictionary<T>(reliableDictionary2, readOnly);
 		}
 
-		public async Task<IStateSessionQueue<T>> OpenQueue<T>(
+		Task<IStateSessionDictionary<T>> IStateSessionWritableManager.OpenDictionary<T>(string schema, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		public async Task<IStateSessionReadOnlyQueue<T>> OpenQueue<T>(
 			string schema,
 			CancellationToken cancellationToken = default(CancellationToken))
 		{
@@ -204,11 +225,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 			return new ReliableStateSessionQueue<T>(reliableConcurrentQueue, readOnly);
 		}
 
-		public IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects)
+		public IStateSession CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects)
 		{
 			var readOnly = stateSessionObjects.All(o => o.IsReadOnly);
 			return new ReliableStateSession(this, readOnly);
 		}
+
+		public IStateSessionWritableManager Writable { get; }
 
 		public IStateSession CreateSession(bool readOnly, params IStateSessionObject[] stateSessionObjects)
 		{

@@ -47,12 +47,12 @@ namespace PersistancePerformanceTestBench
 			while (keepRunning)
 			{
 				Console.WriteLine($"Running test with {rate} items. Delaying for {delay} ms.");
-				var people = await stateSessionManager.OpenDictionary<Person>("people", cancellationToken);
+				var people = await stateSessionManager.Writable.OpenDictionary<Person>("people", cancellationToken);
 
 				stopwatch.Reset();
 				stopwatch.Start();
 				var random = new Random(Environment.TickCount);
-				using (var session = stateSessionManager.CreateSession(people))
+				using (var session = stateSessionManager.Writable.CreateSession(people))
 				{
 					for (var i = 0; i < rate; i++)
 					{
@@ -104,12 +104,12 @@ namespace PersistancePerformanceTestBench
 			while (keepRunning)
 			{
 				Console.WriteLine($"Running test with {rate} items. Delaying for {delay} ms.");
-				var people = await stateSessionManager.OpenDictionary<Person>("people", cancellationToken);
+				var people = await stateSessionManager.Writable.OpenDictionary<Person>("people", cancellationToken);
 
 				stopwatch.Reset();
 				stopwatch.Start();
 				var random = new Random(Environment.TickCount);
-				using (var session = stateSessionManager.CreateSession(people))
+				using (var session = stateSessionManager.Writable.CreateSession(people))
 				{
 					for (var i = 0; i < rate; i++)
 					{

@@ -5,11 +5,11 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
-	internal class StateSessionBaseQueue<TStateSession, TValueType> : StateSessionBaseObject<TStateSession>,
-		IStateSessionQueue<TValueType>, IAsyncEnumerable<TValueType>
-		where TStateSession : class, IStateSession
+	internal class StateSessionBaseReadOnlyQueue<TStateSession, TValueType> : StateSessionBaseObject<TStateSession>,
+	IStateSessionReadOnlyQueue<TValueType>, IAsyncEnumerable<TValueType>
+	where TStateSession : class, IStateSession
 	{
-		public StateSessionBaseQueue(IStateSessionManagerInternals manager, string schema, bool readOnly)
+		public StateSessionBaseReadOnlyQueue(IStateSessionManagerInternals manager, string schema, bool readOnly)
 			: base(manager, schema, readOnly)
 		{
 		}
@@ -17,26 +17,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		IAsyncEnumerator<TValueType> IAsyncEnumerable<TValueType>.GetAsyncEnumerator()
 		{
 			return new StateSessionBaseQueueEnumerator(_manager, _session, _schema);
-		}
-
-		public Task EnqueueAsync(TValueType value, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			CheckSession();
-			return _session.EnqueueAsync(_schema, value, null, cancellationToken);
-		}
-
-		public Task EnqueueAsync(TValueType value, IValueMetadata metadata,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			CheckSession();
-			return _session.EnqueueAsync(_schema, value, metadata, cancellationToken);
-		}
-
-		public Task<ConditionalValue<TValueType>> DequeueAsync(
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			CheckSession();
-			return _session.DequeueAsync<TValueType>(_schema, cancellationToken);
 		}
 
 		public Task<ConditionalValue<TValueType>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -48,7 +28,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 		public Task<IAsyncEnumerable<TValueType>> CreateEnumerableAsync()
 		{
 			CheckSession();
-			return Task.FromResult((IAsyncEnumerable<TValueType>) this);
+			return Task.FromResult((IAsyncEnumerable<TValueType>)this);
 		}
 
 		public Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -56,7 +36,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			CheckSession();
 			return _session.GetEnqueuedCountAsync<TValueType>(_schema, cancellationToken);
 		}
-
 
 		private class StateSessionBaseQueueEnumerator : IAsyncEnumerator<TValueType>
 		{
@@ -123,6 +102,36 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			}
 
 			public TValueType Current { get; private set; }
+		}
+	}
+
+	internal class StateSessionBaseQueue<TStateSession, TValueType> : StateSessionBaseReadOnlyQueue<TStateSession, TValueType>,
+		IStateSessionQueue<TValueType>, IAsyncEnumerable<TValueType>
+		where TStateSession : class, IStateSession
+	{
+		public StateSessionBaseQueue(IStateSessionManagerInternals manager, string schema, bool readOnly)
+			: base(manager, schema, readOnly)
+		{
+		}
+		
+		public Task EnqueueAsync(TValueType value, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			CheckSession();
+			return _session.EnqueueAsync(_schema, value, null, cancellationToken);
+		}
+
+		public Task EnqueueAsync(TValueType value, IValueMetadata metadata,
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			CheckSession();
+			return _session.EnqueueAsync(_schema, value, metadata, cancellationToken);
+		}
+
+		public Task<ConditionalValue<TValueType>> DequeueAsync(
+			CancellationToken cancellationToken = default(CancellationToken))
+		{
+			CheckSession();
+			return _session.DequeueAsync<TValueType>(_schema, cancellationToken);
 		}
 	}
 }

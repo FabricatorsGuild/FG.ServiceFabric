@@ -23,6 +23,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 		SchemaStateKey GetKey(ISchemaKey id);
 
-		RwLock Lock { get; }
+		Nito.AsyncEx.AsyncReaderWriterLock Lock { get; }
 	}
 }

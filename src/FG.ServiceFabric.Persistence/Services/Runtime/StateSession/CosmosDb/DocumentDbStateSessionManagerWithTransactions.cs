@@ -60,7 +60,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			_logger.StartingManager(serviceName, partitionId, partitionKey, _endpointUri, _databaseName, _collection);
 		}
 
+		// ReSharper disable once UnusedMember.Global - For debugging purposes
 		public string InstanceName => _managerInstance;
+
+		#region Data Manager
 
 		string IDocumentDbDataManager.GetCollectionName()
 		{
@@ -73,7 +76,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			{
 				var client = GetClient();
 				var dict = new Dictionary<string, string>();
-				var feedResponse = await client.ReadDocumentFeedAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, _collection));
+				var feedResponse = await client.ReadDocumentFeedAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, collectionName));
 
 				foreach (var document in feedResponse)
 				{
@@ -118,6 +121,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			await client.DestroyCollection(_databaseName, _collection);
 		}
 
+		#endregion
+
 		private DocumentClient CreateClient()
 		{
 			_logger.CreatingClient();
@@ -152,14 +157,33 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			return _client;
 		}
 
+		protected override DocumentDbStateSession CreateSessionInternal(
+			StateSessionManagerBase<DocumentDbStateSession> manager,
+			IStateSessionObject[] stateSessionObjects)
+		{
+			return new DocumentDbStateSession(this, stateSessionObjects);
+		}
+		protected override DocumentDbStateSession CreateSessionInternal(
+			StateSessionManagerBase<DocumentDbStateSession> manager,
+			IStateSessionReadOnlyObject[] stateSessionObjects)
+		{
+			return new DocumentDbStateSession(this, stateSessionObjects);
+		}
+
 		public sealed class DocumentDbStateSession : StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>.StateSessionBase<
 			DocumentDbStateSessionManagerWithTransactions>, IStateSession
 		{
 			private readonly DocumentClient _documentClient;
 			private readonly DocumentDbStateSessionManagerWithTransactions _manager;
 
-			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, bool readOnly, IStateSessionObject[] stateSessionObjects) 
-				: base(manager, readOnly, stateSessionObjects)
+			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionReadOnlyObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
+			{
+				_manager = manager;
+				_documentClient = _manager.GetClient();
+			}
+			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionObject[] stateSessionObjects)
+				: base(manager, stateSessionObjects)
 			{
 				_manager = manager;
 				_documentClient = _manager.GetClient();
@@ -175,7 +199,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			{
 				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
 			}
-
 
 			protected override Task<bool> ContainsInternal(SchemaStateKey id,
 				CancellationToken cancellationToken = default(CancellationToken))
@@ -429,43 +452,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					throw new StateSessionException($"GetCountInternalAsync for {schema} failed", ex);
 				}
 			}
-
+		
 			protected override void Dispose(bool disposing)
 			{
 			}
 		}
-		
+
 		public IStateQuerySession CreateSession()
 		{
 			throw new NotImplementedException();
-		}
-
-		public string GetCollectionName()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<IDictionary<string, string>> GetCollectionDataAsync(string collectionName)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task CreateCollection(string collectionName)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task DestroyCollecton(string collectionName)
-		{
-			throw new NotImplementedException();
-		}
-
-		protected override DocumentDbStateSession CreateSessionInternal(
-			StateSessionManagerBase<DocumentDbStateSession> manager, 
-			bool readOnly, 
-			IStateSessionObject[] stateSessionObjects)
-		{
-			return new DocumentDbStateSession(this, readOnly, stateSessionObjects);
 		}
 	}
 }

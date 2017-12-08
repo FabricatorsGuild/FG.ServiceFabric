@@ -150,7 +150,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					if (stateSessionManager.GetPrivateProperty<InMemoryStateSessionManagerWithTransaction, string>("PartitionKey")
 						.Equals("range-1"))
 					{
-						using (var session = stateSessionManager.CreateSession())
+						using (var session = stateSessionManager.Writable.CreateSession())
 						{
 							var actorId = new ActorId("testivus");
 							var actorIdSchemaKey = new ActorIdStateKey(actorId);
