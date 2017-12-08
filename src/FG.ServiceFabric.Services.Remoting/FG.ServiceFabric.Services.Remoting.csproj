@@ -33,7 +33,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>if not exist "$(SolutionDir)..\nugetfeed" md "$(SolutionDir)..\nugetfeed"
-$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64</PostBuildEvent>
+$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64 -Symbols</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
