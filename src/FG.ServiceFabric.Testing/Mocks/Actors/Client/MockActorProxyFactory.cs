@@ -279,7 +279,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 				if (firstActivation)
 				{
-					target.CallPrivateMethod("OnActivateAsync");
+					var result = target.CallPrivateMethod("OnActivateAsync");
+					if (result is Task returnTask)
+					{
+						returnTask.GetAwaiter().GetResult();
+					}
 
 					var actorStateProvider = instance.ActorStateProvider;
 					await actorStateProvider.ActorActivatedAsync(actorId);

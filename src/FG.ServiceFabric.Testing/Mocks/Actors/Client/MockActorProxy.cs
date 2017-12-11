@@ -2,6 +2,7 @@ using System;
 using System.Fabric;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Castle.DynamicProxy;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
@@ -118,8 +119,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
 			public void Intercept(IInvocation invocation)
 			{
-				_actorManager?.BeforeMethod(invocation.Proxy as IActor, invocation.Method);
+				_actorManager?.BeforeMethod(invocation.Proxy as IActor, invocation.Method);				
 				invocation.Proceed();
+				if (invocation.ReturnValue is Task returnTask)
+				{
+					returnTask.GetAwaiter().GetResult();
+				}
+
 				_actorManager?.AfterMethod(invocation.Proxy as IActor, invocation.Method);
 			}
 		}
