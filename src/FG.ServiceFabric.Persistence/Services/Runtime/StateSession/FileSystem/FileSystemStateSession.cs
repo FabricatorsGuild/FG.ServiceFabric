@@ -143,7 +143,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 					// Quick return not-null value if check for existance only
 					return Task.FromResult(System.IO.File.ReadAllText(filePath));
 				}
-				return null;
+				return Task.FromResult((string)null);
 			}
 
 			protected override Task DeleteAsync(string id)
