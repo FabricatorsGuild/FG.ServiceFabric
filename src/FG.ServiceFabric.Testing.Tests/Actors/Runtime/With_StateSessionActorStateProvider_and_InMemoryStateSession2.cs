@@ -160,6 +160,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 							var id = new ActorStateKey(actorId, "count");
 							await session.SetValueAsync(id.Schema, id.Key, 5,
 								new ActorStateValueMetadata(StateWrapperType.ActorState, actorId));
+
+							await session.CommitAsync();
 						}
 					}
 					await base.SetUpStates(stateSessionManager);
@@ -284,8 +286,13 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 						var actorId = new ActorId($"testivus-{j}");
 						var actorIdSchemaKey = new ActorIdStateKey(actorId);
-						var actorIdKey = State.Keys.Single(k =>
+						var actorIdKey = State.Keys.SingleOrDefault(k =>
 							k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
+						if (actorIdKey == null)
+						{
+							throw new Exception($"Tried to find state for {ActorIdStateKey.ActorIdStateSchemaName} {actorIdSchemaKey.Key} but found no keys matching that");
+						}
+
 						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
 						actorIdState.Schema.Should().Be(StateSessionHelper.ActorIdStateSchemaName);
 						actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
@@ -353,8 +360,14 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 					var actorId = new ActorId(actorName);
 					var actorIdSchemaKey = new ActorIdStateKey(actorId);
 
-					var actorStateKey = State.Keys.Single(k =>
+					var actorStateKey = State.Keys.SingleOrDefault(k =>
 						k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key) && k.Contains(stateName));
+					if (actorStateKey == null)
+					{
+						throw new Exception($"Tried to find state for {ActorStateKey.ActorStateSchemaName} | {actorIdSchemaKey.Key} | {stateName} but found no keys matching that");
+					}
+
+
 					var actorState = GetState<ActorStateWrapper<T>>(actorStateKey);
 					actorState.Schema.Should().StartWith(StateSessionHelper.ActorStateSchemaName);
 					actorState.ServiceTypeName.Should().Be("Overlord-ActorDemoActorService");

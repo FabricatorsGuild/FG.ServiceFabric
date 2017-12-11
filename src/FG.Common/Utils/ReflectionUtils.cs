@@ -243,12 +243,12 @@ namespace FG.Common.Utils
 			return (TResult) methodInfo.Invoke(null, args);
 		}
 
-		public static void CallPrivateMethod(this object that, string methodName, params object[] args)
+		public static object CallPrivateMethod(this object that, string methodName, params object[] args)
 		{
 			var methodInfo = GetPrivateOrPublicMethod(that.GetType(), methodName, args.Select(a => a.GetType()).ToArray());
 			if (methodInfo == null) throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");
 
-			methodInfo.Invoke(that, args);
+			return methodInfo.Invoke(that, args);
 		}
 
 		public static object CallGenericMethod(this object that, string methodName, Type[] genericTypes, params object[] args)
