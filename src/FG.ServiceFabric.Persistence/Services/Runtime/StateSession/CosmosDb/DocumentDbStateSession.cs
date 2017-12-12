@@ -220,7 +220,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 						return Task.FromResult(new ConditionalValue<T>(false, default(T)));
 					}
 					_logger.DocumentClientException(nameof(TryGetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -247,7 +247,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 						throw new KeyNotFoundException($"State with {id} does not exist");
 					}
 					_logger.DocumentClientException(nameof(GetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"GetValueAsync for {id} ({schema}:{key}) failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"GetValueAsync for {id} ({schema}:{key}) failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -269,7 +269,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				catch (DocumentClientException dcex)
 				{
 					_logger.DocumentClientException(nameof(SetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"SetValueAsync for {id} ({schema}:{key}) failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"SetValueAsync for {id} ({schema}:{key}) failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -291,7 +291,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				catch (DocumentClientException dcex)
 				{
 					_logger.DocumentClientException(nameof(SetValueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -316,7 +316,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				catch (DocumentClientException dcex)
 				{
 					_logger.DocumentClientException(nameof(RemoveAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"RemoveAsync for {id} failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"RemoveAsync for {id} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -345,7 +345,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				catch (DocumentClientException dcex)
 				{
 					_logger.DocumentClientException(nameof(EnqueueAsync), (int?)dcex.StatusCode ?? -1, dcex.Error, dcex.Message);
-					throw new StateSessionException($"EnqueueAsync for {schema} failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"EnqueueAsync for {schema} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -386,7 +386,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return new ConditionalValue<T>(false, default(T));
 					}
-					throw new StateSessionException($"DequeueAsync for {schema} failed, {dcex.Message}", dcex);
+					throw new DocumentDbStateSessionExceptionException($"DequeueAsync for {schema} failed, {dcex.Message}", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -421,7 +421,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return new ConditionalValue<T>(false, default(T));
 					}
-					throw new StateSessionException($"PeekAsync for {schema} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"PeekAsync for {schema} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -442,7 +442,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"GetDictionaryCountAsync for {schema} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"GetDictionaryCountAsync for {schema} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -508,7 +508,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 					{
 						return Task.FromResult(false);
 					}
-					throw new StateSessionException($"Contains for {id} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"Contains for {id} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -585,7 +585,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"FindByKeyPrefixAsync for {idPrefix} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"FindByKeyPrefixAsync for {idPrefix} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -620,7 +620,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"EnumerateSchemaNamesAsync for {key} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -693,7 +693,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
 						return await SetQueueInfo(schema, value);
 					}
-					throw new StateSessionException($"DequeueAsync for {stateKeyQueueInfo} failed, { dcex.Message }", dcex);
+					throw new DocumentDbStateSessionExceptionException($"DequeueAsync for {stateKeyQueueInfo} failed, { dcex.Message }", dcex);
 				}
 				catch (Exception ex)
 				{
@@ -716,7 +716,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
-					throw new StateSessionException($"CreateQueueInfo for {id} failed", dcex);
+					throw new DocumentDbStateSessionExceptionException($"CreateQueueInfo for {id} failed", dcex);
 				}
 				catch (Exception ex)
 				{
