@@ -94,7 +94,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		private static string GetStateName(string actorState)
 		{
 			return $"{ActorStateSchemaName}-{actorState}";
-		}	
+		}
+
+		public static string GetActorStateNameFromStateSchemaName(string stateSchemaName)
+		{
+			return stateSchemaName.Substring(ActorStateSchemaName.Length + 1);
+		}
 	}
 
 	public class ActorReminderStateKey : ActorSchemaKey

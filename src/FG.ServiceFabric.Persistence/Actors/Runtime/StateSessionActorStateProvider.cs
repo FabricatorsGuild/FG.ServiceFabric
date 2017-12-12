@@ -148,9 +148,13 @@ namespace FG.ServiceFabric.Actors.Runtime
 				var schemaNames = await session.EnumerateSchemaNamesAsync(key.Key, cancellationToken);
 				foreach (var schemaName in schemaNames)
 				{
-					var schemaKey = new ActorStateKey(actorId, schemaName);
-					// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-					await session.RemoveAsync(schemaKey.Schema, schemaKey.Key, cancellationToken);
+					if (schemaName.Contains(ActorStateKey.ActorStateSchemaName))
+					{
+						var actorStateName = ActorStateKey.GetActorStateNameFromStateSchemaName(schemaName);
+						var schemaKey = new ActorStateKey(actorId, actorStateName);
+						// e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
+						await session.RemoveAsync(schemaKey.Schema, schemaKey.Key, cancellationToken);
+					}
 				}
 
 				await session.RemoveAsync(key.Schema, key.Key, cancellationToken);
