@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>$id$</id>
-    <version>$version$-RC7</version>
+    <version>$version$-RC8</version>
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
@@ -12,8 +12,8 @@
     <copyright>Copyright 2017</copyright>
     <tags>service fabric fabric transport remoting</tags>
     <dependencies>
-      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-RC7" />
-      <dependency id="FG.Common" version="$version$-RC7" />
+      <dependency id="FG.ServiceFabric.Services.Remoting" version="$version$-RC8" />
+      <dependency id="FG.Common" version="$version$-RC8" />
     </dependencies>
   </metadata>
 </package>
