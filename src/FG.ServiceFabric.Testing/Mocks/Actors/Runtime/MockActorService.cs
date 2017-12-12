@@ -1,7 +1,10 @@
 using System;
 using System.Fabric;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Client;
+using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 
@@ -39,6 +42,33 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 			_serviceProxyFactory = serviceProxyFactory;
 			_actorProxyFactory = actorProxyFactory;
 			_nodeContext = nodeContext;
+		}
+
+		Task DeleteActorAsync(ActorId actorId, CancellationToken cancellationToken)
+		{
+			return StateProvider.RemoveActorAsync(actorId, cancellationToken);
+		}
+
+	}
+
+	public class MockActorServiceExtension : IActorService
+	{
+		private readonly ActorService _actorService;
+
+		public MockActorServiceExtension(ActorService actorService)
+		{
+			_actorService = actorService;
+			
+		}
+
+		public Task<PagedResult<ActorInformation>> GetActorsAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task DeleteActorAsync(ActorId actorId, CancellationToken cancellationToken)
+		{
+			return _actorService.StateProvider.RemoveActorAsync(actorId, cancellationToken);
 		}
 	}
 }

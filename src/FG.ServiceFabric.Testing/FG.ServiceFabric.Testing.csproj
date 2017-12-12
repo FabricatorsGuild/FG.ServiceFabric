@@ -155,6 +155,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Mocks\Actors\Client\MockableActorRegistration.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxy.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxyFactory.cs" />
+    <Compile Include="Mocks\Actors\Client\MockActorServiceProxy.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorReminder.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorService.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorStateManager.cs" />

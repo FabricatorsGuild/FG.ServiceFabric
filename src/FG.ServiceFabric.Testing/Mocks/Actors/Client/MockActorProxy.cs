@@ -9,6 +9,7 @@ using Microsoft.ServiceFabric.Actors.Client;
 using Microsoft.ServiceFabric.Actors.Remoting.V1.Client;
 using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
+using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
