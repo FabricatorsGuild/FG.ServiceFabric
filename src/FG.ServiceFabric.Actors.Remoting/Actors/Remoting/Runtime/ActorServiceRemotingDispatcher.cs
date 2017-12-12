@@ -6,6 +6,7 @@ using FG.ServiceFabric.Diagnostics;
 using FG.ServiceFabric.Services.Remoting.FabricTransport;
 using FG.ServiceFabric.Services.Remoting.Runtime;
 using FG.Common.Utils;
+using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Runtime;
@@ -14,11 +15,20 @@ using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 
 namespace FG.ServiceFabric.Actors.Remoting.Runtime
 {
+	public interface IProcessOnlyOnceActorService
+	{
+		byte[] GetProcessedResult(ActorId actorId, Guid commandId);
+
+		void StoreProcessedResult(ActorId actorId, Guid commandId, byte[] result);
+	}
+
+
 	public class ActorServiceRemotingDispatcher : IServiceRemotingMessageHandler
 	{
 		private static readonly IDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
 		private static readonly ConcurrentDictionary<long, string> ActorMethodMap = new ConcurrentDictionary<long, string>();
 
+		private readonly IProcessOnlyOnceActorService _processOnlyOnceActorService;
 		private readonly ActorService _actorService;
 		private readonly IServiceRemotingMessageHandler _innerMessageHandler;
 		private readonly IActorServiceCommunicationLogger _logger;
@@ -27,6 +37,7 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 			IActorServiceCommunicationLogger logger)
 		{
 			_actorService = actorService;
+			_processOnlyOnceActorService = _actorService as IProcessOnlyOnceActorService;
 			_innerMessageHandler = innerMessageHandler;
 			_logger = logger;
 		}
@@ -113,6 +124,26 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 		{
 			var methodName = GetActorMethodName(actorMessageHeaders);
 
+			var commandId = Guid.Empty;
+			if (_processOnlyOnceActorService != null)
+			{
+				var commandIdHeader = customHeader.GetHeader("CommandId");
+				try
+				{
+					commandId = new Guid(commandIdHeader);
+					byte[] preprocessedResult;
+					if ((preprocessedResult = _processOnlyOnceActorService.GetProcessedResult(actorMessageHeaders.ActorId, commandId)) != null)
+					{
+						return preprocessedResult;
+					}
+				}
+				catch (Exception ex)
+				{
+					_logger?.RecieveServiceMessageFailed(_actorService.Context.ServiceName, methodName, messageHeaders, customHeader,
+						ex);
+				}
+			}
+
 			byte[] result = null;
 			using (new ServiceRequestContextWrapper(customHeader))
 			{
@@ -131,6 +162,19 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 					}
 				}
 			}
+			if (_processOnlyOnceActorService != null)
+			{
+				try
+				{
+					_processOnlyOnceActorService.StoreProcessedResult(actorMessageHeaders.ActorId, commandId, result);
+				}
+				catch (Exception ex)
+				{
+					_logger?.RecieveServiceMessageFailed(_actorService.Context.ServiceName, methodName, messageHeaders, customHeader,
+						ex);
+				}
+			}
+
 			return result;
 		}
 
@@ -142,7 +186,6 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 			CustomServiceRequestHeader customHeader)
 		{
 			var methodName = GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
-
 
 			byte[] result = null;
 			using (new ServiceRequestContextWrapper(customHeader))
