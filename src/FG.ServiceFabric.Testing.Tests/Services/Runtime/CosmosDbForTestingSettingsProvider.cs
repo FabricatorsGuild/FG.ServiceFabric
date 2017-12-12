@@ -9,9 +9,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
 	{
 		private readonly IDictionary<string, string> _settings = new Dictionary<string, string>();
 
-		public static CosmosDbForTestingSettingsProvider DefaultForCollection(string collection) => new CosmosDbForTestingSettingsProvider("https://172.27.82.113:8081", "sfp-local1",
+		public static CosmosDbForTestingSettingsProvider DefaultForCollection(string collection) => new CosmosDbForTestingSettingsProvider("https://ffcg-labs-docdb.documents.azure.com:443/", "sfp-local1",
 			collection,
-			"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
+			"Rvh80izCLQJJWOitTes652Qkh6UyLjEhZauCWXHFkY0H3nzdh3iQee7OI3qtO42jgIOLwH7q3j25Hk0onbAIWQ==");
 
 		public CosmosDbForTestingSettingsProvider(string endpointUri, string databaseName, string collection, string primaryKey)
 		{

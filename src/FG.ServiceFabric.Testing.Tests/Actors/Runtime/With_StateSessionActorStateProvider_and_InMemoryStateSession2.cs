@@ -10,10 +10,12 @@ using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Actors.Runtime.StateSession;
 using FG.ServiceFabric.Actors.Runtime.StateSession.Metadata;
 using FG.ServiceFabric.Services.Runtime.StateSession;
+using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_DocumentDbStateSessionManagerWithTransaction;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates;
@@ -33,6 +35,8 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 				protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
 				protected MockFabricApplication _fabricApplication;
 				protected MockFabricRuntime FabricRuntime;
+				private Guid _appId = Guid.NewGuid();
+				private string _collectionName;
 
 				protected TestBase()
 				{
@@ -54,6 +58,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 						createActorStateProvider: (context, actorInfo) =>
 							new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
 						serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
+
 
 					SetupActor().GetAwaiter().GetResult();
 				}
@@ -90,13 +95,22 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
 				{
+					//_collectionName = $"AppTest-{_appId}";
+					//var _cosmosDbSettingsProvider = CosmosDbForTestingSettingsProvider.DefaultForCollection(_collectionName);
+					//var stateManager = new DocumentDbStateSessionManagerWithTransactions(
+					//	"StatefulServiceDemo",
+					//	_appId,
+					//	StateSessionHelper.GetPartitionInfo(context, () => FabricRuntime.PartitionEnumerationManager).GetAwaiter()
+					//		.GetResult(),
+					//	_cosmosDbSettingsProvider
+					//);
 					var stateManager = new InMemoryStateSessionManagerWithTransaction(
-						StateSessionHelper.GetServiceName(context.ServiceName),
-						context.PartitionId,
-						StateSessionHelper.GetPartitionInfo(context,
-							() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
-						State
-					);
+											StateSessionHelper.GetServiceName(context.ServiceName),
+											context.PartitionId,
+											StateSessionHelper.GetPartitionInfo(context,
+												() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
+											State
+										);
 					SetUpStates(stateManager);
 					return stateManager;
 				}
@@ -238,6 +252,28 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 
 					State.Should().HaveCount(200);
 				}
+
+				[Test]
+				public async Task _should_be_able_to_delete_created_actors()
+				{
+					for (int j = 0; j < 10; j++)
+					{
+						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));						
+						var i = await actorProxy.GetCountAsync();
+					}
+
+					//State.Should().HaveCount(20);
+
+					var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+					for (int j = 0; j < 10; j++)
+					{
+						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorService>(serviceUri, new ActorId($"testivus-{j}"));
+						await actorProxy.DeleteActorAsync(new ActorId($"testivus-{j}"), CancellationToken.None);
+					}
+
+					//State.Should().HaveCount(0);
+				}
+
 
 				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
 					ActorDemoActorService service, ActorId actorId)

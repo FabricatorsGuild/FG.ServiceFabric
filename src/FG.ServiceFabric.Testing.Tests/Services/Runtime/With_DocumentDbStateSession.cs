@@ -28,21 +28,19 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 				private DocumentDbStateSessionManagerWithTransactions _stateSessionManager;
 				private CosmosDbForTestingSettingsProvider _cosmosDbSettingsProvider;
 				private string _collectionName;
+				private Guid _appId = Guid.NewGuid();
 
 				public override IDictionary<string, string> State => GetState();
 
 				public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
 					StatefulServiceContext context)
 				{
-					var appId = Guid.NewGuid();
-					_collectionName = $"App-tests-{appId}";
+					_collectionName = $"App-tests-{_appId}";
 
-					_cosmosDbSettingsProvider = new CosmosDbForTestingSettingsProvider("https://localhost:8081/", "sfp-local1",
-						_collectionName,
-						"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==");
+					_cosmosDbSettingsProvider = CosmosDbForTestingSettingsProvider.DefaultForCollection(_collectionName);
 					_stateSessionManager = new DocumentDbStateSessionManagerWithTransactions(
 						"StatefulServiceDemo",
-						appId,
+						_appId,
 						StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager).GetAwaiter()
 							.GetResult(),
 						_cosmosDbSettingsProvider
