@@ -87,11 +87,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 	{
 		internal const string ActorStateSchemaName = @"ACTORSTATE";
 
-		public ActorStateKey(ActorId actorId, string schema) : base(GetStateName(schema), GetActorIdSchemaKey(actorId))
+		public ActorStateKey(ActorId actorId, string schema) : base(GetSchemaName(schema), GetActorIdSchemaKey(actorId))
 		{
 		}
 
-		private static string GetStateName(string actorState)
+		public static string GetSchemaName(string actorState)
 		{
 			return $"{ActorStateSchemaName}-{actorState}";
 		}

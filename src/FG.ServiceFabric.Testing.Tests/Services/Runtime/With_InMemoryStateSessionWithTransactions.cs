@@ -185,7 +185,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await session1.CommitAsync();
 
 					var committedResults =
-						await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+						await session1.FindByKeyPrefixAsync("values", null, 10000, null, CancellationToken.None);
 
 					committedResults.Items.ShouldBeEquivalentTo(new[] {"a", "b", "c", "d"});
 
@@ -201,7 +201,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 					await session1.RemoveAsync<string>("values", "d", CancellationToken.None);
 
 					var uncommittedResults =
-						await session1.FindByKeyPrefixAsync<string>("values", null, 10000, null, CancellationToken.None);
+						await session1.FindByKeyPrefixAsync("values", null, 10000, null, CancellationToken.None);
 					uncommittedResults.Items.ShouldBeEquivalentTo(new[] {"a", "b", "c", "d"});
 
 					committedResults.ShouldBeEquivalentTo(uncommittedResults);

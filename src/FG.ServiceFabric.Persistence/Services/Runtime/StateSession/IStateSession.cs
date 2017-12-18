@@ -1,112 +1,13 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.DocumentDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
-using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
-	public interface IStateSessionReadOnlyObject
-	{
-		string Schema { get; }
-		bool IsReadOnly { get; }
-	}
-
-	public interface IStateSessionObject : IStateSessionReadOnlyObject
-	{
-	}
-
-	public interface IStateSessionReadOnlyQueue<T> : IStateSessionReadOnlyObject
-	{
-		Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken));
-		Task<IAsyncEnumerable<T>> CreateEnumerableAsync();
-		Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));
-	}
-
-	public interface IStateSessionQueue<T> : IStateSessionReadOnlyQueue<T>, IStateSessionObject
-	{
-		Task EnqueueAsync(T value, CancellationToken cancellationToken = default(CancellationToken));
-		Task EnqueueAsync(T value, IValueMetadata metadata, CancellationToken cancellationToken = default(CancellationToken));
-		Task<ConditionalValue<T>> DequeueAsync(CancellationToken cancellationToken = default(CancellationToken));
-	}
-
-	public interface IStateSessionReadOnlyDictionary<T> : IStateSessionReadOnlyObject
-	{
-		Task<bool> Contains(string key, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string keyPrefix, int maxNumResults = 100000,
-			ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
-		Task<ConditionalValue<T>> TryGetValueAsync(string key,
-			CancellationToken cancellationToken = default(CancellationToken));
-		Task<T> GetValueAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
-		Task<IAsyncEnumerable<KeyValuePair<string, T>>> CreateEnumerableAsync();
-		Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));
-	}
-
-	public interface IStateSessionDictionary<T> : IStateSessionReadOnlyDictionary<T>, IStateSessionObject
-	{
-		Task SetValueAsync(string key, T value, CancellationToken cancellationToken = default(CancellationToken));
-		Task SetValueAsync(string key, T value, IValueMetadata metadata,
-			CancellationToken cancellationToken = default(CancellationToken));
-		Task RemoveAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
-	}
-
-	public interface IStateSessionWritableManager
-	{
-		Task<IStateSessionDictionary<T>> OpenDictionary<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<IStateSessionQueue<T>> OpenQueue<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects);
-
-	}
-
-	public interface IStateSessionManager
-	{
-		Task<IStateSessionReadOnlyDictionary<T>> OpenDictionary<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<IStateSessionReadOnlyQueue<T>> OpenQueue<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-		
-		IStateSessionReader CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects);
-
-		IStateSessionWritableManager Writable { get; }
-	}
-
-
-	public interface IStateSessionReader : IDisposable
-	{
-		Task<bool> Contains<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
-		Task<bool> Contains(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix, int maxNumResults = 100000,
-			ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix, int maxNumResults = 100000,
-			ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<ConditionalValue<T>> PeekAsync<T>(string schema,
-			CancellationToken cancellationToken = default(CancellationToken));
-
-		Task<long> GetDictionaryCountAsync<T>(string schema, CancellationToken cancellationToken);
-		Task<long> GetEnqueuedCountAsync<T>(string schema, CancellationToken cancellationToken);
-	}
-
-	public interface IStateSession : IStateSessionReader
+    public interface IStateSession : IStateSessionReader
 	{
 
 		Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata,
@@ -125,11 +26,5 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			CancellationToken cancellationToken = default(CancellationToken));
 		Task CommitAsync();
 		Task AbortAsync();
-	}
-
-	public class FindByKeyPrefixResult
-	{
-		public IEnumerable<string> Items { get; set; }
-		public ContinuationToken ContinuationToken { get; set; }
 	}
 }

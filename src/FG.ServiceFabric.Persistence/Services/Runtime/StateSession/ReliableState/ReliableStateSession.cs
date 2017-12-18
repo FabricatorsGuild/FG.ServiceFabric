@@ -14,14 +14,42 @@ using Microsoft.ServiceFabric.Data.Collections;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 {
-	public class ReliableStateSessionQueue<T> : IStateSessionQueue<T>
+    public class ReliableStateSessionReadOnlyQueue<T> : IStateSessionReadOnlyQueue<T>
+    {
+        protected readonly IReliableConcurrentQueue<T> ReliableConcurrentQueue;
+
+        public ReliableStateSessionReadOnlyQueue(IReliableConcurrentQueue<T> reliableConcurrentQueue)
+        {
+            ReliableConcurrentQueue = reliableConcurrentQueue;
+        }
+
+        public Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IAsyncEnumerable<T>> CreateEnumerableAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public string Schema => ReliableConcurrentQueue.Name.ToString();
+        public bool IsReadOnly { get; }
+    }
+
+    public class ReliableStateSessionQueue<T> : ReliableStateSessionReadOnlyQueue<T>, IStateSessionQueue<T>
 	{
 		private readonly IReliableConcurrentQueue<T> _reliableConcurrentQueue;
 
-		public ReliableStateSessionQueue(IReliableConcurrentQueue<T> reliableConcurrentQueue, bool readOnly)
+		public ReliableStateSessionQueue(IReliableConcurrentQueue<T> reliableConcurrentQueue) : base(reliableConcurrentQueue)
 		{
 			_reliableConcurrentQueue = reliableConcurrentQueue;
-			IsReadOnly = readOnly;
+			IsReadOnly = false;
 		}
 
 		public Task EnqueueAsync(T value, CancellationToken cancellationToken = default(CancellationToken))
@@ -153,12 +181,34 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
 
 			return new ReliableStateSessionDictionary<T>(reliableDictionary2, readOnly: false);
-		}
+	    }
+	    async Task<IStateSessionDictionary<T>> IStateSessionWritableManager.OpenDictionary<T>(string schema, CancellationToken cancellationToken)
+	    {
+	        cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
 
-		Task<IStateSessionQueue<T>> IStateSessionWritableManager.OpenQueue<T>(string schema, CancellationToken cancellationToken)
+	        IReliableDictionary2<string, T> reliableDictionary2 = null;
+	        await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
+	        {
+	            reliableDictionary2 = await _stateManager.GetOrAddAsync<IReliableDictionary2<string, T>>(schema);
+	            _reliableDictionaries[schema] = reliableDictionary2;
+	        }, 3, TimeSpan.FromSeconds(1), cancellationToken);
+
+	        return new ReliableStateSessionDictionary<T>(reliableDictionary2, readOnly: false);
+        }
+
+        async Task<IStateSessionQueue<T>> IStateSessionWritableManager.OpenQueue<T>(string schema, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
-		}
+		    cancellationToken = cancellationToken == default(CancellationToken) ? CancellationToken.None : cancellationToken;
+
+		    IReliableConcurrentQueue<T> reliableQueue = null;
+		    await ExecutionHelper.ExecuteWithRetriesAsync(async (cn) =>
+		    {
+		        reliableQueue = await _stateManager.GetOrAddAsync<IReliableConcurrentQueue<T>>(schema);
+		        _reliableQueues[schema] = reliableQueue;
+		    }, 3, TimeSpan.FromSeconds(1), cancellationToken);
+
+		    return new ReliableStateSessionQueue<T>(reliableQueue);
+        }
 
 		IStateSessionReader IStateSessionManager.CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects)
 		{
@@ -188,10 +238,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 			return new ReliableStateSessionDictionary<T>(reliableDictionary2, readOnly);
 		}
 
-		Task<IStateSessionDictionary<T>> IStateSessionWritableManager.OpenDictionary<T>(string schema, CancellationToken cancellationToken)
-		{
-			throw new NotImplementedException();
-		}
 
 		public async Task<IStateSessionReadOnlyQueue<T>> OpenQueue<T>(
 			string schema,
@@ -206,7 +252,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 				_reliableQueues[schema] = reliableConcurrentQueue;
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
 
-			return new ReliableStateSessionQueue<T>(reliableConcurrentQueue, readOnly: false);
+			return new ReliableStateSessionQueue<T>(reliableConcurrentQueue);
 		}
 		public async Task<IStateSessionQueue<T>> OpenQueue<T>(
 			string schema,
@@ -222,7 +268,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 				_reliableQueues[schema] = reliableConcurrentQueue;
 			}, 3, TimeSpan.FromSeconds(1), cancellationToken);
 
-			return new ReliableStateSessionQueue<T>(reliableConcurrentQueue, readOnly);
+			return new ReliableStateSessionQueue<T>(reliableConcurrentQueue);
 		}
 
 		public IStateSession CreateSession(params IStateSessionReadOnlyObject[] stateSessionObjects)
@@ -429,24 +475,27 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 					cancellationToken: cancellationToken);
 			}
 
-			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
+			public Task<FindByKeyPrefixResult<T>> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
 				int maxNumResults = 100000,
 				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
 			{
-				return FindByKeyPrefixInternalAsync(schema, keyPrefix, maxNumResults,
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-					reliableDictionaryFactory: async (stateSessionManager, schema2) =>
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
-					{
-						_sessionManager.UpdateReliableStateType(schema, typeof(T));
-						var reliableDictionary2 = GetDictionary<T>(schema);
-						return reliableDictionary2;
-					},
-					createKeyEnumerableAsyncFactory: (reliableDictionary2, transaction, cn) =>
-						((IReliableDictionary2<string, T>) reliableDictionary2).CreateKeyEnumerableAsync(transaction,
-							EnumerationMode.Ordered, TimeSpan.FromSeconds(1), cn),
-					continuationToken: continuationToken,
-					cancellationToken: cancellationToken);
+                throw new NotImplementedException();
+
+
+//				return FindByKeyPrefixInternalAsync(schema, keyPrefix, maxNumResults,
+//#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+//					reliableDictionaryFactory: async (stateSessionManager, schema2) =>
+//#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+//					{
+//						_sessionManager.UpdateReliableStateType(schema, typeof(T));
+//						var reliableDictionary2 = GetDictionary<T>(schema);
+//						return reliableDictionary2;
+//					},
+//					createKeyEnumerableAsyncFactory: (reliableDictionary2, transaction, cn) =>
+//						((IReliableDictionary2<string, T>) reliableDictionary2).CreateKeyEnumerableAsync(transaction,
+//							EnumerationMode.Ordered, TimeSpan.FromSeconds(1), cn),
+//					continuationToken: continuationToken,
+//					cancellationToken: cancellationToken);
 			}
 
 			public async Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,

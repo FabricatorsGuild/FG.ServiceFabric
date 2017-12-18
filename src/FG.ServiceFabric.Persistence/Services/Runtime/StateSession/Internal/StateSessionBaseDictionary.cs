@@ -35,7 +35,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			CheckSession();
-			return _session.FindByKeyPrefixAsync<TValueType>(_schema, keyPrefix, maxNumResults, continuationToken,
+			return _session.FindByKeyPrefixAsync(_schema, keyPrefix, maxNumResults, continuationToken,
 				cancellationToken);
 		}
 
@@ -91,7 +91,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 					return false;
 				}
 
-				var findNext = await _session.FindByKeyPrefixAsync<TValueType>(_schema, null, 1, continuationToken, cancellationToken);
+				var findNext = await _session.FindByKeyPrefixAsync(_schema, null, 1, continuationToken, cancellationToken);
 				var nextKey = findNext.Items.FirstOrDefault();
 				if (nextKey != null)
 				{

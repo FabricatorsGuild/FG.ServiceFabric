@@ -228,6 +228,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Services\Runtime\StateSession\CosmosDb\IStateQuerySessionManager.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\StateSessionObjectExtensions.cs" />
     <Compile Include="Services\Runtime\StateSession\FileSystem\FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\FindByKeyPrefixResult.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\InMemory\InMemoryStateSessionManagerWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\Internal\IStateSessionManagerInternals.cs" />
@@ -238,8 +239,18 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Services\Runtime\StateSession\Internal\TextStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\Internal\TextStateSessionManagerWithTransaction.cs" />
     <Compile Include="Services\Runtime\StateSession\IStateSession.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionDictionary.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionManager.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionObject.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionQueue.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionReader.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionReadOnlyDictionary.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionReadOnlyObject.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionReadOnlyQueue.cs" />
+    <Compile Include="Services\Runtime\StateSession\IStateSessionWritableManager.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IServiceMetadata.cs" />
     <Compile Include="Services\Runtime\StateSession\Metadata\IValueMetadata.cs" />
+    <Compile Include="Services\Runtime\StateSession\PagedLookupResult.cs" />
     <Compile Include="Services\Runtime\StateSession\QueueInfo.cs" />
     <Compile Include="Services\Runtime\StateSession\ReliableState\ReliableStateSession.cs" />
     <Compile Include="Services\Runtime\StateSession\SchemaStateKey.cs" />

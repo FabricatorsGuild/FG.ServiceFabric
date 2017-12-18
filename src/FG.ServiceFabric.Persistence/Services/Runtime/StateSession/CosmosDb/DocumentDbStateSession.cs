@@ -516,15 +516,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 			}
 
-			public Task<FindByKeyPrefixResult> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
-				int maxNumResults = 100000,
-				ContinuationToken continuationToken = null,
-				CancellationToken cancellationToken = new CancellationToken())
-			{
-				return FindByKeyPrefixAsync(schema, keyPrefix, maxNumResults, continuationToken, cancellationToken);
-			}
+		    public Task<FindByKeyPrefixResult<T>> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
+		        int maxNumResults = 100000,
+		        ContinuationToken continuationToken = null,
+		        CancellationToken cancellationToken = new CancellationToken())
+		    {
+		        throw new NotImplementedException();
+		    }
 
-			public async Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix,
+		    public async Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix,
 				int maxNumResults = 100000,
 				ContinuationToken continuationToken = null,
 				CancellationToken cancellationToken = new CancellationToken())
