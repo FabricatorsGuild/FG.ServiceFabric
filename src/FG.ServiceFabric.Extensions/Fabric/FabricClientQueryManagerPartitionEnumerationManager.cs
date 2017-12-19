@@ -15,7 +15,7 @@ namespace FG.ServiceFabric.Fabric
 		}
 
 		public Task<ServicePartitionList> GetPartitionListAsync(Uri serviceName)
-		{
+		{            
 			return _fabricClient.QueryManager.GetPartitionListAsync(serviceName);
 		}
 

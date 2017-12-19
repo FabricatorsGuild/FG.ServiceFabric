@@ -46,7 +46,75 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return $"{components[0]}-{components[1]}";
 		}
 
-		public static async Task<string> GetPartitionInfo(ServiceContext serviceContext,
+
+
+        public static async Task<string> GetPartitionInfoUncached(ServiceContext serviceContext,
+            Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
+        {
+            try
+            {
+                var partitionId = serviceContext.PartitionId;
+                var serviceUri = serviceContext.ServiceName;
+                var serviceUriKey = serviceUri.ToString().ToLowerInvariant();
+
+                var partitionKeys = new List<Partition>();
+                var servicePartitionKeys = new Dictionary<Guid, string>();
+
+                string continuationToken = null;
+                do
+                {
+                    var partitionEnumerationManager = partitionEnumerationManagerFactory();
+                    var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);                    
+                    foreach (var partition in servicePartitionList)
+                    {
+                        partitionKeys.Add(partition);
+                    }
+                    continuationToken = servicePartitionList.ContinuationToken;
+                } while (continuationToken != null);
+
+
+                var isNamedPartitions = false;
+                var isInt64Partitions = false;
+                var isSingletonPartition = false;
+
+                var singletonPartition = partitionKeys
+                    .Select(p => p.PartitionInformation as SingletonPartitionInformation)
+                    .FirstOrDefault(pi => pi.Id == partitionId);
+                if (singletonPartition != null)
+                {
+                    return $"singleton";
+                }
+
+                var int64RangePartition = partitionKeys
+                    .Select(p => p.PartitionInformation as Int64RangePartitionInformation)
+                    .Where(pi => pi != null)
+                    .OrderBy(pi => pi.LowKey)
+                    .Select((pi, i) => new {PartitionId = pi.Id, Name = $"range-{i}"})
+                    .FirstOrDefault(pi => pi.PartitionId == partitionId);
+                if (int64RangePartition != null)
+                {
+                    return int64RangePartition.Name;
+                }
+
+                var namedPartition = partitionKeys
+                    .Select(p => p.PartitionInformation as NamedPartitionInformation)
+                    .Where(pi => pi != null)                    
+                    .Select((pi, i) => new { PartitionId = pi.Id, Name = pi.Name })
+                    .FirstOrDefault(pi => pi.PartitionId == partitionId);
+                if (namedPartition != null)
+                {
+                    return namedPartition.Name;
+                }
+
+                throw new StateSessionException($"Could not find a matching partition for {partitionId} for service {serviceContext.ServiceName}");
+            }
+            catch (Exception ex)
+            {
+                throw new StateSessionException("tFailed to enumerate partitions", ex);
+            }
+        }
+
+        public static async Task<string> GetPartitionInfo(ServiceContext serviceContext,
 			Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
 		{
 			try
@@ -153,7 +221,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			}
 			catch (Exception ex)
 			{
-				throw new StateSessionException("Failed to enumerate partitions", ex);
+				throw new StateSessionException("tFailed to enumerate partitions", ex);
 			}
 		}
 
