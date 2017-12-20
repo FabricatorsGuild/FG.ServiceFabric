@@ -147,10 +147,15 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
       <Link>Properties\AssemblyVersion.cs</Link>
     </Compile>
+    <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentState.cs" />
+    <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentStateKey.cs" />
+    <Compile Include="Actors\Runtime\ActorDocument\DefaultStateSessionActorDocumentManager.cs" />
     <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
     <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
     <Compile Include="Actors\Runtime\ExternalState.cs" />
     <Compile Include="Actors\Runtime\IActorValueMetadata.cs" />
+    <Compile Include="Actors\Runtime\ActorDocument\IStateSessionActorDocumentManager.cs" />
+    <Compile Include="Actors\Runtime\OverloadedStateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCollection.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />

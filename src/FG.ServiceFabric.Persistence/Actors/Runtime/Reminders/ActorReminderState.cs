@@ -8,7 +8,20 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 		private readonly TimeSpan _nextDueTime;
 		private readonly ActorReminderData _reminder;
 
-		public ActorReminderState(ActorReminderData reminder, DateTime currentLogicalTime,
+	    public ActorReminderState(ActorReminderData reminder, DateTime currentLogicalTime)
+	    {
+	        this._reminder = reminder;
+	        if (reminder.IsComplete)
+	        {
+	            this._nextDueTime = ComputeRemainingTime(currentLogicalTime, reminder.UtcCompletedTime, reminder.DueTime);
+	        }
+	        else
+	        {
+	            this._nextDueTime = ComputeRemainingTime(currentLogicalTime, reminder.UtcCreationTime, reminder.DueTime);
+            }
+        }
+
+        public ActorReminderState(ActorReminderData reminder, DateTime currentLogicalTime,
 			ActorReminderCompletedData reminderCompletedData)
 		{
 			this._reminder = reminder;

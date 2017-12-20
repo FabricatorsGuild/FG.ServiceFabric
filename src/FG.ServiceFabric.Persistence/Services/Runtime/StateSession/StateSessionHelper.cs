@@ -73,13 +73,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                 } while (continuationToken != null);
 
 
-                var isNamedPartitions = false;
-                var isInt64Partitions = false;
-                var isSingletonPartition = false;
-
                 var singletonPartition = partitionKeys
                     .Select(p => p.PartitionInformation as SingletonPartitionInformation)
-                    .FirstOrDefault(pi => pi.Id == partitionId);
+                    .FirstOrDefault(pi => pi?.Id == partitionId);
                 if (singletonPartition != null)
                 {
                     return $"singleton";

@@ -424,6 +424,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				}
 				catch (DocumentClientException dcex)
 				{
+				    if (dcex.StatusCode == HttpStatusCode.NotFound)
+				    {
+				        throw new KeyNotFoundException($"RemoveAsync for {id} failed, the key was not found");
+				    }
 					throw new StateSessionException($"RemoveAsync for {id} failed", dcex);
 				}
 				catch (Exception ex)

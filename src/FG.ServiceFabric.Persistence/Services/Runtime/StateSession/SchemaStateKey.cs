@@ -52,19 +52,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		}
 	}
 
-	public class DictionaryStateKey : ISchemaKey
-	{
-		public DictionaryStateKey(string schema, string key)
-		{
-			Schema = schema;
-			Key = key;
-		}
+    public class DictionaryStateKey : ISchemaKey
+    {
+        public DictionaryStateKey(string schema, string key)
+        {
+            Schema = schema;
+            Key = key;
+        }
 
-		public string Schema { get; }
-		public string Key { get; }
-	}
+        public string Schema { get; }
+        public string Key { get; }
+    }
 
-	public class ActorIdStateKey : ActorSchemaKey
+    public class ActorIdStateKey : ActorSchemaKey
 	{
 		internal const string ActorIdStateSchemaName = @"ACTORID";
 

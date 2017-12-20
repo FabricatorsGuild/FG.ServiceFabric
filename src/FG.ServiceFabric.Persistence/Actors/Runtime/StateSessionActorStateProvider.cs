@@ -14,7 +14,6 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-
     public interface IStateProviderQueryable
     {
         //

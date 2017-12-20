@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace FG.Common.Utils
 {
-	public static class TextUtil
+    public static class TextUtil
 	{
 		private static readonly Regex TrimInternalWhitespaceRegEx = new Regex(@"(\r\n|\n)\s+", RegexOptions.Compiled);
 

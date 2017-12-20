@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace FG.ServiceFabric.Actors.Runtime.Reminders
 {
 	[DataContract]
-	internal sealed class ActorReminderData
+	internal sealed class ActorReminderData : IActorReminder
 	{
 		private ActorReminderData()
 		{
@@ -35,6 +35,11 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 			this.UtcCreationTime = utcCreationTime;
 		}
 
+	    internal void SetCompleted()
+	    {
+	        IsComplete = true;
+	    }
+
 		[JsonProperty("actorId")]
 		private string ActorIdValue
 		{
@@ -48,22 +53,31 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 
 		[JsonProperty("name")]
 		[DataMember]
-		internal string Name { get; private set; }
+		public string Name { get; private set; }
 
 		[JsonProperty("dueTime")]
 		[DataMember]
-		internal TimeSpan DueTime { get; private set; }
+		public TimeSpan DueTime { get; private set; }
 
 		[JsonProperty("period")]
 		[DataMember]
-		internal TimeSpan Period { get; private set; }
+		public TimeSpan Period { get; private set; }
 
 		[JsonProperty("state")]
 		[DataMember]
-		internal byte[] State { get; private set; }
+		public byte[] State { get; private set; }
 
 		[JsonProperty("utcCreationTime")]
 		[DataMember]
 		internal DateTime UtcCreationTime { get; private set; }
-	}
+
+        [JsonProperty("isComplete")]
+        [DataMember]
+        internal bool IsComplete { get; private set; }
+
+
+	    [JsonProperty("utcCompletedTime")]
+	    [DataMember]
+	    internal DateTime UtcCompletedTime { get; private set; }
+    }
 }
