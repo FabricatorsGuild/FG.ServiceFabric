@@ -116,7 +116,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             {
                 var containsState = await _innerActorStateProvider.ContainsStateAsync(actorId, actorState.Key, cancellationToken);
                 actorStateChanges.Add(new ActorStateChange(actorState.Key, actorState.Value.GetType(),
-                    actorDocument, containsState ? StateChangeKind.Update : StateChangeKind.Add));
+                    actorState.Value, containsState ? StateChangeKind.Update : StateChangeKind.Add));
             }
 
             await _innerActorStateProvider.SaveStateAsync(actorId, actorStateChanges, cancellationToken);
