@@ -31,12 +31,12 @@ namespace FG.ServiceFabric.Actors.Runtime.Reminders
 
         public IEnumerator<KeyValuePair<ActorId, IReadOnlyCollection<string>>> GetEnumerator()
         {
-            throw new System.NotImplementedException();
+            return this._reminderCollectionsByActorId.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return this._reminderCollectionsByActorId.GetEnumerator();
         }
 
         public int Count => this._reminderCollectionsByActorId.Count;
