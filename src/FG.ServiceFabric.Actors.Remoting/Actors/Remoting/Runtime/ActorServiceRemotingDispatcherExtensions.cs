@@ -17,7 +17,7 @@ namespace FG.ServiceFabric.Actors.Remoting.Runtime
 					typeof(Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher).GetField("actorService",
 						BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetField);
 				var actorService = actorServiceFieldInfo?.GetValue(that);
-				var methodDispatcherMapPropertyInfo = typeof(ActorService).GetProperty("MethodDispatcherMap",
+				var methodDispatcherMapPropertyInfo = typeof(ActorService).GetProperty("MethodDispatcherMapV1",
 					BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.GetProperty);
 				var methodDispatcherMap = methodDispatcherMapPropertyInfo?.GetValue(actorService);
 				var getDispatcherMethodInfo =
