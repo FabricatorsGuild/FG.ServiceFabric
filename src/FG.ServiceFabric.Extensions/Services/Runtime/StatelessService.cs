@@ -1,39 +1,44 @@
-﻿using System;
-using System.Fabric;
-using System.Threading;
-using System.Threading.Tasks;
-using FG.ServiceFabric.Diagnostics;
-using Microsoft.ServiceFabric.Actors.Client;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
-
-namespace FG.ServiceFabric.Services.Runtime
+﻿namespace FG.ServiceFabric.Services.Runtime
 {
-	public abstract class StatelessService : Microsoft.ServiceFabric.Services.Runtime.StatelessService
-	{
-		private readonly Func<IActorClientLogger> _actorClientLoggerFactory;
-		private IActorProxyFactory _actorProxyFactory;
-		private ApplicationUriBuilder _applicationUriBuilder;
-		private readonly Func<IServiceClientLogger> _serviceClientLoggerFactory;
-		private IServiceProxyFactory _serviceProxyFactory;
+    using System;
+    using System.Fabric;
 
-		protected StatelessService(StatelessServiceContext serviceContext,
-			Func<IActorClientLogger> actorClientLoggerFactory = null,
-			Func<IServiceClientLogger> serviceClientLoggerFactory = null) : base(serviceContext)
-		{
-			_actorClientLoggerFactory = actorClientLoggerFactory;
-			_serviceClientLoggerFactory = serviceClientLoggerFactory;
-			_applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
-		}
+    using FG.ServiceFabric.Diagnostics;
 
-		public ApplicationUriBuilder ApplicationUriBuilder =>
-			_applicationUriBuilder ?? (_applicationUriBuilder = new ApplicationUriBuilder());
+    using Microsoft.ServiceFabric.Actors.Client;
+    using Microsoft.ServiceFabric.Services.Remoting.Client;
 
-		public IActorProxyFactory ActorProxyFactory => _actorProxyFactory ?? (_actorProxyFactory =
-			                                               new FG.ServiceFabric.Actors.Client.ActorProxyFactory(
-				                                               _actorClientLoggerFactory?.Invoke()));
+    using ActorProxyFactory = FG.ServiceFabric.Actors.Client.ActorProxyFactory;
+    using ServiceProxyFactory = FG.ServiceFabric.Services.Remoting.Runtime.Client.ServiceProxyFactory;
 
-		public IServiceProxyFactory ServiceProxyFactory => _serviceProxyFactory ?? (_serviceProxyFactory =
-			                                                   new FG.ServiceFabric.Services.Remoting.Runtime.Client.
-				                                                   ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke()));
-	}
+    public abstract class StatelessService : Microsoft.ServiceFabric.Services.Runtime.StatelessService
+    {
+        private readonly Func<IActorClientLogger> _actorClientLoggerFactory;
+
+        private readonly Func<IServiceClientLogger> _serviceClientLoggerFactory;
+
+        private IActorProxyFactory _actorProxyFactory;
+
+        private ApplicationUriBuilder _applicationUriBuilder;
+
+        private IServiceProxyFactory _serviceProxyFactory;
+
+        protected StatelessService(
+            StatelessServiceContext serviceContext,
+            Func<IActorClientLogger> actorClientLoggerFactory = null,
+            Func<IServiceClientLogger> serviceClientLoggerFactory = null)
+            : base(serviceContext)
+        {
+            this._actorClientLoggerFactory = actorClientLoggerFactory;
+            this._serviceClientLoggerFactory = serviceClientLoggerFactory;
+            this._applicationUriBuilder = new ApplicationUriBuilder(this.Context.CodePackageActivationContext);
+        }
+
+        public IActorProxyFactory ActorProxyFactory => this._actorProxyFactory ?? (this._actorProxyFactory = new ActorProxyFactory(this._actorClientLoggerFactory?.Invoke()));
+
+        public ApplicationUriBuilder ApplicationUriBuilder => this._applicationUriBuilder ?? (this._applicationUriBuilder = new ApplicationUriBuilder());
+
+        public IServiceProxyFactory ServiceProxyFactory =>
+            this._serviceProxyFactory ?? (this._serviceProxyFactory = new ServiceProxyFactory(this._serviceClientLoggerFactory?.Invoke()));
+    }
 }
