@@ -1,24 +1,22 @@
-using System.Collections.Generic;
-
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
-	public static class ServiceRequestContextExtensions
-	{
-		public static CustomServiceRequestHeader GetCustomHeader(
-			this ServiceRequestContext context)
-		{
-			var headerValues = new Dictionary<string, string>();
-			if (context != null)
-			{
-				var contextWrapper = ServiceRequestContextWrapper.Current;
-				foreach (var key in contextWrapper.GetAllKeys())
-				{
-					headerValues[key] = context[key];
-				}
-			}
+    using System.Collections.Immutable;
 
-			var customServiceRequestHeader = new CustomServiceRequestHeader(headerValues);
-			return customServiceRequestHeader;
-		}
-	}
+    public static class ServiceRequestContextExtensions
+    {
+        public static CustomServiceRequestHeader GetCustomHeader(this ServiceRequestContext context)
+        {
+            return new CustomServiceRequestHeader(context?.Properties ?? ImmutableDictionary<string, string>.Empty);
+        }
+
+        public static string CorrelationId(this ServiceRequestContext context)
+        {
+            return context[ServiceRequestContextKeys.CorrelationId];
+        }
+
+        public static string CorrelationId(this ServiceRequestContext context, string newCorrelationId)
+        {
+            return context[ServiceRequestContextKeys.CorrelationId] = newCorrelationId;
+        }
+    }
 }

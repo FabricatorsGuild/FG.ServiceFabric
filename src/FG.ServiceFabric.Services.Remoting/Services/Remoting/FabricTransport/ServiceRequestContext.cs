@@ -1,26 +1,30 @@
 ﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
     using System;
-    using System.Collections.Concurrent;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
     using System.Runtime.Remoting.Messaging;
 
-    public sealed class ServiceRequestContext : MarshalByRefObject
+    public sealed class ServiceRequestContext
     {
         private static readonly string ContextKey = Guid.NewGuid().ToString();
 
-        private readonly IDictionary<string, string> _values;
-
-        public ServiceRequestContext()
+        private ServiceRequestContext()
         {
-            this._values = new ConcurrentDictionary<string, string>();
         }
 
-        public static ServiceRequestContext Current
-        {
-            get => (ServiceRequestContext)CallContext.LogicalGetData(ContextKey);
+        public static ServiceRequestContext Current { get; } = new ServiceRequestContext();
 
-            internal set
+        public IEnumerable<string> Keys => this.CurrentRequestContextData?.Properties.Keys ?? Enumerable.Empty<string>();
+
+        public IReadOnlyDictionary<string, string> Properties => this.CurrentRequestContextData?.Properties ?? ImmutableDictionary<string, string>.Empty;
+
+        private RequestContextData CurrentRequestContextData
+        {
+            get => CallContext.LogicalGetData(ContextKey) as RequestContextData;
+
+            set
             {
                 if (value == null)
                 {
@@ -33,13 +37,48 @@
             }
         }
 
-        public IEnumerable<string> Keys => this._values.Keys;
-
         public string this[string index]
         {
-            get => this._values.ContainsKey(index) ? this._values[index] : null;
+            get
+            {
+                var dataObject = this.CurrentRequestContextData;
 
-            set => this._values[index] = value;
+                if (dataObject == null || dataObject.Properties.TryGetValue(index, out var value) == false)
+                {
+                    return null;
+                }
+
+                return value;
+            }
+
+            set => this.Update(d => d.SetItem(index, value));
+        }
+
+        public ServiceRequestContext Clear()
+        {
+            this.CurrentRequestContextData = null;
+            return this;
+        }
+
+        public ServiceRequestContext Update(Func<ImmutableDictionary<string, string>, ImmutableDictionary<string, string>> propertyUpdateFunc)
+        {
+            this.CurrentRequestContextData = new RequestContextData(propertyUpdateFunc(this.CurrentRequestContextData?.Properties ?? ImmutableDictionary<string, string>.Empty));
+            return this;
+        }
+
+        private sealed class RequestContextData : MarshalByRefObject
+        {
+            public RequestContextData(ImmutableDictionary<string, string> properties)
+            {
+                this.Properties = properties;
+            }
+
+            public RequestContextData()
+            {
+                this.Properties = ImmutableDictionary<string, string>.Empty;
+            }
+
+            public ImmutableDictionary<string, string> Properties { get; }
         }
     }
 }

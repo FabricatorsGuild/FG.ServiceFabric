@@ -1,148 +1,147 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using FG.Common.Utils;
-using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.V1;
-
-namespace FG.ServiceFabric.Services.Remoting.FabricTransport
+﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
-	[DataContract(Name = "cstm", Namespace = "urn:serviceaudit")]
-	public class CustomServiceRequestHeader : ServiceRequestHeader
-	{
-		private const string CustomServiceRequestHeaderName = "CustomServiceRequestHeader";
-		private byte[] _bytes;
-		private Dictionary<string, string> _headers;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Runtime.Serialization;
 
-		private bool _needsPackaging = false;
-		private bool _needsUnpacking = false;
+    using FG.Common.Extensions;
+    using FG.Common.Utils;
 
-		public CustomServiceRequestHeader()
-		{
-			HeaderName = CustomServiceRequestHeaderName;
-			_headers = new Dictionary<string, string>();
+    using Microsoft.ServiceFabric.Services.Remoting.V1;
 
-			_needsUnpacking = false;
-			_needsPackaging = false;
-		}
+    [DataContract(Name = "cstm", Namespace = "urn:serviceaudit")]
+    public class CustomServiceRequestHeader : ServiceRequestHeader
+    {
+        private const string CustomServiceRequestHeaderName = "CustomServiceRequestHeader";
 
-		public CustomServiceRequestHeader(IDictionary<string, string> headers)
-		{
-			HeaderName = CustomServiceRequestHeaderName;
-			_headers = new Dictionary<string, string>();
-			foreach (var header in headers)
-			{
-				_headers.Add(header.Key, header.Value);
-			}
+        private byte[] _bytes;
 
-			_needsUnpacking = false;
-			_needsPackaging = true;
-		}
+        private Dictionary<string, string> _headers;
 
-		private CustomServiceRequestHeader(byte[] bytes)
-		{
-			HeaderName = CustomServiceRequestHeaderName;
-			_bytes = bytes;
-			Unpack();
-		}
+        private bool _needsPackaging;
 
-		public string this[string index] => GetHeader(index);
+        private bool _needsUnpacking;
 
-		public CustomServiceRequestHeader AddHeader(string name, string value)
-		{
-			_headers.Add(name, value);
-			_needsPackaging = true;
+        public CustomServiceRequestHeader()
+            : base(CustomServiceRequestHeaderName)
+        {
+            this._headers = new Dictionary<string, string>();
 
-			return this;
-		}
+            this._needsUnpacking = false;
+            this._needsPackaging = false;
+        }
 
-		public CustomServiceRequestHeader AddHeader(KeyValuePair<string, string> header)
-		{
-			_headers.Add(header.Key, header.Value);
-			_needsPackaging = true;
+        public CustomServiceRequestHeader(IReadOnlyDictionary<string, string> headers)
+            : base(CustomServiceRequestHeaderName)
+        {
+            this._headers = headers.ToDictionary(h => h.Key, h => h.Value);
 
-			return this;
-		}
+            this._needsUnpacking = false;
+            this._needsPackaging = true;
+        }
 
-		public static bool TryFromServiceMessageHeaders(ServiceRemotingMessageHeaders headers,
-			out CustomServiceRequestHeader customServiceRequestHeader)
-		{
-			customServiceRequestHeader = (CustomServiceRequestHeader) null;
-			byte[] headerValue;
-			if (!headers.TryGetHeaderValue(CustomServiceRequestHeaderName, out headerValue))
-				return false;
-			customServiceRequestHeader = new CustomServiceRequestHeader(headerValue);
-			return true;
-		}
+        private CustomServiceRequestHeader(byte[] bytes)
+            : base(CustomServiceRequestHeaderName)
+        {
+            this._bytes = bytes;
+            this.Unpack();
+        }
 
-		private void Unpack()
-		{
-			_headers = _bytes.Deserialize<Dictionary<string, string>>();
-			_needsUnpacking = false;
-			_bytes = null;
-		}
+        public string this[string index] => this.GetHeader(index);
 
-		private void Pack()
-		{
-			_bytes = _headers.Serialize();
-			_needsPackaging = false;
-		}
+        public static bool TryFromServiceMessageHeaders(ServiceRemotingMessageHeaders headers, out CustomServiceRequestHeader customServiceRequestHeader)
+        {
+            customServiceRequestHeader = null;
+            if (!headers.TryGetHeaderValue(CustomServiceRequestHeaderName, out var headerValue))
+            {
+                return false;
+            }
 
-		public IEnumerable<string> GetHeaderNames()
-		{
-			if (_needsUnpacking)
-			{
-				Unpack();
-			}
+            customServiceRequestHeader = new CustomServiceRequestHeader(headerValue);
+            return true;
+        }
 
-			return _headers.Keys;
-		}
+        public CustomServiceRequestHeader AddHeader(string name, string value)
+        {
+            this._headers.Add(name, value);
+            this._needsPackaging = true;
 
-		public IDictionary<string, string> GetHeaders()
-		{
-			if (_needsUnpacking)
-			{
-				Unpack();
-			}
-			return _headers;
-		}
+            return this;
+        }
 
-		public string GetHeader(string name)
-		{
-			if (_needsUnpacking)
-			{
-				Unpack();
-			}
-			return _headers.ContainsKey(name) ? _headers[name] : null;
-		}
+        public CustomServiceRequestHeader AddHeader(KeyValuePair<string, string> header)
+        {
+            this._headers.Add(header.Key, header.Value);
+            this._needsPackaging = true;
 
-		public ServiceRemotingMessageHeaders ToServiceMessageHeaders()
-		{
-			if (_needsPackaging)
-			{
-				Pack();
-			}
+            return this;
+        }
 
-			var remotingMessageHeaders = new ServiceRemotingMessageHeaders();
-			remotingMessageHeaders.AddHeader(CustomServiceRequestHeaderName, _bytes);
-			return remotingMessageHeaders;
-		}
+        public string GetHeader(string name)
+        {
+            return this.GetHeaders().GetValueOrDefault(name);
+        }
 
-		public override byte[] GetValue()
-		{
-			if (_needsPackaging)
-			{
-				Pack();
-			}
-			return _bytes;
-		}
-	}
+        public IEnumerable<string> GetHeaderNames()
+        {
+            return this.UnpackIfRequired()._headers.Keys;
+        }
 
-	public static class CustomServiceRequestHeaderExtensions
-	{
-		public static CustomServiceRequestHeader GetCustomHeader(this IEnumerable<ServiceRequestHeader> headers)
-		{
-			return (CustomServiceRequestHeader) headers.FirstOrDefault(h => h is CustomServiceRequestHeader);
-		}
-	}
+        public IDictionary<string, string> GetHeaders()
+        {
+            return this.UnpackIfRequired()._headers;
+        }
+
+        public override byte[] GetValue()
+        {
+            this.PackIfRequired();
+
+            return this._bytes;
+        }
+
+        public ServiceRemotingMessageHeaders ToServiceMessageHeaders()
+        {
+            if (this._needsPackaging)
+            {
+                this.Pack();
+            }
+
+            var remotingMessageHeaders = new ServiceRemotingMessageHeaders();
+            remotingMessageHeaders.AddHeader(CustomServiceRequestHeaderName, this._bytes);
+            return remotingMessageHeaders;
+        }
+
+        private void Pack()
+        {
+            this._bytes = this._headers.Serialize();
+            this._needsPackaging = false;
+        }
+
+        private CustomServiceRequestHeader PackIfRequired()
+        {
+            if (this._needsPackaging)
+            {
+                this.Pack();
+            }
+
+            return this;
+        }
+
+        private void Unpack()
+        {
+            this._headers = this._bytes.Deserialize<Dictionary<string, string>>();
+            this._needsUnpacking = false;
+            this._bytes = null;
+        }
+
+        private CustomServiceRequestHeader UnpackIfRequired()
+        {
+            if (this._needsUnpacking)
+            {
+                this.Unpack();
+            }
+
+            return this;
+        }
+    }
 }
