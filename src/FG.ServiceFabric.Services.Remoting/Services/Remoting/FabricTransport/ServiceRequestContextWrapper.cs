@@ -4,17 +4,13 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
     using System.Collections.Generic;
     using System.Collections.Immutable;
 
+    using FG.Common.CallContext;
+
     /// <summary>
     ///     Provides a scope for the current service context
     /// </summary>
-    public class ServiceRequestContextWrapper : IDisposable
+    public class ServiceRequestContextWrapper : BaseCallContextWrapper<ServiceRequestContext, string>
     {
-        private readonly bool _shouldDispose;
-
-        private readonly ImmutableDictionary<string, string> previousProperties;
-
-        private readonly ServiceRequestContext serviceRequestContext;
-
         /// <summary>
         ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
         /// </summary>
@@ -34,10 +30,10 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         /// </param>
         /// <param name="serviceRequestContext">The service request context to use</param>
         public ServiceRequestContextWrapper(CustomServiceRequestHeader customHeader, ServiceRequestContext serviceRequestContext)
-            : this()
+            : base(serviceRequestContext)
         {
-            this.serviceRequestContext = serviceRequestContext;
             ServiceRequestContext.Current.Update(customHeader.GetHeaders(), (headers, d) => d.SetItems(headers));
+            this.ShouldDispose = true;
         }
 
         /// <summary>
@@ -45,18 +41,16 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         /// </summary>
         /// <param name="serviceRequestContext">The service request context to use</param>
         public ServiceRequestContextWrapper(ServiceRequestContext serviceRequestContext)
-            : this()
+            : base(serviceRequestContext ?? ServiceRequestContext.Current)
         {
-            this.serviceRequestContext = serviceRequestContext;
         }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
         /// </summary>
-        protected ServiceRequestContextWrapper()
+        protected ServiceRequestContextWrapper() : base(ServiceRequestContext.Current, ServiceRequestContext.Current.Properties)
         {
-            this._shouldDispose = true;
-            this.previousProperties = ServiceRequestContext.Current.InternalProperties;
+            this.ShouldDispose = true;
         }
 
         /// <summary>
@@ -69,22 +63,17 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         /// </summary>
         public string CorrelationId
         {
-            get => this.serviceRequestContext.CorrelationId();
-            set => this.serviceRequestContext.CorrelationId(value);
+            get => this.Context.CorrelationId();
+            set => this.Context.CorrelationId(value);
         }
-
-        /// <summary>
-        ///  Gets all property names/keys
-        /// </summary>
-        public IEnumerable<string> Keys => this.serviceRequestContext.Keys;
 
         /// <summary>
         /// Gets or sets the request id
         /// </summary>
         public string RequestUri
         {
-            get => this.serviceRequestContext[ServiceRequestContextKeys.RequestUri];
-            set => this.serviceRequestContext[ServiceRequestContextKeys.RequestUri] = value;
+            get => this.Context[ServiceRequestContextKeys.RequestUri];
+            set => this.Context[ServiceRequestContextKeys.RequestUri] = value;
         }
 
         /// <summary>
@@ -92,35 +81,8 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         /// </summary>
         public string UserId
         {
-            get => ServiceRequestContext.Current[ServiceRequestContextKeys.UserId];
-            set => ServiceRequestContext.Current[ServiceRequestContextKeys.UserId] = value;
-        }
-
-        /// <summary>
-        /// Disposes the instance
-        /// </summary>
-        public void Dispose()
-        {
-            this.serviceRequestContext.InternalProperties = this.previousProperties;
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// Gets all property names/keys
-        /// </summary>
-        /// <returns>The property names/keys</returns>
-        public IEnumerable<string> GetAllKeys()
-        {
-            return ServiceRequestContext.Current.Keys;
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (disposing && this._shouldDispose)
-            {
-                ServiceRequestContext.Current.Clear();
-            }
+            get => this.Context[ServiceRequestContextKeys.UserId];
+            set => this.Context[ServiceRequestContextKeys.UserId] = value;
         }
     }
 }

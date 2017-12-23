@@ -49,6 +49,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Async\ExecutionHelper.cs" />
     <Compile Include="Async\TaskHelper.cs" />
     <None Include="FG.Common.nuspec" />
+    <Compile Include="CallContext\BaseCallContext.cs" />
+    <Compile Include="CallContext\BaseCallContextWrapper.cs" />
     <Compile Include="Expressions\CreateInstanceFactory.cs" />
     <Compile Include="Expressions\MethodCallProxyFactory.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />

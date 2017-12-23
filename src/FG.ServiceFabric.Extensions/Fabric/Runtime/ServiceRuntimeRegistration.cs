@@ -34,6 +34,7 @@ namespace FG.ServiceFabric.Fabric.Runtime
 			{
 				return ServiceRuntime.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
 			}
+
 			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout,
 				cancellationToken);
 		}
@@ -63,6 +64,7 @@ namespace FG.ServiceFabric.Fabric.Runtime
 			{
 				return ServiceRuntime.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout, cancellationToken);
 			}
+
 			return currentServiceRuntimeRegistration.RegisterServiceAsync(serviceTypeName, serviceFactory, timeout,
 				cancellationToken);
 		}
