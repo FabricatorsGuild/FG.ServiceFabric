@@ -142,7 +142,6 @@
                 return this._innerActorProxyFactory;
             }
 
-            // EB: TODO: Why is this locked? Can there be complications if one client gets an actor from one factory and another from another?
             lock (_lock)
             {
                 return this._innerActorProxyFactory = _actorProxyFactoryInnerFactory(this, serviceInterfaceType, actorInterfaceType);

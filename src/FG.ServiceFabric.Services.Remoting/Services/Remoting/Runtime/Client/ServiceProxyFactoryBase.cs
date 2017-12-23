@@ -83,8 +83,7 @@
 
             lock (this._lock)
             {
-                this._innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
-                return this._innerProxyFactory;
+                return this._innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
             }
         }
 

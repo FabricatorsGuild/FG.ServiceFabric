@@ -215,14 +215,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 
                 var actorReminderData = new ActorReminderData(actorId, reminder.Name,
                     reminder.DueTime, reminder.Period, reminder.State, DateTime.UtcNow);
-                if (!actorDocument.Reminders.ContainsKey(reminder.Name))
-                {
-                    actorDocument.Reminders.Add(reminder.Name, actorReminderData);
-                }
-                else
-                {
-                    actorDocument.Reminders[reminder.Name] = actorReminderData;
-                }
+
+                actorDocument.Reminders[reminder.Name] = actorReminderData;
 
                 var metadata = new ActorStateValueMetadata(StateWrapperType.ActorState, actorId);
                 await session.SetValueAsync(key.Schema, key.Key, actorDocument, metadata, cancellationToken);

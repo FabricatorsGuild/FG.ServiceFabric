@@ -51,6 +51,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>

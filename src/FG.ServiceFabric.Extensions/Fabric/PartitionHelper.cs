@@ -12,8 +12,6 @@
     {
         private readonly ConcurrentDictionary<Uri, Int64RangePartitionInformation[]> _int64Partitions;
 
-        private readonly object _lock = new object();
-
         private readonly ConcurrentDictionary<Uri, NamedPartitionInformation[]> _namedPartitions;
 
         private readonly Func<IPartitionEnumerationManager> _partitionEnumerationManagerFactory;
@@ -53,14 +51,10 @@
         {
             logger.EnumeratingPartitions(serviceUri);
 
-            lock (this._lock)
+            if (this._int64Partitions.TryGetValue(serviceUri, out var partitions))
             {
-                if (this._int64Partitions.ContainsKey(serviceUri))
-                {
-                    var partitions = this._int64Partitions[serviceUri];
-                    logger.EnumeratedExistingPartitions(serviceUri, partitions);
-                    return partitions;
-                }
+                logger.EnumeratedExistingPartitions(serviceUri, partitions);
+                return partitions;
             }
 
             try
@@ -78,13 +72,7 @@
                     partitionKeys.Add(partitionInfo);
                 }
 
-                lock (this._lock)
-                {
-                    if (!this._int64Partitions.ContainsKey(serviceUri))
-                    {
-                        this._int64Partitions.TryAdd(serviceUri, partitionKeys.ToArray());
-                    }
-                }
+                this._int64Partitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
 
                 logger.EnumeratedAndCachedPartitions(serviceUri, partitionKeys);
                 return partitionKeys;
@@ -100,14 +88,10 @@
         {
             logger.EnumeratingPartitions(serviceUri);
 
-            lock (this._lock)
+            if (this._namedPartitions.TryGetValue(serviceUri, out var partitions))
             {
-                if (this._namedPartitions.ContainsKey(serviceUri))
-                {
-                    var partitions = this._namedPartitions[serviceUri];
-                    logger.EnumeratedExistingPartitions(serviceUri, partitions);
-                    return partitions;
-                }
+                logger.EnumeratedExistingPartitions(serviceUri, partitions);
+                return partitions;
             }
 
             try
@@ -125,13 +109,7 @@
                     partitionKeys.Add(partitionInfo);
                 }
 
-                lock (this._lock)
-                {
-                    if (!this._namedPartitions.ContainsKey(serviceUri))
-                    {
-                        this._namedPartitions.TryAdd(serviceUri, partitionKeys.ToArray());
-                    }
-                }
+                this._namedPartitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
 
                 logger.EnumeratedAndCachedPartitions(serviceUri, partitionKeys);
                 return partitionKeys;
