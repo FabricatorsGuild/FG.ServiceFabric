@@ -1,4 +1,5 @@
-﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport
+﻿// ReSharper disable StyleCop.SA1126
+namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -9,6 +10,9 @@
 
     using Microsoft.ServiceFabric.Services.Remoting.V1;
 
+    /// <summary>
+    /// Provides a custom service request header 
+    /// </summary>
     [DataContract(Name = "cstm", Namespace = "urn:serviceaudit")]
     public class CustomServiceRequestHeader : ServiceRequestHeader
     {
@@ -22,6 +26,9 @@
 
         private bool _needsUnpacking;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomServiceRequestHeader"/> class. 
+        /// </summary>
         public CustomServiceRequestHeader()
             : base(CustomServiceRequestHeaderName)
         {
@@ -31,7 +38,13 @@
             this._needsPackaging = false;
         }
 
-        public CustomServiceRequestHeader(IReadOnlyDictionary<string, string> headers)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomServiceRequestHeader"/> class. 
+        /// </summary>
+        /// <param name="headers">
+        /// The headers
+        /// </param>
+        public CustomServiceRequestHeader(IEnumerable<KeyValuePair<string, string>> headers)
             : base(CustomServiceRequestHeaderName)
         {
             this._headers = headers.ToDictionary(h => h.Key, h => h.Value);
@@ -47,8 +60,19 @@
             this.Unpack();
         }
 
-        public string this[string index] => this.GetHeader(index);
+        /// <summary>
+        /// Gets a header by name/key
+        /// </summary>
+        /// <param name="key">The header name/key</param>
+        /// <returns>A string containing the value of the property or null if the property does not exist or is null</returns>
+        public string this[string key] => this.GetHeader(key);
 
+        /// <summary>
+        ///  Tries to create a <see cref="CustomServiceRequestHeader"/> containing all properties
+        /// </summary>
+        /// <param name="headers">The headers</param>
+        /// <param name="customServiceRequestHeader">Th custom service request header</param>
+        /// <returns>True if the headers exist, false if it does not exist</returns>
         public static bool TryFromServiceMessageHeaders(ServiceRemotingMessageHeaders headers, out CustomServiceRequestHeader customServiceRequestHeader)
         {
             customServiceRequestHeader = null;
@@ -61,6 +85,12 @@
             return true;
         }
 
+        /// <summary>
+        /// Adds a header value
+        /// </summary>
+        /// <param name="name">The property key/name</param>
+        /// <param name="value">The property valuke</param>
+        /// <returns>A <see cref="CustomServiceRequestHeader"/></returns>
         public CustomServiceRequestHeader AddHeader(string name, string value)
         {
             this._headers.Add(name, value);
@@ -69,6 +99,11 @@
             return this;
         }
 
+        /// <summary>
+        /// Adds a header value
+        /// </summary>
+        /// <param name="header">The property key/name &amp; valye pair</param>
+        /// <returns>A <see cref="CustomServiceRequestHeader"/></returns>
         public CustomServiceRequestHeader AddHeader(KeyValuePair<string, string> header)
         {
             this._headers.Add(header.Key, header.Value);
@@ -77,21 +112,38 @@
             return this;
         }
 
+        /// <summary>
+        /// Gets a header by name
+        /// </summary>
+        /// <param name="name">The header name</param>
+        /// <returns>The header value or null if it does not exist or has the value null</returns>
         public string GetHeader(string name)
         {
             return this.GetHeaders().GetValueOrDefault(name);
         }
 
+        /// <summary>
+        /// Gets all header names
+        /// </summary>
+        /// <returns>The header names</returns>
         public IEnumerable<string> GetHeaderNames()
         {
             return this.UnpackIfRequired()._headers.Keys;
         }
 
+        /// <summary>
+        /// Gets all headers
+        /// </summary>
+        /// <returns>The headers</returns>
         public IDictionary<string, string> GetHeaders()
         {
             return this.UnpackIfRequired()._headers;
         }
 
+        /// <summary>
+        ///  Gets the instance's packed value
+        /// </summary>
+        /// <returns>The packed value</returns>
         public override byte[] GetValue()
         {
             this.PackIfRequired();
@@ -99,6 +151,10 @@
             return this._bytes;
         }
 
+        /// <summary>
+        /// Create a new <see cref="ServiceRemotingMessageHeaders"/> from this instance
+        /// </summary>
+        /// <returns>The new <see cref="ServiceRemotingMessageHeaders"/></returns>
         public ServiceRemotingMessageHeaders ToServiceMessageHeaders()
         {
             if (this._needsPackaging)
@@ -111,12 +167,19 @@
             return remotingMessageHeaders;
         }
 
+        /// <summary>
+        /// Packs the current header
+        /// </summary>
         private void Pack()
         {
             this._bytes = this._headers.Serialize();
             this._needsPackaging = false;
         }
 
+        /// <summary>
+        /// Packs the current header if it's required
+        /// </summary>
+        /// <returns>The new <see cref="CustomServiceRequestHeader"/></returns>
         private CustomServiceRequestHeader PackIfRequired()
         {
             if (this._needsPackaging)

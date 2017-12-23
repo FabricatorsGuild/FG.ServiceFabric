@@ -1,6 +1,8 @@
-﻿namespace FG.ServiceFabric.Services.Remoting.Tests
+﻿// ReSharper disable UnusedVariable
+namespace FG.ServiceFabric.Services.Remoting.Tests
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
@@ -66,7 +68,7 @@
             // Wait for part 1 of the task to complete
             await semaphore.WaitAsync();
             Assert.AreEqual(2, ServiceRequestContext.Current.Properties.Count);
-            ServiceRequestContext.Current.Update(d => d.Clear());
+            ServiceRequestContext.Current.Clear();
             semaphore.Release();
 
             // Wait for part 2 of the task to complete
@@ -154,6 +156,12 @@
             context.Update(d => d.RemoveRange("a", "b"));
 
             Assert.IsTrue(context.Properties.Count == 0);
+
+            var items = new[] { new KeyValuePair<string, string>("a", "b"), new KeyValuePair<string, string>("c", "d") };
+            context.Update(items, (i, d) => d.SetItems(i));
+            Assert.IsTrue(context.Properties.Count == 2);
+
+            Assert.IsTrue(context.Properties.ContainsKey("a") && context.Properties.ContainsKey("c"));
         }
     }
 }

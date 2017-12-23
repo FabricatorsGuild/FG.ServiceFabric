@@ -49,6 +49,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Async\ExecutionHelper.cs" />
     <Compile Include="Async\TaskHelper.cs" />
     <None Include="FG.Common.nuspec" />
+    <Compile Include="Expressions\CreateInstanceFactory.cs" />
+    <Compile Include="Expressions\MethodCallProxyFactory.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
@@ -68,6 +70,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Utils\TypeExtensions.cs" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
