@@ -1,32 +1,30 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Fabric;
-using System.Threading.Tasks;
-
-using FG.Common.Utils;
-using FG.ServiceFabric.Diagnostics;
-using FG.ServiceFabric.Services.Remoting.Runtime;
-
-using Microsoft.ServiceFabric.Services.Communication.Client;
-using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.Builder;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
-using Microsoft.ServiceFabric.Services.Remoting.V1;
-using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-
-namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
+﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Fabric;
+    using System.Threading.Tasks;
+
+    using FG.Common.Utils;
+    using FG.ServiceFabric.Diagnostics;
+    using FG.ServiceFabric.Services.Remoting.Runtime;
+
+    using Microsoft.ServiceFabric.Services.Communication.Client;
+    using Microsoft.ServiceFabric.Services.Remoting.Builder;
+    using Microsoft.ServiceFabric.Services.Remoting.V1;
+    using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
+
     public class FabricTransportServiceRemotingClient : IServiceRemotingClient, ICommunicationClient
     {
-        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>()
-            ;
+        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
 
         private readonly IServiceClientLogger _logger;
 
         private readonly MethodDispatcherBase[] _serviceMethodDispatchers;
-        protected readonly Uri ServiceUri;
 
-        public FabricTransportServiceRemotingClient(IServiceRemotingClient innerClient, Uri serviceUri,
+        public FabricTransportServiceRemotingClient(
+            IServiceRemotingClient innerClient,
+            Uri serviceUri,
             IServiceClientLogger logger,
             MethodDispatcherBase[] serviceMethodDispatchers)
         {
@@ -36,10 +34,56 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
             this._serviceMethodDispatchers = serviceMethodDispatchers;
         }
 
+        ~FabricTransportServiceRemotingClient()
+        {
+            if (this.InnerClient == null)
+            {
+                return;
+            }
+
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            var disposable = this.InnerClient as IDisposable;
+            disposable?.Dispose();
+        }
+
+        /// <summary>
+        /// Gets or sets the endpoint to which the client is connected
+        /// </summary>
+        public ResolvedServiceEndpoint Endpoint
+        {
+            get => this.InnerClient.Endpoint;
+            set => this.InnerClient.Endpoint = value;
+        }
+
+        /// <summary>
+        /// Gets or Sets the name of the listener in the replica or instance to which the client is connected to
+        /// </summary>
+        public string ListenerName
+        {
+            get => this.InnerClient.ListenerName;
+            set => this.InnerClient.ListenerName = value;
+        }
+
+        /// <summary>
+        /// Gets or Sets the Resolved service partition which was used when this client was created.
+        /// </summary>
+        public ResolvedServicePartition ResolvedServicePartition
+        {
+            get => this.InnerClient.ResolvedServicePartition;
+            set => this.InnerClient.ResolvedServicePartition = value;
+        }
+
+        /// <summary>
+        /// The inner service remoting client
+        /// </summary>
         protected internal IServiceRemotingClient InnerClient { get; }
 
-        Task<byte[]> IServiceRemotingClient.RequestResponseAsync(ServiceRemotingMessageHeaders messageHeaders,
-            byte[] requestBody)
+        /// <summary>
+        /// Gets the service uri
+        /// </summary>
+        protected Uri ServiceUri { get; }
+
+        Task<byte[]> IServiceRemotingClient.RequestResponseAsync(ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
         {
             var customServiceRequestHeader = this.UpdateAndGetMessageHeaders(messageHeaders);
             return this.RequestServiceResponseAsync(messageHeaders, customServiceRequestHeader, requestBody);
@@ -50,31 +94,6 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
             var customServiceRequestHeader = this.UpdateAndGetMessageHeaders(messageHeaders);
 
             this.SendServiceOneWay(messageHeaders, customServiceRequestHeader, requestBody);
-        }
-
-        public ResolvedServicePartition ResolvedServicePartition
-        {
-            get { return this.InnerClient.ResolvedServicePartition; }
-            set { this.InnerClient.ResolvedServicePartition = value; }
-        }
-
-        public string ListenerName
-        {
-            get { return this.InnerClient.ListenerName; }
-            set { this.InnerClient.ListenerName = value; }
-        }
-
-        public ResolvedServiceEndpoint Endpoint
-        {
-            get { return this.InnerClient.Endpoint; }
-            set { this.InnerClient.Endpoint = value; }
-        }
-
-        private string GetServiceMethodName(ServiceRemotingMessageHeaders messageHeaders)
-        {
-            if (messageHeaders == null) return null;
-
-            return this.GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
         }
 
         protected string GetServiceMethodName(int interfaceId, int methodId)
@@ -99,7 +118,6 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 
                             return null;
                         });
-
             }
             catch (Exception)
             {
@@ -110,21 +128,13 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
             return null;
         }
 
-        ~FabricTransportServiceRemotingClient()
-        {
-            if (this.InnerClient == null) return;
-
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            var disposable = this.InnerClient as IDisposable;
-            disposable?.Dispose();
-        }
-
-        protected virtual Task<byte[]> RequestServiceResponseAsync(ServiceRemotingMessageHeaders messageHeaders,
-            CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
+        protected virtual Task<byte[]> RequestServiceResponseAsync(
+            ServiceRemotingMessageHeaders messageHeaders,
+            CustomServiceRequestHeader customServiceRequestHeader,
+            byte[] requestBody)
         {
             var methodName = this.GetServiceMethodName(messageHeaders);
-            using (this._logger?.CallService(this.ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ??
-                   new SafeDisposable())
+            using (this._logger?.CallService(this.ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -139,12 +149,10 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
             }
         }
 
-        protected virtual Task<byte[]> SendServiceOneWay(ServiceRemotingMessageHeaders messageHeaders,
-            CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
+        protected virtual Task<byte[]> SendServiceOneWay(ServiceRemotingMessageHeaders messageHeaders, CustomServiceRequestHeader customServiceRequestHeader, byte[] requestBody)
         {
             var methodName = this.GetServiceMethodName(messageHeaders);
-            using (this._logger?.CallService(this.ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ??
-                   new SafeDisposable())
+            using (this._logger?.CallService(this.ServiceUri, methodName, messageHeaders, customServiceRequestHeader) ?? new SafeDisposable())
             {
                 try
                 {
@@ -157,6 +165,16 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
                     throw;
                 }
             }
+        }
+
+        private string GetServiceMethodName(ServiceRemotingMessageHeaders messageHeaders)
+        {
+            if (messageHeaders == null)
+            {
+                return null;
+            }
+
+            return this.GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
         }
 
         private CustomServiceRequestHeader UpdateAndGetMessageHeaders(ServiceRemotingMessageHeaders messageHeaders)
