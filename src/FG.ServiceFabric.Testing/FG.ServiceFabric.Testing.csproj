@@ -179,6 +179,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Mocks\Services\Remoting\Client\MockServiceProxyFactory.cs" />
     <Compile Include="Mocks\Services\Runtime\IMockServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockActorServiceInstance.cs" />
+    <Compile Include="Mocks\Services\Runtime\MockActorServiceInstanceStatus.cs" />
     <Compile Include="Mocks\Services\Runtime\MockServiceDefinition.cs" />
     <Compile Include="Mocks\Services\Runtime\MockServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockStatefulService.cs" />

@@ -14,7 +14,9 @@
     using Microsoft.ServiceFabric.Services.Remoting.V1;
     using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 
-    // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
+    /// <summary>
+    /// Provides dispathching services for service remoting
+    /// </summary>
     public class ServiceRemotingDispatcher : IServiceRemotingMessageHandler
     {
         private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
@@ -25,6 +27,15 @@
 
         private readonly IService _service;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceRemotingDispatcher"/> class. 
+        /// </summary>
+        /// <param name="service">The service interface
+        /// </param>
+        /// <param name="innerMessageHandler">The inner message handler
+        /// </param>
+        /// <param name="logger">A service communication logger
+        /// </param>
         public ServiceRemotingDispatcher(IService service, IServiceRemotingMessageHandler innerMessageHandler, IServiceCommunicationLogger logger)
         {
             this._service = service;

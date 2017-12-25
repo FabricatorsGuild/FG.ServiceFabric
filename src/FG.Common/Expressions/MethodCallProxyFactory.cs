@@ -17,6 +17,8 @@
             public static Func<TParameterType, TReturnValue> CreateMethodProxy<TParameterType, TReturnValue>(MethodInfo methodInfo, string parameterName = null)
             {
                 return (Func<TParameterType, TReturnValue>)CreateMethodProxy(methodInfo, typeof(TReturnValue), typeof(TParameterType), parameterName);
+                
+
             }
         }
     }

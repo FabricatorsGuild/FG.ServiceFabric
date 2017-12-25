@@ -14,6 +14,9 @@
     using Microsoft.ServiceFabric.Services.Remoting.V1;
     using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
+    /// <summary>
+    /// Provides a service remoting client
+    /// </summary>
     public class FabricTransportServiceRemotingClient : IServiceRemotingClient, ICommunicationClient
     {
         private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
@@ -22,6 +25,17 @@
 
         private readonly MethodDispatcherBase[] _serviceMethodDispatchers;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FabricTransportServiceRemotingClient"/> class. 
+        /// </summary>
+        /// <param name="innerClient">The inner client
+        /// </param>
+        /// <param name="serviceUri">The service uri
+        /// </param>
+        /// <param name="logger">A service client logger
+        /// </param>
+        /// <param name="serviceMethodDispatchers">The service metod dispatchers
+        /// </param>
         public FabricTransportServiceRemotingClient(
             IServiceRemotingClient innerClient,
             Uri serviceUri,
@@ -34,6 +48,9 @@
             this._serviceMethodDispatchers = serviceMethodDispatchers;
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="FabricTransportServiceRemotingClient"/> class. 
+        /// </summary>
         ~FabricTransportServiceRemotingClient()
         {
             if (this.InnerClient == null)
@@ -96,20 +113,25 @@
             this.SendServiceOneWay(messageHeaders, customServiceRequestHeader, requestBody);
         }
 
+        /// <summary>
+        /// Gets the service method name by interface id and method id
+        /// </summary>
+        /// <param name="interfaceId">The interface id</param>
+        /// <param name="methodId">The method id</param>
+        /// <returns>The name of the method</returns>
         protected string GetServiceMethodName(int interfaceId, int methodId)
         {
             try
             {
-                var methodName = "-";
                 var lookup = HashUtil.Combine(interfaceId, methodId);
 
                 return ServiceMethodMap.GetOrAdd(
                     lookup,
                     lu =>
-                        {
+                        {  
                             foreach (var serviceMethodDispatcher in this._serviceMethodDispatchers)
                             {
-                                methodName = serviceMethodDispatcher.GetMethodDispatcherMapName(interfaceId, methodId);
+                                var methodName = serviceMethodDispatcher.GetMethodDispatcherMapName(interfaceId, methodId);
                                 if (methodName != null)
                                 {
                                     return methodName;
