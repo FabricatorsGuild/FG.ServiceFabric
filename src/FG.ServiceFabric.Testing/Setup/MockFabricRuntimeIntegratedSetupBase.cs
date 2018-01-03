@@ -170,6 +170,8 @@ namespace FG.ServiceFabric.Testing.Setup
                     if (parameter == null)
                         throw new MockServiceRuntimeException(
                             $"Trying to setup Actor {actorType.Name} {actorId} and needs parameter of type {parameterType.GetFriendlyName()} but test class does not override CreateActorParameter or the override returns null");
+                    if (parameter is IgnoredSetupParameter)
+                        parameter = null;
                     parameters.Add(parameter);
                 }
             }
@@ -249,6 +251,8 @@ namespace FG.ServiceFabric.Testing.Setup
                     if (parameter == null)
                         throw new MockServiceRuntimeException(
                             $"Trying to setup StatefulService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null for parameter {parameterType.GetFriendlyName()} on {context.ServiceName}");
+                    if (parameter is IgnoredSetupParameter)
+                        parameter = null;
                     parameters.Add(parameter);
                 }
             }
@@ -284,6 +288,8 @@ namespace FG.ServiceFabric.Testing.Setup
                     if (parameter == null)
                         throw new MockServiceRuntimeException(
                             $"Trying to setup StatelessService {serviceType.Name} but test class does not override CreateServiceParameter or the override returns null for parameter {parameterType.GetFriendlyName()} on {context.ServiceName}");
+                    if (parameter is IgnoredSetupParameter)
+                        parameter = null;
                     parameters.Add(parameter);
                 }
             }
@@ -340,6 +346,8 @@ namespace FG.ServiceFabric.Testing.Setup
                     if (parameter == null && !constructorParameter.IsOptional)
                         throw new MockServiceRuntimeException(
                             $"Trying to setup ActorService {actorServiceType.Name} but test class does not override CreateActorServiceParameter or the override returns null for parameter {parameterType.GetFriendlyName()} on {context.ServiceName}");
+                    if (parameter is IgnoredSetupParameter)
+                        parameter = null;
                     parameters.Add(parameter);
                 }
             }

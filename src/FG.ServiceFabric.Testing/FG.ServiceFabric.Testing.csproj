@@ -191,6 +191,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Setup\ApplicationManifestDefaultService.cs" />
     <Compile Include="Setup\ApplicationManifestServiceManifestImport.cs" />
     <Compile Include="Setup\ApplicationProject.cs" />
+    <Compile Include="Setup\IgnoredSetupParameter.cs" />
     <Compile Include="Setup\IServiceConfig.cs" />
     <Compile Include="Setup\IServiceConfigSection.cs" />
     <Compile Include="Setup\IServiceManifest.cs" />
