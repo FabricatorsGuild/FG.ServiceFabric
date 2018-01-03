@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Services.Runtime.StateSession;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Actors.Runtime;
@@ -35,5 +36,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 
         Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+            CancellationToken cancellationToken = default(CancellationToken)) where T : class;
     }
 }

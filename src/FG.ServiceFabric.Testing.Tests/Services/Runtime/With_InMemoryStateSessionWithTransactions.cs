@@ -569,8 +569,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							""HeadKey"": 0,
 							""TailKey"": 1
 						  },
-						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
-						  ""partitionKey"": ""range-0"",
+						  ""serviceName"": ""fabric:/Overlord/StatefulServiceDemo"",
+						  ""servicePartitionKey"": ""range-0"",
+						  ""partitionKey"": ""ghAHeQ=="",
 						  ""schema"": ""myQueue"",
 						  ""key"": ""QUEUEINFO"",
 						  ""type"": ""ReliableQueueItem"",
@@ -590,8 +591,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 							""HeadKey"": 4,
 							""TailKey"": 5
 						  },
-						  ""serviceTypeName"": ""fabric:/Overlord/StatefulServiceDemo"",
-						  ""partitionKey"": ""range-0"",
+						  ""serviceName"": ""fabric:/Overlord/StatefulServiceDemo"",
+						  ""servicePartitionKey"": ""range-0"",
+						  ""partitionKey"": ""ghAHeQ=="",
 						  ""schema"": ""myQueue"",
 						  ""key"": ""queue-info"",
 						  ""type"": ""ReliableQueueItem"",

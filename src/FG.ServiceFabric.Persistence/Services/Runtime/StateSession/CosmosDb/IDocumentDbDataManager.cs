@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {

@@ -308,8 +308,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 
 		private IReliableDictionary2<string, T> GetDictionary<T>(string schema)
 		{
-			var reliableDictionary2 = _reliableDictionaries[schema] as IReliableDictionary2<string, T>;
-			if (reliableDictionary2 == null)
+		    if (!(_reliableDictionaries[schema] is IReliableDictionary2<string, T> reliableDictionary2))
 			{
 				throw new KeyNotFoundException($"State dictionary schema {schema} not found");
 			}
@@ -318,8 +317,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 
 		private IReliableQueue<T> GetQueue<T>(string schema)
 		{
-			var reliableQueue = _reliableQueues[schema] as IReliableQueue<T>;
-			if (reliableQueue == null)
+		    if (!(_reliableQueues[schema] is IReliableQueue<T> reliableQueue))
 			{
 				throw new KeyNotFoundException($"State queue schema {schema} not found");
 			}

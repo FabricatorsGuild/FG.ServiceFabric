@@ -34,5 +34,25 @@ namespace FG.Common.Utils
 		{
 			return a << 32 | b;
 		}
-	}
+
+	    public static uint Adler32(string str)
+	    {
+	        const int mod = 65521;
+	        uint a = 1, b = 0;
+	        foreach (char c in str)
+	        {
+	            a = (a + c) % mod;
+	            b = (b + a) % mod;
+	        }
+	        return (b << 16) | a;
+	    }
+
+	    public static string Adler32String(string str)
+	    {
+	        var value = HashUtil.Adler32(str);
+	        var bytes = BitConverter.GetBytes(value);            
+	        return System.Convert.ToBase64String(bytes);
+        }
+    }
+    
 }

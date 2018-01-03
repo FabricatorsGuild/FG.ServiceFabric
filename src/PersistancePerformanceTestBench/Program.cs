@@ -188,7 +188,7 @@ namespace PersistancePerformanceTestBench
 					var person = new Person() {Description = description, Title = title, Name = $"{firstName} {lastName}"};
 					var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem){ Schema = "people", Key = key};
 					var value = new FG.ServiceFabric.Services.Runtime.StateSession.StateWrapper<Person>(key, person,
-						new ServiceMetadata() {ServiceName = "sample-service2", PartitionKey = "range-0"}, metadata);
+						new ServiceMetadata() {ServiceName = "sample-service2", ServicePartitionKey = "range-0"}, metadata);
 
 					try
 					{

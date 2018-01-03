@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.Common.Utils;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
@@ -765,9 +766,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 						foreach (var documentId in response)
 						{
 							resultCount++;
-							if (!results.Contains(documentId.ServiceTypeName))
+							if (!results.Contains(documentId.ServiceName))
 							{
-								results.Add(documentId.ServiceTypeName);
+								results.Add(documentId.ServiceName);
 							}
 						}
 					}

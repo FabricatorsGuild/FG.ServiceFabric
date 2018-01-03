@@ -58,15 +58,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			Key = valueMetadata.Key;
 			Schema = valueMetadata.Schema;
 			Type = valueMetadata.Type;
-			ServiceTypeName = serviceMetadata.ServiceName;
-			PartitionKey = serviceMetadata.PartitionKey;
+			ServiceName = serviceMetadata.ServiceName;
+		    ServicePartitionKey = serviceMetadata.ServicePartitionKey;
+			PartitionKey = serviceMetadata.StoragePartitionKey;
 		}
 
-		[JsonProperty(PropertyName = "serviceTypeName")]
+		[JsonProperty(PropertyName = "serviceName")]
 		[DataMember]
-		public string ServiceTypeName { get; private set; }
+		public string ServiceName { get; private set; }
 
-		[JsonProperty(PropertyName = "partitionKey")]
+	    [JsonProperty(PropertyName = "servicePartitionKey")]
+	    [DataMember]
+	    public string ServicePartitionKey { get; private set; }
+
+        [JsonProperty(PropertyName = "partitionKey")]
 		[DataMember]
 		public string PartitionKey { get; private set; }
 
@@ -78,8 +83,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 		[DataMember]
 		public string Key { get; private set; }
 
-		[JsonProperty(PropertyName = "type")]
-		[DataMember]
-		public string Type { get; private set; }
+	    [JsonProperty(PropertyName = "type")]
+	    [DataMember]
+	    public string Type { get; private set; }
 	}
 }

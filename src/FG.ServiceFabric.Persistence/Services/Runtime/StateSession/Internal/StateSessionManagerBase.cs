@@ -52,15 +52,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			ServiceName = serviceName;
 			PartitionId = partitionId;
 			PartitionKey = partitionKey;
-		}
+
+		    _storagePartitionKey = HashUtil.Adler32String($"{serviceName}-{partitionKey}");
+        }
 
 		protected Guid PartitionId { get; }
 		protected string PartitionKey { get; }
 		protected string ServiceName { get; }
 
+	    private readonly string _storagePartitionKey;
+
 		#region Internals
 
-		private IStateSessionManagerInternals Internals => (IStateSessionManagerInternals) this;
+        private IStateSessionManagerInternals Internals => (IStateSessionManagerInternals) this;
 
 		IDictionary<string, QueueInfo> IStateSessionManagerInternals.OpenQueues => _openQueues;
 
@@ -71,10 +75,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
 		IServiceMetadata IStateSessionManagerInternals.GetMetadata()
 		{
-			return new ServiceMetadata() { ServiceName = ServiceName, PartitionKey = PartitionKey };
+			return new ServiceMetadata() { ServiceName = ServiceName, ServicePartitionKey = PartitionKey, StoragePartitionKey = GetStoragePartitionKey(ServiceName, PartitionKey)};
 		}
 
-		IValueMetadata IStateSessionManagerInternals.GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type)
+	    protected virtual string GetStoragePartitionKey(string serviceName, string partitionKey)
+	    {
+	        return _storagePartitionKey;
+        }
+
+        IValueMetadata IStateSessionManagerInternals.GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type)
 		{
 			if (metadata == null)
 			{
@@ -82,7 +91,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			}
 			else
 			{
-				metadata.SetType(type);
+			    if (metadata.Type == null)
+			    {
+			        metadata.SetType(type);
+			    }
 			}
 			return metadata;
 		}
@@ -111,7 +123,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 			var serviceMetadata = Internals.GetMetadata();
 			if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
 			valueMetadata.Key = key.Key;
-			valueMetadata.Schema = key.Schema;
+			valueMetadata.Schema = key.Schema;            
 			var wrapper = valueMetadata.BuildStateWrapper(key, value, serviceMetadata);
 			return wrapper;
 		}

@@ -14,42 +14,7 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public interface IStateProviderQueryable
-    {
-        //
-        // Summary:
-        //     Gets the requested number of Actor states from the state provider.
-        //
-        // Parameters:
-        //   numItemsToReturn:
-        //     Number of items requested to be returned.
-        //
-        //   continuationToken:
-        //     A continuation token to start querying the results from. A null value of continuation
-        //     token means start returning values form the beginning.
-        //
-        //   cancellationToken:
-        //     The token to monitor for cancellation requests.
-        //
-        // Returns:
-        //     A task that represents the asynchronous operation of call to server.
-        //
-        // Exceptions:
-        //   T:System.OperationCanceledException:
-        //     The operation was canceled.
-        //
-        // Remarks:
-        //     The continuationToken is relative to the state of actor state provider at the
-        //     time of invocation of this API. If the state of actor state provider changes
-        //     (i.e. new actors are activated or existing actors are deleted) in between calls
-        //     to this API and the continuation token from previous call (before the state was
-        //     modified) is supplied, the result may contain entries that were already fetched
-        //     in previous calls.
-        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
-            CancellationToken cancellationToken);
-    }
-
-    public partial class StateSessionActorStateProvider : IActorStateProvider, IStateProviderQueryable
+    public partial class StateSessionActorStateProvider : IActorStateProvider, IActorStateProviderQueryable
     {
 		//private IActorStateProvider _actorStateProvider;
 		private readonly IStateSessionManager _stateSessionManager;
@@ -221,8 +186,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 				// e.g.: servicename_partition1_ACTORSTATE-xyz_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
 				return baseSchemaNames
-					.Where(schema => schema.StartsWith(StateSessionHelper.ActorStateSchemaName))
-					.Select(schema => schema.Substring(StateSessionHelper.ActorStateSchemaName.Length + 1)).ToArray();
+					.Where(schema => schema.StartsWith(ActorStateKey.ActorStateSchemaName))
+					.Select(schema => schema.Substring(ActorStateKey.ActorStateSchemaName.Length + 1)).ToArray();
 			}
 			catch (Exception ex)
 			{
@@ -242,7 +207,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 			var session = _stateSessionManager.CreateSession();
 			try
 			{
-				var schemaName = StateSessionHelper.ActorIdStateSchemaName;
+				var schemaName = ActorIdStateKey.ActorIdStateSchemaName;
 
 				var result =
 					await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken,
@@ -360,20 +325,20 @@ namespace FG.ServiceFabric.Actors.Runtime
 
 				// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
 				var reminderKeys = await session
-					.FindByKeyPrefixAsync(StateSessionHelper.ActorReminderSchemaName, null,
+					.FindByKeyPrefixAsync(ActorReminderStateKey.ActorReminderSchemaName, null,
 						cancellationToken: cancellationToken);
 
 				foreach (var reminderKey in reminderKeys.Items)
 				{
 					// e.g.: servicename_partition1_ACTORREMINDER_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
-					var reminder = await session.TryGetValueAsync<ActorReminderData>(StateSessionHelper.ActorReminderSchemaName,
+					var reminder = await session.TryGetValueAsync<ActorReminderData>(ActorReminderStateKey.ActorReminderSchemaName,
 						reminderKey, cancellationToken);
 					if (reminder.HasValue)
 					{
 						var reminderData = reminder.Value;
 						// e.g.: servicename_partition1_ACTORREMINDERCOMPLETED_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9-wakeupcall
 						var reminderCompleted = await session
-							.TryGetValueAsync<ActorReminderCompletedData>(StateSessionHelper.ActorReminderCompletedSchemaName, reminderKey,
+							.TryGetValueAsync<ActorReminderCompletedData>(ActorReminderCompletedStateKey.ActorReminderCompletedSchemaName, reminderKey,
 								cancellationToken);
 						var reminderCompletedData = reminderCompleted.HasValue ? reminderCompleted.Value : null;
 						reminderCollection.Add(

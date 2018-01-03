@@ -15,7 +15,7 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class OverloadedStateSessionActorStateProvider : IActorStateProvider
+    public class OverloadedStateSessionActorStateProvider : IActorStateProvider, IQueryableActorStateProvider
     {
         private readonly IActorStateProvider _innerActorStateProvider;
         private readonly IStateSessionActorDocumentManager _actorDocumentManager;
@@ -274,7 +274,17 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             return remindersByActorId;
         }
-        
+
+        #endregion
+
+        #region Queryable
+
+        public Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+            CancellationToken cancellationToken = default(CancellationToken)) where T : class
+        {
+            return _actorDocumentManager.GetActorStatesAsync<T>(stateName, numItemsToReturn, continuationToken, cancellationToken);
+        }
+
         #endregion
     }
 }

@@ -57,9 +57,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			_endpointUri = settingsProvider.EndpointUri();
 			_collectionPrimaryKey = settingsProvider.PrimaryKey();
 
-			_logger.StartingManager(serviceName, partitionId, partitionKey, _endpointUri, _databaseName, _collection);
+            _logger.StartingManager(serviceName, partitionId, partitionKey, _endpointUri, _databaseName, _collection);
 		}
-
+        
 		// ReSharper disable once UnusedMember.Global - For debugging purposes
 		public string InstanceName => _managerInstance;
 
@@ -163,18 +163,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 		{
 			return new DocumentDbStateSession(this, stateSessionObjects);
 		}
-		protected override DocumentDbStateSession CreateSessionInternal(
+        
+        protected override DocumentDbStateSession CreateSessionInternal(
 			StateSessionManagerBase<DocumentDbStateSession> manager,
 			IStateSessionReadOnlyObject[] stateSessionObjects)
 		{
 			return new DocumentDbStateSession(this, stateSessionObjects);
 		}
 
-		public sealed class DocumentDbStateSession : StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>.StateSessionBase<
-			DocumentDbStateSessionManagerWithTransactions>, IStateSession
+	    public class DocumentDbStateSession : StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>.StateSessionBase<
+			DocumentDbStateSessionManagerWithTransactions>, IDocumentDbSession
 		{
-			private readonly DocumentClient _documentClient;
-			private readonly DocumentDbStateSessionManagerWithTransactions _manager;
+		    private readonly DocumentClient _documentClient;
+		    private readonly DocumentDbStateSessionManagerWithTransactions _manager;
 
 			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionReadOnlyObject[] stateSessionObjects)
 				: base(manager, stateSessionObjects)
@@ -189,27 +190,42 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				_documentClient = _manager.GetClient();
 			}
 
-			private string DatabaseName => _manager._databaseName;
-			private string DatabaseCollection => _manager._collection;
-			private Guid ServicePartitionId => _manager.PartitionId;
-			private string ServicePartitionKey => _manager.PartitionKey;
-			private string ServiceTypeName => _manager.ServiceName;
+		    DocumentClient IDocumentDbSession.Client => _documentClient;
+		    string IDocumentDbSession.DatabaseName => _manager._databaseName;
+		    string IDocumentDbSession.DatabaseCollection => _manager._collection;
+		    PartitionKey IDocumentDbSession.PartitionKey => GetPartitionKey();
 
-			private Uri CreateDocumentUri(string schemaKey)
+            public override string ToString()
+		    {
+		        return $"{this.GetType().Name}\r\n-------------------\r\nManager: {_manager.GetType().Name} {_manager.GetHashCode()}\r\nClient: {_documentClient.GetType().Name} {_documentClient.GetHashCode()}\r\nService Name: {_manager.ServiceName}\r\nService Partition: {_manager.PartitionKey}\r\nStorage Partition: {_manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey)}";
+		    }
+
+		    private PartitionKey GetPartitionKey()
+		    {
+		        var compoundKey = _manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey);
+                return new PartitionKey(compoundKey);
+		    }
+
+		    private Uri CreateDocumentUri(string schemaKey)
 			{
-				return UriFactory.CreateDocumentUri(DatabaseName, DatabaseCollection, schemaKey);
+				return UriFactory.CreateDocumentUri(_manager._databaseName, _manager._collection, schemaKey);
 			}
+
+		    private Uri CreateDocumentCollectionUri()
+		    {
+		        return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
+		    }
 
 			protected override Task<bool> ContainsInternal(SchemaStateKey id,
 				CancellationToken cancellationToken = default(CancellationToken))
 			{
 				try
 				{
-					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
-							UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+					var documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
+					    CreateDocumentCollectionUri(),
 							new FeedOptions()
 							{
-								PartitionKey = new PartitionKey(ServicePartitionKey),
+								PartitionKey = GetPartitionKey(),
 								MaxItemCount = 1
 							})
 						.Where(d => d.Id == id);
@@ -243,33 +259,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				try
 				{
 					IDocumentQuery<IdWrapper> documentCollectionQuery;
-					if (continuationToken?.Marker is string nextToken)
-					{
-						documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
-								UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-								new FeedOptions
-								{
-									PartitionKey = new PartitionKey(ServicePartitionKey),
-									MaxItemCount = maxNumResults,
-									RequestContinuation = nextToken,
-								})
-							.Where(d => d.Id.StartsWith(schemaKeyPrefix))
-							.AsDocumentQuery();
-					}
-					else
-					{
-						documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
-								UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-								new FeedOptions
-								{
-									PartitionKey = new PartitionKey(ServicePartitionKey),
-									MaxItemCount = maxNumResults,
-								})
-							.Where(d => d.Id.StartsWith(schemaKeyPrefix))
-							.AsDocumentQuery();
-					}
+				    var nextToken = continuationToken?.Marker as string;
 
-					while (documentCollectionQuery.HasMoreResults)
+				    documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
+				            CreateDocumentCollectionUri(),
+				            new FeedOptions
+				            {
+				                PartitionKey = GetPartitionKey(),
+				                MaxItemCount = maxNumResults,
+				                RequestContinuation = nextToken,
+				            })
+				        .Where(d => d.Id.StartsWith(schemaKeyPrefix))
+				        .AsDocumentQuery();
+
+                    while (documentCollectionQuery.HasMoreResults)
 					{
 						var response = await documentCollectionQuery.ExecuteNextAsync<IdWrapper>(CancellationToken.None);
 
@@ -308,8 +311,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				try
 				{
 					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
-							UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-							new FeedOptions { PartitionKey = new PartitionKey(ServicePartitionKey) })
+					        CreateDocumentCollectionUri(),
+							new FeedOptions
+							{
+							    PartitionKey = GetPartitionKey()
+                            })
 						.Where(d => d.Id.StartsWith(schemaKeyPrefix))
 						.AsDocumentQuery();
 				
@@ -343,10 +349,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				try
 				{
 					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
-							UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
+							CreateDocumentCollectionUri(),
 							new FeedOptions()
 							{
-								PartitionKey = new PartitionKey(ServicePartitionKey),
+								PartitionKey = GetPartitionKey(),
 								MaxItemCount = 1
 							})
 						.Where(d => d.Id == id);
@@ -377,7 +383,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				{
 					var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
 						CreateDocumentUri(id),
-						new RequestOptions { PartitionKey = new PartitionKey(ServicePartitionKey) });
+						new RequestOptions
+						{
+						    PartitionKey = GetPartitionKey()
+						});
 
 					return response.Document;
 				}
@@ -400,9 +409,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			{
 				try
 				{
-					await _documentClient.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-						value,
-						new RequestOptions { PartitionKey = new PartitionKey(ServicePartitionKey) });
+                    await _documentClient.UpsertDocumentAsync(
+                        CreateDocumentCollectionUri(),
+                        value,
+						new RequestOptions
+						{
+						    PartitionKey = GetPartitionKey()
+                        });
 				}
 				catch (DocumentClientException dcex)
 				{
@@ -420,7 +433,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 				try
 				{
 					await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
-						new RequestOptions { PartitionKey = new PartitionKey(ServicePartitionKey) });
+						new RequestOptions
+						{
+						    PartitionKey = GetPartitionKey()
+						});
 				}
 				catch (DocumentClientException dcex)
 				{
@@ -440,10 +456,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 			{
 				try
 				{
-					var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
-							UriFactory.CreateDocumentCollectionUri(DatabaseName, DatabaseCollection),
-							new FeedOptions { MaxDegreeOfParallelism = -1, PartitionKey = new PartitionKey(ServicePartitionKey) })
-						.CountAsync(cancellationToken: cancellationToken);
+				    var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
+				            CreateDocumentCollectionUri(),
+                            new FeedOptions
+				            {
+				                MaxDegreeOfParallelism = -1,
+				                PartitionKey = GetPartitionKey()
+                            })
+				        .CountAsync(cancellationToken: cancellationToken);
 
 					return (long)resultCount;
 				}

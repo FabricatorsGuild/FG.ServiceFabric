@@ -104,7 +104,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 	public class ActorReminderStateKey : ActorSchemaKey
 	{
-		private const string ActorReminderSchemaName = @"ACTORREMINDER";
+		internal const string ActorReminderSchemaName = @"ACTORREMINDER";
 
 		public string ReminderName { get; private set; }
 

@@ -325,5 +325,36 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 session?.Dispose();
             }
         }
+
+        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+            CancellationToken cancellationToken = default(CancellationToken)) where T : class
+        {
+            var session = _stateSessionManager.CreateSession();
+            try
+            {
+                var schemaName = ActorDocumentStateKey.ActorDocumentStateSchemaName;
+
+                var page = await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken, cancellationToken);
+                // e.g.: servicename_partition1_ACTORID_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
+                var actorIds = page.Items.Select(ActorSchemaKey.TryGetActorIdFromSchemaKey).ToArray();
+                var result = new List<KeyValuePair<ActorId, T>>();
+                foreach (var actorId in actorIds)
+                {
+                    var key = new ActorStateKey(actorId, schemaName);
+                    var state = await session.GetValueAsync<T>(key.Schema, key.Key, cancellationToken);
+                    result.Add(new KeyValuePair<ActorId, T>(actorId, state));
+                }
+
+                return new PagedLookupResult<ActorId, T>() {Items = result, ContinuationToken = page.ContinuationToken};
+            }
+            catch (Exception ex)
+            {
+                throw new SessionStateActorStateProviderException($"Failed to GetActorStatesAsync", ex);
+            }
+            finally
+            {
+                session?.Dispose();
+            }
+        }
     }
 }

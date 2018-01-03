@@ -25,16 +25,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
 	public static class StateSessionHelper
 	{
-		public const string ActorIdStateSchemaName = @"ACTORID";
-		public const string ActorStateSchemaName = @"ACTORSTATE";
-		public const string ActorReminderSchemaName = @"ACTORREMINDER";
-		public const string ActorReminderCompletedSchemaName = @"ACTORREMINDERCOMPLETED";
-
-		public const string ReliableStateQueueInfoName = @"QUEUEINFO";
-		public const string ReliableStateQueueItemName = @"QUEUE-";
-
-		private static readonly Regex RegexActorIdDetector = new Regex(@"(S{.+})|(G{[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}})|(L{[0-9]+})", RegexOptions.Compiled);
-
 		private static readonly object _lock = new object();
 
 		private static readonly IDictionary<string, IDictionary<Guid, string>> PartitionKeys =
@@ -46,8 +36,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			return $"{components[0]}-{components[1]}";
 		}
 
-
-
         public static async Task<string> GetPartitionInfoUncached(ServiceContext serviceContext,
             Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
         {
@@ -55,10 +43,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             {
                 var partitionId = serviceContext.PartitionId;
                 var serviceUri = serviceContext.ServiceName;
-                var serviceUriKey = serviceUri.ToString().ToLowerInvariant();
 
                 var partitionKeys = new List<Partition>();
-                var servicePartitionKeys = new Dictionary<Guid, string>();
 
                 string continuationToken = null;
                 do
@@ -219,12 +205,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 			{
 				throw new StateSessionException("tFailed to enumerate partitions", ex);
 			}
-		}
-
-
-		public static string GetQueueKey(long index)
-		{
-			return $"{ReliableStateQueueItemName}{index}";
-		}		
+		}        
 	}
 }

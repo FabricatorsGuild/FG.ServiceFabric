@@ -150,11 +150,15 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentState.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentStateKey.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\DefaultStateSessionActorDocumentManager.cs" />
+    <Compile Include="Actors\Runtime\DefaultQueryableStateProvider.cs" />
+    <Compile Include="Actors\Runtime\DocumentDbStateSessionManagerQueryableWithTransactions.cs" />
     <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
     <Compile Include="Actors\Runtime\ExternalActorIdState.cs" />
     <Compile Include="Actors\Runtime\ExternalState.cs" />
+    <Compile Include="Actors\Runtime\IActorStateProviderQueryable.cs" />
     <Compile Include="Actors\Runtime\IActorValueMetadata.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\IStateSessionActorDocumentManager.cs" />
+    <Compile Include="Actors\Runtime\IQueryableActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\OverloadedStateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCollection.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
@@ -226,6 +230,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Services\Runtime\StateSession\CosmosDb\DocumentDbStateSessionExceptionException.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\DocumentDbStateSessionManagerWithTransactions.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\IDocumentDbDataManager.cs" />
+    <Compile Include="Services\Runtime\StateSession\CosmosDb\IDocumentDbSession.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\IDocumentDbStateSessionLogger.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\IDocumentDbStateSessionManagerLogger.cs" />
     <Compile Include="Services\Runtime\StateSession\CosmosDb\ILoggerFactory.cs" />
