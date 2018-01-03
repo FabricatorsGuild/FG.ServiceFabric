@@ -16,475 +16,474 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
-	public class DocumentDbStateSessionManagerWithTransactions :
-		StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>, 
-		IStateSessionManager,
-		IStateQuerySessionManager,
-		IDocumentDbDataManager
-	{
-		private object _lock = new object();
+    public class DocumentDbStateSessionManagerWithTransactions :
+        StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>,
+        IStateSessionManager,
+        IStateQuerySessionManager,
+        IDocumentDbDataManager
+    {
+        private readonly string _collection;
+        private readonly string _collectionPrimaryKey;
+        private readonly ConnectionPolicySetting _connectionPolicySetting;
+        private readonly string _databaseName;
+        private readonly string _endpointUri;
 
-		private DocumentClient _client;
+        private readonly ICosmosDbClientFactory _factory;
+        private readonly IDocumentDbStateSessionManagerLogger _logger;
 
-		private readonly string _managerInstance;
-		private readonly IDocumentDbStateSessionManagerLogger _logger;
-		private readonly string _collection;
-		private readonly string _collectionPrimaryKey;
-		private readonly ConnectionPolicySetting _connectionPolicySetting;
-		private readonly string _databaseName;
-		private readonly string _endpointUri;
-		private bool _collectionExists;
+        private DocumentClient _client;
+        private bool _collectionExists;
+        private readonly object _lock = new object();
 
-		private readonly ICosmosDbClientFactory _factory;
+        public DocumentDbStateSessionManagerWithTransactions(
+            string serviceName,
+            Guid partitionId,
+            string partitionKey,
+            ISettingsProvider settingsProvider,
+            ICosmosDbClientFactory factory = null,
+            ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps) :
+            base(serviceName, partitionId, partitionKey)
+        {
+            InstanceName = new MiniId();
+            _logger = new DocumentDbStateSessionManagerLogger(InstanceName);
+            _connectionPolicySetting = connectionPolicySetting;
 
-		public DocumentDbStateSessionManagerWithTransactions(
-			string serviceName,
-			Guid partitionId,
-			string partitionKey,
-			ISettingsProvider settingsProvider,
-			ICosmosDbClientFactory factory = null,
-			ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.GatewayHttps) :
-			base(serviceName, partitionId, partitionKey)
-		{
-			_managerInstance = new MiniId();
-			_logger = new DocumentDbStateSessionManagerLogger(_managerInstance);
-			_connectionPolicySetting = connectionPolicySetting;
+            _factory = factory ?? new CosmosDbClientFactory();
 
-			_factory = factory ?? new CosmosDbClientFactory();
-
-			_collection = settingsProvider.Collection();
-			_databaseName = settingsProvider.DatabaseName();
-			_endpointUri = settingsProvider.EndpointUri();
-			_collectionPrimaryKey = settingsProvider.PrimaryKey();
+            _collection = settingsProvider.Collection();
+            _databaseName = settingsProvider.DatabaseName();
+            _endpointUri = settingsProvider.EndpointUri();
+            _collectionPrimaryKey = settingsProvider.PrimaryKey();
 
             _logger.StartingManager(serviceName, partitionId, partitionKey, _endpointUri, _databaseName, _collection);
-		}
-        
-		// ReSharper disable once UnusedMember.Global - For debugging purposes
-		public string InstanceName => _managerInstance;
+        }
 
-		#region Data Manager
+        // ReSharper disable once UnusedMember.Global - For debugging purposes
+        public string InstanceName { get; }
 
-		string IDocumentDbDataManager.GetCollectionName()
-		{
-			return _collection;
-		}
+        public IStateQuerySession CreateSession()
+        {
+            throw new NotImplementedException();
+        }
 
-		async Task<IDictionary<string, string>> IDocumentDbDataManager.GetCollectionDataAsync(string collectionName)
-		{
-			try
-			{
-				var client = GetClient();
-				var dict = new Dictionary<string, string>();
-				var feedResponse = await client.ReadDocumentFeedAsync(UriFactory.CreateDocumentCollectionUri(_databaseName, collectionName));
+        private DocumentClient CreateClient()
+        {
+            _logger.CreatingClient();
+            lock (_lock)
+            {
+                _client = _factory.OpenAsync(
+                    _databaseName,
+                    new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+                    new Uri(_endpointUri),
+                    _collectionPrimaryKey,
+                    _connectionPolicySetting
+                ).GetAwaiter().GetResult();
 
-				foreach (var document in feedResponse)
-				{
-					dict.Add(document.Id, document.ToString());
-				}
 
-				return dict;
-			}
-			catch (DocumentClientException e)
-			{
-				if (e.Error.Code == "NotFound")
-				{
-					return null;
-				}
-				throw;
-			}
-			catch (Exception)
-			{
-				// TODO: inject logger and log this
-				throw;
-			}
-		}
+                if (!_collectionExists)
+                {
+                    _client.EnsureStoreIsConfigured(_databaseName,
+                            new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter()
+                        .GetResult();
+                    _collectionExists = true;
+                }
+            }
 
-		async Task IDocumentDbDataManager.CreateCollection(string collectionName)
-		{
-			var client = GetClient();
+            return _client;
+        }
 
-			await client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
+        private DocumentClient GetClient()
+        {
+            if (_client == null)
+                _client = CreateClient();
 
-			_collectionExists = true;
-		}
+            return _client;
+        }
 
-		async Task IDocumentDbDataManager.DestroyCollecton(string collectionName)
-		{
-			var client = await _factory.OpenAsync(
-				databaseName: _databaseName,
-				collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
-				endpointUri: new Uri(_endpointUri),
-				primaryKey: _collectionPrimaryKey,
-				connectionPolicySetting: _connectionPolicySetting
-			);
-			await client.DestroyCollection(_databaseName, _collection);
-		}
-
-		#endregion
-
-		private DocumentClient CreateClient()
-		{
-			_logger.CreatingClient();
-			lock (_lock)
-			{
-				_client = _factory.OpenAsync(
-					databaseName: _databaseName,
-					collection: new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
-					endpointUri: new Uri(_endpointUri),
-					primaryKey: _collectionPrimaryKey,
-					connectionPolicySetting: _connectionPolicySetting
-				).GetAwaiter().GetResult();
-
-			
-				if (!_collectionExists)
-				{
-					_client.EnsureStoreIsConfigured(_databaseName, new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter().GetResult();
-					_collectionExists = true;
-				}
-			}
-
-			return _client;
-		}
-
-		private DocumentClient GetClient()
-		{
-			if (_client == null)
-			{				
-				_client = CreateClient();
-			}
-
-			return _client;
-		}
-
-		protected override DocumentDbStateSession CreateSessionInternal(
-			StateSessionManagerBase<DocumentDbStateSession> manager,
-			IStateSessionObject[] stateSessionObjects)
-		{
-			return new DocumentDbStateSession(this, stateSessionObjects);
-		}
-        
         protected override DocumentDbStateSession CreateSessionInternal(
-			StateSessionManagerBase<DocumentDbStateSession> manager,
-			IStateSessionReadOnlyObject[] stateSessionObjects)
-		{
-			return new DocumentDbStateSession(this, stateSessionObjects);
-		}
+            StateSessionManagerBase<DocumentDbStateSession> manager,
+            IStateSessionObject[] stateSessionObjects)
+        {
+            return new DocumentDbStateSession(this, stateSessionObjects);
+        }
 
-	    public class DocumentDbStateSession : StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>.StateSessionBase<
-			DocumentDbStateSessionManagerWithTransactions>, IDocumentDbSession
-		{
-		    private readonly DocumentClient _documentClient;
-		    private readonly DocumentDbStateSessionManagerWithTransactions _manager;
+        protected override DocumentDbStateSession CreateSessionInternal(
+            StateSessionManagerBase<DocumentDbStateSession> manager,
+            IStateSessionReadOnlyObject[] stateSessionObjects)
+        {
+            return new DocumentDbStateSession(this, stateSessionObjects);
+        }
 
-			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionReadOnlyObject[] stateSessionObjects)
-				: base(manager, stateSessionObjects)
-			{
-				_manager = manager;
-				_documentClient = _manager.GetClient();
-			}
-			public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionObject[] stateSessionObjects)
-				: base(manager, stateSessionObjects)
-			{
-				_manager = manager;
-				_documentClient = _manager.GetClient();
-			}
+        public class DocumentDbStateSession : StateSessionBase<
+            DocumentDbStateSessionManagerWithTransactions>, IDocumentDbSession
+        {
+            private readonly DocumentClient _documentClient;
+            private readonly DocumentDbStateSessionManagerWithTransactions _manager;
 
-		    DocumentClient IDocumentDbSession.Client => _documentClient;
-		    string IDocumentDbSession.DatabaseName => _manager._databaseName;
-		    string IDocumentDbSession.DatabaseCollection => _manager._collection;
-		    PartitionKey IDocumentDbSession.PartitionKey => GetPartitionKey();
+            public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
+                IStateSessionReadOnlyObject[] stateSessionObjects)
+                : base(manager, stateSessionObjects)
+            {
+                _manager = manager;
+                _documentClient = _manager.GetClient();
+            }
+
+            public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
+                IStateSessionObject[] stateSessionObjects)
+                : base(manager, stateSessionObjects)
+            {
+                _manager = manager;
+                _documentClient = _manager.GetClient();
+            }
+
+            DocumentClient IDocumentDbSession.Client => _documentClient;
+            string IDocumentDbSession.DatabaseName => _manager._databaseName;
+            string IDocumentDbSession.DatabaseCollection => _manager._collection;
+            PartitionKey IDocumentDbSession.PartitionKey => GetPartitionKey();
 
             public override string ToString()
-		    {
-		        return $"{this.GetType().Name}\r\n-------------------\r\nManager: {_manager.GetType().Name} {_manager.GetHashCode()}\r\nClient: {_documentClient.GetType().Name} {_documentClient.GetHashCode()}\r\nService Name: {_manager.ServiceName}\r\nService Partition: {_manager.PartitionKey}\r\nStorage Partition: {_manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey)}";
-		    }
+            {
+                return
+                    $"{GetType().Name}\r\n-------------------\r\nManager: {_manager.GetType().Name} {_manager.GetHashCode()}\r\nClient: {_documentClient.GetType().Name} {_documentClient.GetHashCode()}\r\nService Name: {_manager.ServiceName}\r\nService Partition: {_manager.PartitionKey}\r\nStorage Partition: {_manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey)}";
+            }
 
-		    private PartitionKey GetPartitionKey()
-		    {
-		        var compoundKey = _manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey);
+            private PartitionKey GetPartitionKey()
+            {
+                var compoundKey = _manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey);
                 return new PartitionKey(compoundKey);
-		    }
+            }
 
-		    private Uri CreateDocumentUri(string schemaKey)
-			{
-				return UriFactory.CreateDocumentUri(_manager._databaseName, _manager._collection, schemaKey);
-			}
+            private Uri CreateDocumentUri(string schemaKey)
+            {
+                return UriFactory.CreateDocumentUri(_manager._databaseName, _manager._collection, schemaKey);
+            }
 
-		    private Uri CreateDocumentCollectionUri()
-		    {
-		        return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
-		    }
+            private Uri CreateDocumentCollectionUri()
+            {
+                return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
+            }
 
-			protected override Task<bool> ContainsInternal(SchemaStateKey id,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				try
-				{
-					var documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
-					    CreateDocumentCollectionUri(),
-							new FeedOptions()
-							{
-								PartitionKey = GetPartitionKey(),
-								MaxItemCount = 1
-							})
-						.Where(d => d.Id == id);
+            protected override Task<bool> ContainsInternal(SchemaStateKey id,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                try
+                {
+                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
+                            CreateDocumentCollectionUri(),
+                            new FeedOptions
+                            {
+                                PartitionKey = GetPartitionKey(),
+                                MaxItemCount = 1
+                            })
+                        .Where(d => d.Id == id);
 
-					// ReSharper disable once UnusedVariable - cannot use Any() on DocumentQueryException
-					foreach (var document in documentCollectionQuery)
-					{
-						return Task.FromResult(true);
-					}
-					return Task.FromResult(false);
-				}
-				catch (DocumentClientException dcex)
-				{
-					if (dcex.StatusCode == HttpStatusCode.NotFound)
-					{
-						return Task.FromResult(false);
-					}
-					throw new StateSessionException($"ContainsInternal for {id} failed, {dcex.Message}", dcex); 
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"ContainsInternal for {id} failed, {ex.Message}", ex);
-				}
-			}
+                    // ReSharper disable once UnusedVariable - cannot use Any() on DocumentQueryException
+                    foreach (var document in documentCollectionQuery)
+                        return Task.FromResult(true);
+                    return Task.FromResult(false);
+                }
+                catch (DocumentClientException dcex)
+                {
+                    if (dcex.StatusCode == HttpStatusCode.NotFound)
+                        return Task.FromResult(false);
+                    throw new StateSessionException($"ContainsInternal for {id} failed, {dcex.Message}", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"ContainsInternal for {id} failed, {ex.Message}", ex);
+                }
+            }
 
-			protected override async Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix, int maxNumResults = 100000,
-				ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
-			{
-				var results = new List<string>();
-				var resultCount = 0;
-				try
-				{
-					IDocumentQuery<IdWrapper> documentCollectionQuery;
-				    var nextToken = continuationToken?.Marker as string;
+            protected override async Task<FindByKeyPrefixResult> FindByKeyPrefixInternalAsync(string schemaKeyPrefix,
+                int maxNumResults = 100000,
+                ContinuationToken continuationToken = null,
+                CancellationToken cancellationToken = new CancellationToken())
+            {
+                var results = new List<string>();
+                var resultCount = 0;
+                try
+                {
+                    IDocumentQuery<IdWrapper> documentCollectionQuery;
+                    var nextToken = continuationToken?.Marker as string;
 
-				    documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
-				            CreateDocumentCollectionUri(),
-				            new FeedOptions
-				            {
-				                PartitionKey = GetPartitionKey(),
-				                MaxItemCount = maxNumResults,
-				                RequestContinuation = nextToken,
-				            })
-				        .Where(d => d.Id.StartsWith(schemaKeyPrefix))
-				        .AsDocumentQuery();
+                    documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
+                            CreateDocumentCollectionUri(),
+                            new FeedOptions
+                            {
+                                PartitionKey = GetPartitionKey(),
+                                MaxItemCount = maxNumResults,
+                                RequestContinuation = nextToken
+                            })
+                        .Where(d => d.Id.StartsWith(schemaKeyPrefix))
+                        .AsDocumentQuery();
 
                     while (documentCollectionQuery.HasMoreResults)
-					{
-						var response = await documentCollectionQuery.ExecuteNextAsync<IdWrapper>(CancellationToken.None);
+                    {
+                        var response =
+                            await documentCollectionQuery.ExecuteNextAsync<IdWrapper>(CancellationToken.None);
 
-						foreach (var documentId in response)
-						{
-							resultCount++;
+                        foreach (var documentId in response)
+                        {
+                            resultCount++;
 
-							var schemaStateKey = SchemaStateKey.Parse(documentId.Id);
-							results.Add(schemaStateKey.Key);
+                            var schemaStateKey = SchemaStateKey.Parse(documentId.Id);
+                            results.Add(schemaStateKey.Key);
 
-							if (resultCount >= maxNumResults)
-							{
-								var nextContinuationToken = response.ResponseContinuation == null
-									? null
-									: new ContinuationToken(response.ResponseContinuation);
-								return new FindByKeyPrefixResult() { ContinuationToken = nextContinuationToken, Items = results };
-							}
-						}
-					}
-					return new FindByKeyPrefixResult() { ContinuationToken = null, Items = results };
-				}
-				catch (DocumentClientException dcex)
-				{
-					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {dcex.Message}", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {ex.Message}", ex);
-				}
-			}
+                            if (resultCount >= maxNumResults)
+                            {
+                                var nextContinuationToken = response.ResponseContinuation == null
+                                    ? null
+                                    : new ContinuationToken(response.ResponseContinuation);
+                                return new FindByKeyPrefixResult
+                                {
+                                    ContinuationToken = nextContinuationToken,
+                                    Items = results
+                                };
+                            }
+                        }
+                    }
+                    return new FindByKeyPrefixResult {ContinuationToken = null, Items = results};
+                }
+                catch (DocumentClientException dcex)
+                {
+                    throw new StateSessionException(
+                        $"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {dcex.Message}", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {ex.Message}",
+                        ex);
+                }
+            }
 
-			protected override async Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix, string key,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				var results = new List<string>();
-				try
-				{
-					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
-					        CreateDocumentCollectionUri(),
-							new FeedOptions
-							{
-							    PartitionKey = GetPartitionKey()
+            protected override async Task<IEnumerable<string>> EnumerateSchemaNamesInternalAsync(string schemaKeyPrefix,
+                string key,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                var results = new List<string>();
+                try
+                {
+                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
+                            CreateDocumentCollectionUri(),
+                            new FeedOptions
+                            {
+                                PartitionKey = GetPartitionKey()
                             })
-						.Where(d => d.Id.StartsWith(schemaKeyPrefix))
-						.AsDocumentQuery();
-				
-					while (documentCollectionQuery.HasMoreResults)
-					{
-						var response = await documentCollectionQuery.ExecuteNextAsync<StateWrapper>(CancellationToken.None);
+                        .Where(d => d.Id.StartsWith(schemaKeyPrefix))
+                        .AsDocumentQuery();
 
-						foreach (var documentId in response)
-						{
-							if (!results.Contains(documentId.Schema))
-							{
-								results.Add(documentId.Schema);
-							}
-						}
-					}
-					return results;
-				}
-				catch (DocumentClientException dcex)
-				{
-					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {dcex.Message}", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {ex.Message}", ex);
-				}
-			}
+                    while (documentCollectionQuery.HasMoreResults)
+                    {
+                        var response =
+                            await documentCollectionQuery.ExecuteNextAsync<StateWrapper>(CancellationToken.None);
 
-			protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{				
-				try
-				{
-					var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
-							CreateDocumentCollectionUri(),
-							new FeedOptions()
-							{
-								PartitionKey = GetPartitionKey(),
-								MaxItemCount = 1
-							})
-						.Where(d => d.Id == id);
+                        foreach (var documentId in response)
+                            if (!results.Contains(documentId.Schema))
+                                results.Add(documentId.Schema);
+                    }
+                    return results;
+                }
+                catch (DocumentClientException dcex)
+                {
+                    throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {dcex.Message}",
+                        dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {ex.Message}", ex);
+                }
+            }
 
-					foreach (var document in documentCollectionQuery)
-					{
-						return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, document));
-					}
-					return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
-				}
-				catch (DocumentClientException dcex)
-				{
-					if (dcex.StatusCode == HttpStatusCode.NotFound)
-					{
-						return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
-					}
-					throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
-				}
-			}
+            protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                try
+                {
+                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
+                            CreateDocumentCollectionUri(),
+                            new FeedOptions
+                            {
+                                PartitionKey = GetPartitionKey(),
+                                MaxItemCount = 1
+                            })
+                        .Where(d => d.Id == id);
 
-			protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(string id, CancellationToken cancellationToken = default(CancellationToken))
-			{
-				try
-				{
-					var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
-						CreateDocumentUri(id),
-						new RequestOptions
-						{
-						    PartitionKey = GetPartitionKey()
-						});
+                    foreach (var document in documentCollectionQuery)
+                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, document));
+                    return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                }
+                catch (DocumentClientException dcex)
+                {
+                    if (dcex.StatusCode == HttpStatusCode.NotFound)
+                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                    throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
+                }
+            }
 
-					return response.Document;
-				}
-				catch (DocumentClientException dcex)
-				{
-					if (dcex.StatusCode == HttpStatusCode.NotFound)
-					{
-						throw new KeyNotFoundException($"State with {id} does not exist");
-					}
-					throw new StateSessionException($"GetValueAsync for {id} failed, {dcex.Message}", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
-				}
-			}
+            protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                try
+                {
+                    var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
+                        CreateDocumentUri(id),
+                        new RequestOptions
+                        {
+                            PartitionKey = GetPartitionKey()
+                        });
 
-			protected override async Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value, Type valueType,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				try
-				{
+                    return response.Document;
+                }
+                catch (DocumentClientException dcex)
+                {
+                    if (dcex.StatusCode == HttpStatusCode.NotFound)
+                        throw new KeyNotFoundException($"State with {id} does not exist");
+                    throw new StateSessionException($"GetValueAsync for {id} failed, {dcex.Message}", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
+                }
+            }
+
+            protected override async Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value, Type valueType,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                try
+                {
                     await _documentClient.UpsertDocumentAsync(
                         CreateDocumentCollectionUri(),
                         value,
-						new RequestOptions
-						{
-						    PartitionKey = GetPartitionKey()
+                        new RequestOptions
+                        {
+                            PartitionKey = GetPartitionKey()
                         });
-				}
-				catch (DocumentClientException dcex)
-				{
-					throw new StateSessionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"SetValueAsync for {id} failed, {ex.Message}", ex);
-				}
-			}
+                }
+                catch (DocumentClientException dcex)
+                {
+                    throw new StateSessionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"SetValueAsync for {id} failed, {ex.Message}", ex);
+                }
+            }
 
-			protected override async Task RemoveInternalAsync(SchemaStateKey id,
-				CancellationToken cancellationToken = default(CancellationToken))
-			{
-				try
-				{
-					await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
-						new RequestOptions
-						{
-						    PartitionKey = GetPartitionKey()
-						});
-				}
-				catch (DocumentClientException dcex)
-				{
-				    if (dcex.StatusCode == HttpStatusCode.NotFound)
-				    {
-				        throw new KeyNotFoundException($"RemoveAsync for {id} failed, the key was not found");
-				    }
-					throw new StateSessionException($"RemoveAsync for {id} failed", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"RemoveAsync for {id} failed", ex);
-				}
-			}
+            protected override async Task RemoveInternalAsync(SchemaStateKey id,
+                CancellationToken cancellationToken = default(CancellationToken))
+            {
+                try
+                {
+                    await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
+                        new RequestOptions
+                        {
+                            PartitionKey = GetPartitionKey()
+                        });
+                }
+                catch (DocumentClientException dcex)
+                {
+                    if (dcex.StatusCode == HttpStatusCode.NotFound)
+                        throw new KeyNotFoundException($"RemoveAsync for {id} failed, the key was not found");
+                    throw new StateSessionException($"RemoveAsync for {id} failed", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"RemoveAsync for {id} failed", ex);
+                }
+            }
 
-			protected override async Task<long> GetCountInternalAsync(string schema, CancellationToken cancellationToken)
-			{
-				try
-				{
-				    var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
-				            CreateDocumentCollectionUri(),
+            protected override async Task<long> GetCountInternalAsync(string schema,
+                CancellationToken cancellationToken)
+            {
+                try
+                {
+                    var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
+                            CreateDocumentCollectionUri(),
                             new FeedOptions
-				            {
-				                MaxDegreeOfParallelism = -1,
-				                PartitionKey = GetPartitionKey()
+                            {
+                                MaxDegreeOfParallelism = -1,
+                                PartitionKey = GetPartitionKey()
                             })
-				        .CountAsync(cancellationToken: cancellationToken);
+                        .CountAsync(cancellationToken);
 
-					return (long)resultCount;
-				}
-				catch (DocumentClientException dcex)
-				{
-					throw new StateSessionException($"GetCountInternalAsync for {schema} failed", dcex);
-				}
-				catch (Exception ex)
-				{
-					throw new StateSessionException($"GetCountInternalAsync for {schema} failed", ex);
-				}
-			}
-		
-			protected override void Dispose(bool disposing)
-			{
-			}
-		}
+                    return resultCount;
+                }
+                catch (DocumentClientException dcex)
+                {
+                    throw new StateSessionException($"GetCountInternalAsync for {schema} failed", dcex);
+                }
+                catch (Exception ex)
+                {
+                    throw new StateSessionException($"GetCountInternalAsync for {schema} failed", ex);
+                }
+            }
 
-		public IStateQuerySession CreateSession()
-		{
-			throw new NotImplementedException();
-		}
-	}
+            protected override void Dispose(bool disposing)
+            {
+            }
+        }
+
+        #region Data Manager
+
+        string IDocumentDbDataManager.GetCollectionName()
+        {
+            return _collection;
+        }
+
+        async Task<IDictionary<string, string>> IDocumentDbDataManager.GetCollectionDataAsync(string collectionName)
+        {
+            try
+            {
+                var client = GetClient();
+                var dict = new Dictionary<string, string>();
+                var feedResponse =
+                    await client.ReadDocumentFeedAsync(
+                        UriFactory.CreateDocumentCollectionUri(_databaseName, collectionName));
+
+                foreach (var document in feedResponse)
+                    dict.Add(document.Id, document.ToString());
+
+                return dict;
+            }
+            catch (DocumentClientException e)
+            {
+                if (e.Error.Code == "NotFound")
+                    return null;
+                throw;
+            }
+            catch (Exception)
+            {
+                // TODO: inject logger and log this
+                throw;
+            }
+        }
+
+        async Task IDocumentDbDataManager.CreateCollection(string collectionName)
+        {
+            var client = GetClient();
+
+            await client.EnsureStoreIsConfigured(_databaseName,
+                new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
+
+            _collectionExists = true;
+        }
+
+        async Task IDocumentDbDataManager.DestroyCollecton(string collectionName)
+        {
+            var client = await _factory.OpenAsync(
+                _databaseName,
+                new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+                new Uri(_endpointUri),
+                _collectionPrimaryKey,
+                _connectionPolicySetting
+            );
+            await client.DestroyCollection(_databaseName, _collection);
+        }
+
+        #endregion
+    }
 }

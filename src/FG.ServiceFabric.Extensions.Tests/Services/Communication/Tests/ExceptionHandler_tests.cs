@@ -1,15 +1,12 @@
 ﻿// ReSharper disable InconsistentNaming
 
+using System;
+using FluentAssertions;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using NUnit.Framework;
+
 namespace FG.ServiceFabric.Services.Communication.Tests
 {
-    using System;
-
-    using FluentAssertions;
-
-    using Microsoft.ServiceFabric.Services.Communication.Client;
-
-    using NUnit.Framework;
-
     public class ExceptionHandler_tests
     {
         [Test]
@@ -18,10 +15,12 @@ namespace FG.ServiceFabric.Services.Communication.Tests
             var exceptionHandler = new ExceptionHandler<ArgumentException>();
 
             var exceptionInformation = new ExceptionInformation(new ArgumentException("Some argument error"));
-            var operationRetrySettings = new OperationRetrySettings(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), 3);
+            var operationRetrySettings =
+                new OperationRetrySettings(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), 3);
             ExceptionHandlingResult exceptionHandlingResult;
 
-            var canHandle = exceptionHandler.TryHandleException(exceptionInformation, operationRetrySettings, out exceptionHandlingResult);
+            var canHandle = exceptionHandler.TryHandleException(exceptionInformation, operationRetrySettings,
+                out exceptionHandlingResult);
 
             canHandle.Should().BeTrue();
             exceptionHandlingResult.Should().BeOfType(typeof(ExceptionHandlingRetryResult));
@@ -33,10 +32,12 @@ namespace FG.ServiceFabric.Services.Communication.Tests
             var exceptionHandler = new ExceptionHandler<ArgumentException>();
 
             var exceptionInformation = new ExceptionInformation(new SystemException("A system exception"));
-            var operationRetrySettings = new OperationRetrySettings(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), 3);
+            var operationRetrySettings =
+                new OperationRetrySettings(TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3), 3);
             ExceptionHandlingResult exceptionHandlingResult;
 
-            var canHandle = exceptionHandler.TryHandleException(exceptionInformation, operationRetrySettings, out exceptionHandlingResult);
+            var canHandle = exceptionHandler.TryHandleException(exceptionInformation, operationRetrySettings,
+                out exceptionHandlingResult);
 
             canHandle.Should().BeFalse();
             exceptionHandlingResult.Should().BeOfType(typeof(ExceptionHandlingThrowResult));

@@ -9,14 +9,20 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
     public interface IStateSessionReader : IDisposable
     {
-        Task<bool> Contains<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
-        Task<bool> Contains(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> Contains<T>(string schema, string key,
+            CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<FindByKeyPrefixResult<T>> FindByKeyPrefixAsync<T>(string schema, string keyPrefix, int maxNumResults = 100000,
-            ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> Contains(string schema, string key,
+            CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<FindByKeyPrefixResult<T>> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
+            int maxNumResults = 100000,
+            ContinuationToken continuationToken = null,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string schema, string keyPrefix, int maxNumResults = 100000,
-            ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
+            ContinuationToken continuationToken = null,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,
             CancellationToken cancellationToken = default(CancellationToken));
@@ -24,7 +30,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
             CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<T> GetValueAsync<T>(string schema, string key, CancellationToken cancellationToken = default(CancellationToken));
+        Task<T> GetValueAsync<T>(string schema, string key,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         Task<ConditionalValue<T>> PeekAsync<T>(string schema,
             CancellationToken cancellationToken = default(CancellationToken));

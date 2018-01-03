@@ -4,32 +4,31 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FG.CQRS;
 using FG.ServiceFabric.Actors;
-using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
 {
-	#region Contracts
+    #region Contracts
 
-	public interface IIndexActor : IReliableMessageReceiverActor, IActor
-	{
-		Task<IEnumerable<Guid>> ListCommandsAsync();
-	}
+    public interface IIndexActor : IReliableMessageReceiverActor, IActor
+    {
+        Task<IEnumerable<Guid>> ListCommandsAsync();
+    }
 
-	#endregion
+    #endregion
 
-	#region Commands
+    #region Commands
 
-	[DataContract]
-	public class IndexCommand : DomainCommandBase
-	{
-		[DataMember]
-		public Guid PersonId { get; set; }
-	}
+    [DataContract]
+    public class IndexCommand : DomainCommandBase
+    {
+        [DataMember]
+        public Guid PersonId { get; set; }
+    }
 
-	#endregion
+    #endregion
 
-	#region Models
+    #region Models
 
-	#endregion
+    #endregion
 }

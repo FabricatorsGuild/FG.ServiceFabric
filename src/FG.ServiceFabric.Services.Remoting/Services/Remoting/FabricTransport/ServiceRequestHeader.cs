@@ -4,7 +4,7 @@
     {
         public ServiceRequestHeader(string headerName)
         {
-            this.HeaderName = headerName;
+            HeaderName = headerName;
         }
 
         public string HeaderName { get; set; }

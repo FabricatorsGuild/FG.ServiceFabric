@@ -37,7 +37,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         //     to this API and the continuation token from previous call (before the state was
         //     modified) is supplied, the result may contain entries that were already fetched
         //     in previous calls.
-        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken);
     }
 }

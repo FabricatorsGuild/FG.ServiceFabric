@@ -8,22 +8,22 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
 {
-	public class When_creating_an_aggregate_root_throwing_exception : TestBase
-	{
-		private readonly Guid _aggregateRootId = Guid.NewGuid();
+    public class When_creating_an_aggregate_root_throwing_exception : TestBase
+    {
+        private readonly Guid _aggregateRootId = Guid.NewGuid();
 
-		protected override void SetupRuntime()
-		{
-			ForTestEventStoredActor.Setup(_fabricApplication);
-			ForTestIndexActor.Setup(_fabricApplication);
-			base.SetupRuntime();
-		}
+        protected override void SetupRuntime()
+        {
+            ForTestEventStoredActor.Setup(_fabricApplication);
+            ForTestIndexActor.Setup(_fabricApplication);
+            base.SetupRuntime();
+        }
 
-		[Test]
-		public void Then_exception_is_thrown_back_to_client()
-		{
-			var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
-			proxy.Awaiting(p => p.CreateAsync(new CreateCommand {SomeProperty = ""})).ShouldThrow<Exception>();
-		}
-	}
+        [Test]
+        public void Then_exception_is_thrown_back_to_client()
+        {
+            var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
+            proxy.Awaiting(p => p.CreateAsync(new CreateCommand {SomeProperty = ""})).ShouldThrow<Exception>();
+        }
+    }
 }

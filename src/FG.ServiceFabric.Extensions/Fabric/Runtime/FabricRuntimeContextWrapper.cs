@@ -1,15 +1,16 @@
+using FG.Common.CallContext;
+
 namespace FG.ServiceFabric.Fabric.Runtime
 {
-    using FG.Common.CallContext;
-
     public class FabricRuntimeContextWrapper : BaseCallContextWrapper<FabricRuntimeContext, object>
     {
         public static FabricRuntimeContextWrapper Current => new FabricRuntimeContextWrapper();
 
         public IServiceRuntimeRegistration ServiceRuntimeRegistration
         {
-            get => (IServiceRuntimeRegistration)FabricRuntimeContext.Current?[FabricRuntimeContextKeys.ServiceRuntimeRegistration];
-            set => this.Context?.SetItem(FabricRuntimeContextKeys.ServiceRuntimeRegistration, value);
+            get => (IServiceRuntimeRegistration) FabricRuntimeContext.Current?[
+                FabricRuntimeContextKeys.ServiceRuntimeRegistration];
+            set => Context?.SetItem(FabricRuntimeContextKeys.ServiceRuntimeRegistration, value);
         }
 
         public object this[string key]

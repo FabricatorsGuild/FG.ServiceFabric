@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Fabric;
 using System.Fabric.Query;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Fabric;
-using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession
 {
@@ -32,7 +30,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
         public static string GetServiceName(Uri serviceName)
         {
-            var components = serviceName.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped).TrimStart('/').Split('/');
+            var components = serviceName.GetComponents(UriComponents.Path, UriFormat.SafeUnescaped).TrimStart('/')
+                .Split('/');
             return $"{components[0]}-{components[1]}";
         }
 
@@ -52,9 +51,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                     var partitionEnumerationManager = partitionEnumerationManagerFactory();
                     var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);
                     foreach (var partition in servicePartitionList)
-                    {
                         partitionKeys.Add(partition);
-                    }
                     continuationToken = servicePartitionList.ContinuationToken;
                 } while (continuationToken != null);
 
@@ -63,32 +60,27 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                     .Select(p => p.PartitionInformation as SingletonPartitionInformation)
                     .FirstOrDefault(pi => pi?.Id == partitionId);
                 if (singletonPartition != null)
-                {
                     return $"singleton";
-                }
 
                 var int64RangePartition = partitionKeys
                     .Select(p => p.PartitionInformation as Int64RangePartitionInformation)
                     .Where(pi => pi != null)
                     .OrderBy(pi => pi.LowKey)
-                    .Select((pi, i) => new { PartitionId = pi.Id, Name = $"range-{i}" })
+                    .Select((pi, i) => new {PartitionId = pi.Id, Name = $"range-{i}"})
                     .FirstOrDefault(pi => pi.PartitionId == partitionId);
                 if (int64RangePartition != null)
-                {
                     return int64RangePartition.Name;
-                }
 
                 var namedPartition = partitionKeys
                     .Select(p => p.PartitionInformation as NamedPartitionInformation)
                     .Where(pi => pi != null)
-                    .Select((pi, i) => new { PartitionId = pi.Id, Name = pi.Name })
+                    .Select((pi, i) => new {PartitionId = pi.Id, pi.Name})
                     .FirstOrDefault(pi => pi.PartitionId == partitionId);
                 if (namedPartition != null)
-                {
                     return namedPartition.Name;
-                }
 
-                throw new StateSessionException($"Could not find a matching partition for {partitionId} for service {serviceContext.ServiceName}");
+                throw new StateSessionException(
+                    $"Could not find a matching partition for {partitionId} for service {serviceContext.ServiceName}");
             }
             catch (Exception ex)
             {
@@ -107,13 +99,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                 if (PartitionKeys.TryGetValue(serviceUriKey, out var servicePartitionKeys))
                 {
                     if (servicePartitionKeys.TryGetValue(serviceContext.PartitionId, out var servicePartitionKey))
-                    {
                         return servicePartitionKey;
-                    }
                 }
                 else
                 {
-                    servicePartitionKeys = PartitionKeys.GetOrAdd(serviceUriKey, new ConcurrentDictionary<Guid, string>());
+                    servicePartitionKeys =
+                        PartitionKeys.GetOrAdd(serviceUriKey, new ConcurrentDictionary<Guid, string>());
                 }
 
                 var partitionKeys = new List<Partition>();
@@ -126,19 +117,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                     partitionKeys.AddRange(servicePartitionList);
 
                     continuationToken = servicePartitionList.ContinuationToken;
-                }
-                while (continuationToken != null);
+                } while (continuationToken != null);
 
                 var enumeratedIntPartitions = false;
                 foreach (var partition in partitionKeys)
                 {
                     var partitionId = partition.PartitionInformation.Id;
                     if (partition.PartitionInformation is NamedPartitionInformation namedPartitionInformation)
-                    {
                         servicePartitionKeys.TryAdd(partitionId, namedPartitionInformation.Name);
-                    }
 
-                    if ((partition.PartitionInformation is Int64RangePartitionInformation int64PartitionInformation) && !enumeratedIntPartitions)
+                    if (partition.PartitionInformation is Int64RangePartitionInformation int64PartitionInformation &&
+                        !enumeratedIntPartitions)
                     {
                         var int64RangePartitionInformations = partitionKeys
                             .Select(p => p.PartitionInformation as Int64RangePartitionInformation)
@@ -156,9 +145,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
                     }
 
                     if (partition.PartitionInformation is SingletonPartitionInformation singletonPartitionInformation)
-                    {
                         servicePartitionKeys.TryAdd(partitionId, $"singleton");
-                    }
                 }
 
                 return PartitionKeys[serviceUriKey][serviceContext.PartitionId];

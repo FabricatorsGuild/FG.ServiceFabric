@@ -2,9 +2,9 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-	public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension
-	{
-		private string Definition = @"{
+    public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension
+    {
+        private readonly string Definition = @"{
                   ""Name"": ""StatefulServiceContext"",
                   ""CLRType"": ""System.Fabric.StatefulServiceContext"",
                   ""Arguments"": [
@@ -53,11 +53,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
                   ]
                 }";
 
-		public override string Module => @"ServiceFabric";
+        public override string Module => @"ServiceFabric";
 
-		protected override string GetDefinition()
-		{
-			return Definition;
-		}
-	}
+        protected override string GetDefinition()
+        {
+            return Definition;
+        }
+    }
 }

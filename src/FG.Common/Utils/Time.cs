@@ -21,7 +21,7 @@ namespace FG.Common.Utils
 
         public static TimeSpan Since(DateTime earlierDate)
         {
-            return (DateTime.Now - earlierDate);
+            return DateTime.Now - earlierDate;
         }
     }
 }

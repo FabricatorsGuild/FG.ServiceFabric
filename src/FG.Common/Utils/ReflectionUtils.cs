@@ -3,26 +3,24 @@ using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Security.Cryptography;
 
 namespace FG.Common.Utils
 {
-    using System.Collections.Generic;
-
     public static class ReflectionUtils
     {
         public static T ActivateInternalCtor<T>(params object[] args)
         {
-            return (T)ActivateInternalCtor(typeof(T), args);
+            return (T) ActivateInternalCtor(typeof(T), args);
         }
 
         public static object ActivateCtor(this Type type, params object[] args)
         {
-            var constructorInfos = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            var constructorInfos =
+                type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
 
             var matchingCtor = constructorInfos.FirstOrDefault(c =>
                 c.GetParameters().Length == args.Length &&
-                c.GetParameters().Select((a, i) => new { Type = a?.ParameterType ?? typeof(object), Index = i })
+                c.GetParameters().Select((a, i) => new {Type = a?.ParameterType ?? typeof(object), Index = i})
                     .All(a => a.Type.IsAssignableFrom(args[a.Index]?.GetType() ?? typeof(object))));
 
             if (matchingCtor == null) return null;
@@ -37,7 +35,7 @@ namespace FG.Common.Utils
 
             var matchingCtor = constructorInfos.FirstOrDefault(c =>
                 c.GetParameters().Length == args.Length &&
-                c.GetParameters().Select((a, i) => new { Type = a?.ParameterType ?? typeof(object), Index = i })
+                c.GetParameters().Select((a, i) => new {Type = a?.ParameterType ?? typeof(object), Index = i})
                     .All(a => a.Type.IsAssignableFrom(args[a.Index]?.GetType() ?? typeof(object))));
 
             if (matchingCtor == null) return null;
@@ -52,7 +50,7 @@ namespace FG.Common.Utils
             var memberExpr = propertyExpression.Body as MemberExpression;
             if (memberExpr == null)
                 throw new ArgumentException("propertyExpression should represent access to a member");
-            string memberName = memberExpr.Member.Name;
+            var memberName = memberExpr.Member.Name;
 
             var propertyInfo = typeof(TImplementingType)
                 .GetProperty(memberName,
@@ -73,9 +71,7 @@ namespace FG.Common.Utils
             if (fieldInfo != null) return fieldInfo;
 
             if (type.BaseType != null)
-            {
                 return GetPrivateField(type.BaseType, fieldName);
-            }
 
             return null;
         }
@@ -89,9 +85,7 @@ namespace FG.Common.Utils
             if (propertyInfo != null) return propertyInfo;
 
             if (type.BaseType != null)
-            {
                 return GetPrivateProperty(type.BaseType, propertyName);
-            }
 
             return null;
         }
@@ -105,9 +99,7 @@ namespace FG.Common.Utils
             if (fieldInfo != null) return fieldInfo;
 
             if (type.BaseType != null)
-            {
                 return GetPrivateField(type.BaseType, fieldName);
-            }
 
             return null;
         }
@@ -123,9 +115,7 @@ namespace FG.Common.Utils
             if (methodInfo != null) return methodInfo;
 
             if (type.BaseType != null)
-            {
                 return GetPrivateOrPublicMethod(type.BaseType, methodName, argTypes);
-            }
 
             return null;
         }
@@ -143,12 +133,9 @@ namespace FG.Common.Utils
                     var argumentType = argumentTypes[i];
 
                     if (parameterInfo.ParameterType.IsGenericParameter)
-                    {
-                        foreach (var genericParameterConstraint in parameterInfo.ParameterType.GetGenericParameterConstraints())
-                        {
+                        foreach (var genericParameterConstraint in parameterInfo.ParameterType
+                            .GetGenericParameterConstraints())
                             if (!genericParameterConstraint.IsAssignableFrom(argumentType)) return false;
-                        }
-                    }
                     else if (!parameterInfo.ParameterType.IsAssignableFrom(argumentType)) return false;
                 }
                 else
@@ -172,9 +159,7 @@ namespace FG.Common.Utils
                 {
                     var argumentType = argumentTypes[i];
                     foreach (var genericParameterConstraint in genericType.GetGenericParameterConstraints())
-                    {
                         if (!genericParameterConstraint.IsAssignableFrom(argumentType)) return false;
-                    }
                 }
             }
 
@@ -198,7 +183,7 @@ namespace FG.Common.Utils
             if (fieldInfo == null)
                 throw new ArgumentException($"Cannot get value on field {fieldName} on {that.GetType().Name}");
 
-            return (TPropertyValue)fieldInfo.GetValue(that);
+            return (TPropertyValue) fieldInfo.GetValue(that);
         }
 
         public static TPropertyValue GetPrivateProperty<TImplementingType, TPropertyValue>(this TImplementingType that,
@@ -208,7 +193,7 @@ namespace FG.Common.Utils
             if (property == null)
                 throw new ArgumentException($"Cannot get value on property {propertyName} on {that.GetType().Name}");
 
-            return (TPropertyValue)property.GetValue(that);
+            return (TPropertyValue) property.GetValue(that);
         }
 
         public static TResult GetPrivateStaticField<TResult>(this Type type, string fieldName)
@@ -217,14 +202,14 @@ namespace FG.Common.Utils
             if (fieldInfo == null)
                 throw new ArgumentException($"Method {fieldName} does not exist on {type.Name}");
 
-            return (TResult)fieldInfo.GetValue(null);
+            return (TResult) fieldInfo.GetValue(null);
         }
 
         public static TResult CallPrivateStaticMethod<TResult>(this Type type, string methodName, params object[] args)
         {
             var methodInfo = type.GetMethod(
-                name: methodName,
-                bindingAttr: BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+                methodName,
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
                 types: args.Select(a => a.GetType()).ToArray(),
                 binder: null,
                 modifiers: null);
@@ -232,26 +217,27 @@ namespace FG.Common.Utils
             if (methodInfo == null)
             {
                 methodInfo = type.GetMethod(
-                    name: methodName,
-                    bindingAttr: BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    methodName,
+                    BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
                 if (methodInfo == null)
-                {
                     throw new ArgumentException($"Method {methodName} does not exist on {type.Name}");
-                }
             }
 
-            return (TResult)methodInfo.Invoke(null, args);
+            return (TResult) methodInfo.Invoke(null, args);
         }
 
         public static object CallPrivateMethod(this object that, string methodName, params object[] args)
         {
-            var methodInfo = GetPrivateOrPublicMethod(that.GetType(), methodName, args.Select(a => a.GetType()).ToArray());
-            if (methodInfo == null) throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");
+            var methodInfo =
+                GetPrivateOrPublicMethod(that.GetType(), methodName, args.Select(a => a.GetType()).ToArray());
+            if (methodInfo == null)
+                throw new ArgumentException($"Method {methodName} does not exist on {that.GetType().Name}");
 
             return methodInfo.Invoke(that, args);
         }
 
-        public static object CallGenericMethod(this object that, string methodName, Type[] genericTypes, params object[] args)
+        public static object CallGenericMethod(this object that, string methodName, Type[] genericTypes,
+            params object[] args)
         {
             var type = that.GetType();
             return CallGenericMethod(that, type, methodName, genericTypes, args);
@@ -270,19 +256,16 @@ namespace FG.Common.Utils
                 AreGenericTypesValid(method.GetGenericArguments(), genericTypes));
 
             if (methodInfo != null)
-            {
                 return methodInfo.MakeGenericMethod(genericTypes).Invoke(that, args);
-            }
 
             if (type.BaseType != null)
-            {
                 return CallGenericMethod(that, type.BaseType, methodName, genericTypes, args);
-            }
 
             var genericArgumentsList = genericTypes.Any()
                 ? $"<{genericTypes.Aggregate("", (a, b) => $"{a},{b.Name}").TrimStart(',')}>"
                 : "";
-            throw new ArgumentException($"Method {methodName}{genericArgumentsList} does not exist on {that.GetType().Name}");
+            throw new ArgumentException(
+                $"Method {methodName}{genericArgumentsList} does not exist on {that.GetType().Name}");
         }
 
         public static bool ImplementsInterface(this Type type, Type interfaceType)

@@ -1,18 +1,18 @@
-﻿namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Query;
+using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Data;
+using Newtonsoft.Json;
+
+namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Fabric;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using Microsoft.ServiceFabric.Actors;
-    using Microsoft.ServiceFabric.Actors.Query;
-    using Microsoft.ServiceFabric.Actors.Runtime;
-    using Microsoft.ServiceFabric.Data;
-
     public class MockActorStateProvider : IActorStateProvider
     {
         private readonly MockFabricRuntime _fabricRuntime;
@@ -22,15 +22,15 @@
 
         public MockActorStateProvider(MockFabricRuntime fabricRuntime, IList<string> actionsPerformed = null)
         {
-            this.ActionsPerformed = actionsPerformed ?? new List<string>();
-            this._fabricRuntime = fabricRuntime;
+            ActionsPerformed = actionsPerformed ?? new List<string>();
+            _fabricRuntime = fabricRuntime;
         }
 
         public IList<string> ActionsPerformed { get; }
 
         public void Initialize(StatefulServiceInitializationParameters initializationParameters)
         {
-            this.ActionsPerformed.Add("Initialize");
+            ActionsPerformed.Add("Initialize");
         }
 
         public Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition,
@@ -70,7 +70,8 @@
             throw new NotImplementedException();
         }
 
-        public Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy, CancellationToken cancellationToken)
+        public Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy,
+            CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -79,35 +80,31 @@
 
         public void Initialize(ActorTypeInformation actorTypeInformation)
         {
-            this.ActionsPerformed.Add($"{nameof(Initialize)} - {actorTypeInformation.ImplementationType}");
+            ActionsPerformed.Add($"{nameof(Initialize)} - {actorTypeInformation.ImplementationType}");
         }
 
         public Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add($"{nameof(this.ActorActivatedAsync)} - {actorId}");
+            ActionsPerformed.Add($"{nameof(ActorActivatedAsync)} - {actorId}");
 
-            this._trackedActors.GetOrAdd(actorId, a => new MockedInternalActorState());
+            _trackedActors.GetOrAdd(actorId, a => new MockedInternalActorState());
             return Task.FromResult(true);
         }
 
         public Task ReminderCallbackCompletedAsync(ActorId actorId, IActorReminder reminder,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add(nameof(this.ReminderCallbackCompletedAsync));
+            ActionsPerformed.Add(nameof(ReminderCallbackCompletedAsync));
             return Task.FromResult(true);
         }
 
         public Task<T> LoadStateAsync<T>(ActorId actorId, string stateName,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add($"{nameof(this.LoadStateAsync)} - {actorId} - {stateName}");
-            if (this._trackedActors.TryGetValue(actorId, out var trackedActor))
-            {
+            ActionsPerformed.Add($"{nameof(LoadStateAsync)} - {actorId} - {stateName}");
+            if (_trackedActors.TryGetValue(actorId, out var trackedActor))
                 if (trackedActor.State.TryGetValue(stateName, out var trackedActorState))
-                {
-                    return Task.FromResult((T)trackedActorState);
-                }
-            }
+                    return Task.FromResult((T) trackedActorState);
 
             return Task.FromResult(default(T));
         }
@@ -115,17 +112,16 @@
         public Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add(
-                $"{nameof(this.SaveStateAsync)} - {actorId} - {Newtonsoft.Json.JsonConvert.SerializeObject(stateChanges)}");
+            ActionsPerformed.Add(
+                $"{nameof(SaveStateAsync)} - {actorId} - {JsonConvert.SerializeObject(stateChanges)}");
 
-            if (!this._trackedActors.TryGetValue(actorId, out var mockedInternalActorState))
+            if (!_trackedActors.TryGetValue(actorId, out var mockedInternalActorState))
             {
                 mockedInternalActorState = new MockedInternalActorState();
-                this._trackedActors.TryAdd(actorId, mockedInternalActorState);
+                _trackedActors.TryAdd(actorId, mockedInternalActorState);
             }
 
             foreach (var actorStateChange in stateChanges)
-            {
                 switch (actorStateChange.ChangeKind)
                 {
                     case StateChangeKind.Add:
@@ -138,7 +134,6 @@
                         mockedInternalActorState.State.Remove(actorStateChange.StateName);
                         break;
                 }
-            }
 
             return Task.FromResult(true);
         }
@@ -146,45 +141,41 @@
         public Task<bool> ContainsStateAsync(ActorId actorId, string stateName,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add($"{nameof(this.ContainsStateAsync)} - {actorId} - {stateName}");
-            if (this._trackedActors.TryGetValue(actorId, out var actorState))
-            {
+            ActionsPerformed.Add($"{nameof(ContainsStateAsync)} - {actorId} - {stateName}");
+            if (_trackedActors.TryGetValue(actorId, out var actorState))
                 if (actorState.State.ContainsKey(stateName))
-                {
                     return Task.FromResult(true);
-                }
-            }
 
             return Task.FromResult(false);
         }
 
         public Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add($"{nameof(this.RemoveActorAsync)} - {actorId}");
-            this._trackedActors.TryRemove(actorId, out var _);
+            ActionsPerformed.Add($"{nameof(RemoveActorAsync)} - {actorId}");
+            _trackedActors.TryRemove(actorId, out var _);
             return Task.FromResult(true);
         }
 
         public Task<IEnumerable<string>> EnumerateStateNamesAsync(ActorId actorId,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add($"{nameof(this.EnumerateStateNamesAsync)} - {actorId}");
-            var stateNames = this._trackedActors[actorId].State.Select(actorState => actorState.Key);
+            ActionsPerformed.Add($"{nameof(EnumerateStateNamesAsync)} - {actorId}");
+            var stateNames = _trackedActors[actorId].State.Select(actorState => actorState.Key);
             return Task.FromResult(stateNames);
         }
 
         public Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken,
             CancellationToken cancellationToken)
         {
-            this.ActionsPerformed.Add($"{nameof(this.GetActorsAsync)} - {numItemsToReturn} - {continuationToken?.Marker}");
+            ActionsPerformed.Add($"{nameof(GetActorsAsync)} - {numItemsToReturn} - {continuationToken?.Marker}");
 
-            var continueAt = continuationToken == null ? 0 : int.Parse((string)continuationToken.Marker);
-            var actorsLeft = this._trackedActors.Keys.Count - continueAt;
+            var continueAt = continuationToken == null ? 0 : int.Parse((string) continuationToken.Marker);
+            var actorsLeft = _trackedActors.Keys.Count - continueAt;
             var actualNumToReturn = Math.Min(numItemsToReturn, actorsLeft);
 
             var result = new PagedResult<ActorId>
             {
-                Items = this._trackedActors.Keys.Skip(continueAt).Take(actualNumToReturn).ToList(),
+                Items = _trackedActors.Keys.Skip(continueAt).Take(actualNumToReturn).ToList(),
                 ContinuationToken = actorsLeft - actualNumToReturn == 0
                     ? null
                     : new ContinuationToken((continueAt + actualNumToReturn).ToString())
@@ -196,9 +187,9 @@
         public Task SaveReminderAsync(ActorId actorId, IActorReminder reminder,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            this.ActionsPerformed.Add(nameof(this.SaveReminderAsync));
+            ActionsPerformed.Add(nameof(SaveReminderAsync));
 
-            if (this._trackedActors.TryGetValue(actorId, out var actorState))
+            if (_trackedActors.TryGetValue(actorId, out var actorState))
             {
                 actorState.Reminders.Add(reminder.Name, reminder);
             }
@@ -206,7 +197,7 @@
             {
                 actorState = new MockedInternalActorState();
                 actorState.Reminders.Add(reminder.Name, reminder);
-                this._trackedActors.TryAdd(actorId, actorState);
+                _trackedActors.TryAdd(actorId, actorState);
             }
 
             return Task.FromResult(true);
@@ -234,16 +225,14 @@
 
         public void PrepareActorState(ActorId actorId, IDictionary<string, object> stateValues)
         {
-            if (!this._trackedActors.TryGetValue(actorId, out var actorState))
+            if (!_trackedActors.TryGetValue(actorId, out var actorState))
             {
                 actorState = new MockedInternalActorState();
-                this._trackedActors.TryAdd(actorId, actorState);
+                _trackedActors.TryAdd(actorId, actorState);
             }
 
             foreach (var stateValue in stateValues)
-            {
                 actorState.State[stateValue.Key] = stateValue.Value;
-            }
         }
 
 
@@ -251,12 +240,12 @@
         {
             public MockedInternalActorState()
             {
-                this.State = new ConcurrentDictionary<string, object>();
-                this.Reminders = new ConcurrentDictionary<string, IActorReminder>();
+                State = new ConcurrentDictionary<string, object>();
+                Reminders = new ConcurrentDictionary<string, IActorReminder>();
             }
 
-            public IDictionary<string, object> State { get; private set; }
-            public IDictionary<string, IActorReminder> Reminders { get; private set; }
+            public IDictionary<string, object> State { get; }
+            public IDictionary<string, IActorReminder> Reminders { get; }
         }
     }
 }

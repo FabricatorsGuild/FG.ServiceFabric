@@ -1,13 +1,11 @@
-﻿namespace FG.ServiceFabric.Diagnostics
+﻿using System;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+
+namespace FG.ServiceFabric.Diagnostics
 {
-    using System;
-
-    using FG.ServiceFabric.Services.Remoting.FabricTransport;
-
-    using Microsoft.ServiceFabric.Services.Remoting.V1;
-
     /// <summary>
-    /// Provides logging for server side service communication 
+    ///     Provides logging for server side service communication
     /// </summary>
     public interface IServiceCommunicationLogger : IServiceRemotingLogger
     {

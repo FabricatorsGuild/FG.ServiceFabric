@@ -1,28 +1,29 @@
 using System;
 using System.Collections.Generic;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
+using Nito.AsyncEx;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 {
-	public interface IStateSessionManagerInternals : IStateSessionManager
-	{
-		IDictionary<string, QueueInfo> OpenQueues { get; }
+    public interface IStateSessionManagerInternals : IStateSessionManager
+    {
+        IDictionary<string, QueueInfo> OpenQueues { get; }
 
-		IServiceMetadata GetMetadata();
+        AsyncReaderWriterLock Lock { get; }
 
-		IValueMetadata GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type);
+        IServiceMetadata GetMetadata();
 
-		StateWrapper BuildWrapper(IValueMetadata valueMetadata, SchemaStateKey key);
+        IValueMetadata GetOrCreateMetadata(IValueMetadata metadata, StateWrapperType type);
 
-		StateWrapper BuildWrapper(IValueMetadata metadata, SchemaStateKey key, Type valueType,
-			object value);
+        StateWrapper BuildWrapper(IValueMetadata valueMetadata, SchemaStateKey key);
 
-		StateWrapper<T> BuildWrapperGeneric<T>(IValueMetadata valueMetadata, SchemaStateKey key, T value);
-		string GetEscapedKey(string key);
-		string GetUnescapedKey(string key);
+        StateWrapper BuildWrapper(IValueMetadata metadata, SchemaStateKey key, Type valueType,
+            object value);
 
-		SchemaStateKey GetKey(ISchemaKey id);
+        StateWrapper<T> BuildWrapperGeneric<T>(IValueMetadata valueMetadata, SchemaStateKey key, T value);
+        string GetEscapedKey(string key);
+        string GetUnescapedKey(string key);
 
-		Nito.AsyncEx.AsyncReaderWriterLock Lock { get; }
-	}
+        SchemaStateKey GetKey(ISchemaKey id);
+    }
 }

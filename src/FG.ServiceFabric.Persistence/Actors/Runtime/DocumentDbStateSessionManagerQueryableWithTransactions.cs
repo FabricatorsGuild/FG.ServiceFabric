@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
@@ -13,20 +12,11 @@ using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
 using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Query;
-using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-
     public static class DocumentDbStateSessionExtensions
     {
-        // ReSharper disable once ClassNeverInstantiated.Local - Used in deserializing DocDb result
-        private class ActorSingleStateDocument<T>
-        {
-            public string ActorID { get; set; }
-            public T Content { get; set; }
-        }
-
         public static Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(
             this IStateSession session,
             string stateName,
@@ -35,12 +25,10 @@ namespace FG.ServiceFabric.Actors.Runtime
             CancellationToken cancellationToken)
         {
             if (session is IDocumentDbSession documentDbSession)
-            {
                 return GetActorStatesAsync<T>(documentDbSession, stateName, numItemsToReturn, continuationToken,
                     cancellationToken);
-            }
             throw new NotImplementedException();
-        } 
+        }
 
         public static async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(
             this IDocumentDbSession session,
@@ -56,11 +44,11 @@ namespace FG.ServiceFabric.Actors.Runtime
                 var nextToken = continuationToken?.Marker as string;
                 var documentCollectionQuery = session.Client.CreateDocumentQuery<ActorSingleStateDocument<T>>(
                     UriFactory.CreateDocumentCollectionUri(session.DatabaseName, session.DatabaseCollection),
-                    new SqlQuerySpec()
+                    new SqlQuerySpec
                     {
                         QueryText =
                             "SELECT c.actorId AS ActorId, c.state.states[@state] AS Content FROM c WHERE c.state.states[@state] != null",
-                        Parameters = new SqlParameterCollection()
+                        Parameters = new SqlParameterCollection
                         {
                             new SqlParameter("@state", stateName)
                         }
@@ -76,7 +64,9 @@ namespace FG.ServiceFabric.Actors.Runtime
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var response = await documentCollectionQuery.ExecuteNextAsync<ActorSingleStateDocument<T>>(CancellationToken.None);
+                    var response =
+                        await documentCollectionQuery.ExecuteNextAsync<ActorSingleStateDocument<T>>(CancellationToken
+                            .None);
 
                     foreach (var actorSingleStateDocument in response)
                     {
@@ -90,11 +80,15 @@ namespace FG.ServiceFabric.Actors.Runtime
                             var nextContinuationToken = response.ResponseContinuation == null
                                 ? null
                                 : new ContinuationToken(response.ResponseContinuation);
-                            return new PagedLookupResult<ActorId, T>() { ContinuationToken = nextContinuationToken, Items = results };
+                            return new PagedLookupResult<ActorId, T>
+                            {
+                                ContinuationToken = nextContinuationToken,
+                                Items = results
+                            };
                         }
                     }
                 }
-                return new PagedLookupResult<ActorId, T>() { ContinuationToken = null, Items = results };
+                return new PagedLookupResult<ActorId, T> {ContinuationToken = null, Items = results};
             }
             catch (DocumentClientException dcex)
             {
@@ -105,34 +99,31 @@ namespace FG.ServiceFabric.Actors.Runtime
                 throw new StateSessionException($"GetActorStatesAsync for {stateName} failed, {ex.Message}", ex);
             }
         }
+
+        // ReSharper disable once ClassNeverInstantiated.Local - Used in deserializing DocDb result
+        private class ActorSingleStateDocument<T>
+        {
+            public string ActorID { get; set; }
+            public T Content { get; set; }
+        }
     }
 
-    public class DocumentDbStateSessionManagerQueryableWithTransactions : DocumentDbStateSessionManagerWithTransactions, IActorStateProviderQueryable
+    public class DocumentDbStateSessionManagerQueryableWithTransactions : DocumentDbStateSessionManagerWithTransactions,
+        IActorStateProviderQueryable
     {
         public DocumentDbStateSessionManagerQueryableWithTransactions(
-            string serviceName, 
-            Guid partitionId, 
-            string partitionKey, 
-            ISettingsProvider settingsProvider, 
-            ICosmosDbClientFactory factory = null, 
-            ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.DirectTcp) : 
+            string serviceName,
+            Guid partitionId,
+            string partitionKey,
+            ISettingsProvider settingsProvider,
+            ICosmosDbClientFactory factory = null,
+            ConnectionPolicySetting connectionPolicySetting = ConnectionPolicySetting.DirectTcp) :
             base(serviceName, partitionId, partitionKey, settingsProvider, factory, connectionPolicySetting)
         {
         }
 
-        protected override DocumentDbStateSession
-            CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager, IStateSessionObject[] stateSessionObjects)
-        {
-            return new DocumentDbStateSessionActorQueryable(this, stateSessionObjects);
-        }
-
-        protected override DocumentDbStateSession CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager,
-            IStateSessionReadOnlyObject[] stateSessionObjects)
-        {
-            return new DocumentDbStateSessionActorQueryable(this, stateSessionObjects);
-        }
-
-        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken)
         {
             using (var session = new DocumentDbStateSessionActorQueryable(this, new IStateSessionObject[0]))
@@ -143,12 +134,29 @@ namespace FG.ServiceFabric.Actors.Runtime
             }
         }
 
-        protected class DocumentDbStateSessionActorQueryable : DocumentDbStateSession {
-            public DocumentDbStateSessionActorQueryable(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionReadOnlyObject[] stateSessionObjects) : base(manager, stateSessionObjects)
+        protected override DocumentDbStateSession
+            CreateSessionInternal(StateSessionManagerBase<DocumentDbStateSession> manager,
+                IStateSessionObject[] stateSessionObjects)
+        {
+            return new DocumentDbStateSessionActorQueryable(this, stateSessionObjects);
+        }
+
+        protected override DocumentDbStateSession CreateSessionInternal(
+            StateSessionManagerBase<DocumentDbStateSession> manager,
+            IStateSessionReadOnlyObject[] stateSessionObjects)
+        {
+            return new DocumentDbStateSessionActorQueryable(this, stateSessionObjects);
+        }
+
+        protected class DocumentDbStateSessionActorQueryable : DocumentDbStateSession
+        {
+            public DocumentDbStateSessionActorQueryable(DocumentDbStateSessionManagerWithTransactions manager,
+                IStateSessionReadOnlyObject[] stateSessionObjects) : base(manager, stateSessionObjects)
             {
             }
 
-            public DocumentDbStateSessionActorQueryable(DocumentDbStateSessionManagerWithTransactions manager, IStateSessionObject[] stateSessionObjects) : base(manager, stateSessionObjects)
+            public DocumentDbStateSessionActorQueryable(DocumentDbStateSessionManagerWithTransactions manager,
+                IStateSessionObject[] stateSessionObjects) : base(manager, stateSessionObjects)
             {
             }
         }

@@ -2,8 +2,8 @@
 
 namespace FG.CQRS
 {
-	public interface IDomainEventController
-	{
-		Task RaiseDomainEventAsync<TDomainEvent>(TDomainEvent domainEvent) where TDomainEvent : IDomainEvent;
-	}
+    public interface IDomainEventController
+    {
+        Task RaiseDomainEventAsync<TDomainEvent>(TDomainEvent domainEvent) where TDomainEvent : IDomainEvent;
+    }
 }

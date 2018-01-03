@@ -47,28 +47,16 @@ namespace FG.Common.Async
             task.ContinueWith(async executedTask =>
             {
                 if (!executedTask.IsFaulted && !executedTask.IsCanceled)
-                {
                     if (onDone != null)
-                    {
                         await onDone(task);
-                    }
-                }
 
                 if (executedTask.IsFaulted)
-                {
                     if (onFault != null)
-                    {
                         await onFault(task, executedTask.Exception);
-                    }
-                }
 
                 if (executedTask.IsCanceled)
-                {
                     if (onCancel != null)
-                    {
                         await onCancel(task);
-                    }
-                }
             });
             return task.Id;
         }
@@ -115,28 +103,16 @@ namespace FG.Common.Async
             task.ContinueWith(async executedTask =>
             {
                 if (!executedTask.IsFaulted && !executedTask.IsCanceled)
-                {
                     if (onDone != null)
-                    {
                         await onDone(task, executedTask.Result);
-                    }
-                }
 
                 if (executedTask.IsFaulted)
-                {
                     if (onFault != null)
-                    {
                         await onFault(task, executedTask.Exception);
-                    }
-                }
 
                 if (executedTask.IsCanceled)
-                {
                     if (onCancel != null)
-                    {
                         await onCancel(task);
-                    }
-                }
             });
 
             return task.Id;

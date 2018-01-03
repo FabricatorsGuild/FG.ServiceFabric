@@ -5,21 +5,20 @@ using FG.ServiceFabric.Testing.Setup;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
-	public interface IMockServiceInstance
-	{
+    public interface IMockServiceInstance
+    {
+        MockActorServiceInstanceStatus Status { get; }
+        Uri ServiceUri { get; }
+        Partition Partition { get; }
+        Replica Replica { get; }
 
-		MockActorServiceInstanceStatus Status { get; }
-		Uri ServiceUri { get; }
-		Partition Partition { get; }
-		Replica Replica { get; }
-
-		IServiceManifest ServiceManifest { get; }
-		IServiceConfig ServiceConfig { get; }
+        IServiceManifest ServiceManifest { get; }
+        IServiceConfig ServiceConfig { get; }
 
 
-		DateTime? RunAsyncStarted { get; }
-		DateTime? RunAsyncEnded { get; }
+        DateTime? RunAsyncStarted { get; }
+        DateTime? RunAsyncEnded { get; }
 
-		CancellationTokenSource CancellationTokenSource { get; }
-	}
+        CancellationTokenSource CancellationTokenSource { get; }
+    }
 }

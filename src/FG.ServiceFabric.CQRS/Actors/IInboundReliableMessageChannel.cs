@@ -3,8 +3,8 @@ using FG.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors
 {
-	public interface IInboundReliableMessageChannel
-	{
-		Task ReceiveMessageAsync(ReliableMessage message);
-	}
+    public interface IInboundReliableMessageChannel
+    {
+        Task ReceiveMessageAsync(ReliableMessage message);
+    }
 }

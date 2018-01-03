@@ -1,6 +1,6 @@
 namespace FG.CQRS
 {
-	public interface IAggregateRoot
-	{
-	}
+    public interface IAggregateRoot
+    {
+    }
 }

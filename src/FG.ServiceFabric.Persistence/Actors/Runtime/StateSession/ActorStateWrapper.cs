@@ -6,27 +6,28 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Actors.Runtime.StateSession
 {
-	public class ActorStateWrapper<T> : StateWrapper<T>
-	{
-		public ActorStateWrapper()
-		{
-		}
+    public class ActorStateWrapper<T> : StateWrapper<T>
+    {
+        public ActorStateWrapper()
+        {
+        }
 
-		public ActorStateWrapper(string id, T value, IServiceMetadata serviceMetadata, IActorValueMetadata actorValueMetadata)
-			: base(id, value, serviceMetadata, actorValueMetadata)
-		{
-			ActorId = actorValueMetadata.ActorId;
-		}
+        public ActorStateWrapper(string id, T value, IServiceMetadata serviceMetadata,
+            IActorValueMetadata actorValueMetadata)
+            : base(id, value, serviceMetadata, actorValueMetadata)
+        {
+            ActorId = actorValueMetadata.ActorId;
+        }
 
-		[JsonProperty("actorId")]
-		private string ActorIdValue
-		{
-			get => ActorSchemaKey.GetActorIdSchemaKey(ActorId);
-			set => ActorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(value);
-		}
+        [JsonProperty("actorId")]
+        private string ActorIdValue
+        {
+            get => ActorSchemaKey.GetActorIdSchemaKey(ActorId);
+            set => ActorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(value);
+        }
 
-		[JsonIgnore]
-		[DataMember]
-		public ActorId ActorId { get; private set; }
-	}
+        [JsonIgnore]
+        [DataMember]
+        public ActorId ActorId { get; private set; }
+    }
 }

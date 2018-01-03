@@ -1,58 +1,58 @@
 {
-  "EventSources": [
-    {
-      "Name": "FGServiceFabricPersistenceEventSource.eventsource.json",
-      "Hash": "efbfbdefbfbdefbfbd52efbfbd45efbfbd0d6f1f54efbfbd1aefbfbd4a3f"
-    }
-  ],
-  "References": [
-    "Microsoft.CSharp.dll",
-    "System.dll",
-    "System.Core.dll",
-    "System.Data.dll",
-    "System.Data.DataSetExtensions.dll",
-    "System.Net.Http.dll",
-    "System.Runtime.Serialization.dll",
-    "System.ServiceModel.dll",
-    "System.Xml.dll",
-    "System.Xml.Linq.dll",
-    "..\\packages\\Microsoft.Azure.DocumentDB.1.18.0\\lib\\net45\\Microsoft.Azure.Documents.Client.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Actors.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Actors.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Data.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Data.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Data.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Data.Interfaces.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Diagnostics.dll",
-    "..\\packages\\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.FabricTransport.dll",
-    "..\\packages\\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.FabricTransport.V2.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Internal.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Internal.Strings.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Preview.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Services.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Services.dll",
-    "..\\packages\\Microsoft.ServiceFabric.Services.Remoting.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Services.Remoting.dll",
-    "..\\packages\\Newtonsoft.Json.10.0.3\\lib\\net45\\Newtonsoft.Json.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Management.ServiceModel.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Management.ServiceModel.XmlSerializers.dll",
-    "..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Strings.dll"
-  ],
-  "ProjectReferences": [
-    {
-      "ReferenceName": "..\\FG.Common\\bin\\Debug\\FG.Common.dll",
-      "Hash": "15:43:04"
-    },
-    {
-      "ReferenceName": "..\\FG.ServiceFabric.Extensions\\bin\\Debug\\FG.ServiceFabric.Extensions.dll",
-      "Hash": "15:43:07"
-    }
-  ],
-  "CompileTargets": [
-    {
-      "Name": "Services\\Runtime\\StateSession\\CosmosDb\\IDocumentDbStateSessionLogger.cs",
-      "Hash": "00efbfbd6408207defbfbddabc0c63efbfbdefbfbd61efbfbdefbfbd"
-    },
-    {
-      "Name": "Services\\Runtime\\StateSession\\CosmosDb\\IDocumentDbStateSessionManagerLogger.cs",
-      "Hash": "efbfbd1117efbfbdefbfbdc398efbfbdefbfbd6732efbfbdefbfbdefbfbdc3b2"
-    }
-  ],
-  "Hash": "efbfbdefbfbdefbfbd0b2fefbfbdefbfbd22496defbfbdefbfbd10efbfbdefbfbd64"
+	"EventSources": [
+		{
+			"Name": "FGServiceFabricPersistenceEventSource.eventsource.json",
+			"Hash": "efbfbdefbfbdefbfbd52efbfbd45efbfbd0d6f1f54efbfbd1aefbfbd4a3f"
+		}
+	],
+	"References": [
+		"Microsoft.CSharp.dll",
+		"System.dll",
+		"System.Core.dll",
+		"System.Data.dll",
+		"System.Data.DataSetExtensions.dll",
+		"System.Net.Http.dll",
+		"System.Runtime.Serialization.dll",
+		"System.ServiceModel.dll",
+		"System.Xml.dll",
+		"System.Xml.Linq.dll",
+		"..\\packages\\Microsoft.Azure.DocumentDB.1.18.0\\lib\\net45\\Microsoft.Azure.Documents.Client.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Actors.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Actors.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Data.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Data.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Data.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Data.Interfaces.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Diagnostics.dll",
+		"..\\packages\\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.FabricTransport.dll",
+		"..\\packages\\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.FabricTransport.V2.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Internal.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Internal.Strings.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\Microsoft.ServiceFabric.Preview.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Services.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Services.dll",
+		"..\\packages\\Microsoft.ServiceFabric.Services.Remoting.2.8.219\\lib\\net45\\Microsoft.ServiceFabric.Services.Remoting.dll",
+		"..\\packages\\Newtonsoft.Json.10.0.3\\lib\\net45\\Newtonsoft.Json.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Management.ServiceModel.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Management.ServiceModel.XmlSerializers.dll",
+		"..\\packages\\Microsoft.ServiceFabric.6.0.219\\lib\\net45\\System.Fabric.Strings.dll"
+	],
+	"ProjectReferences": [
+		{
+			"ReferenceName": "..\\FG.Common\\bin\\Debug\\FG.Common.dll",
+			"Hash": "15:43:04"
+		},
+		{
+			"ReferenceName": "..\\FG.ServiceFabric.Extensions\\bin\\Debug\\FG.ServiceFabric.Extensions.dll",
+			"Hash": "15:43:07"
+		}
+	],
+	"CompileTargets": [
+		{
+			"Name": "Services\\Runtime\\StateSession\\CosmosDb\\IDocumentDbStateSessionLogger.cs",
+			"Hash": "00efbfbd6408207defbfbddabc0c63efbfbdefbfbd61efbfbdefbfbd"
+		},
+		{
+			"Name": "Services\\Runtime\\StateSession\\CosmosDb\\IDocumentDbStateSessionManagerLogger.cs",
+			"Hash": "efbfbd1117efbfbdefbfbdc398efbfbdefbfbd6732efbfbdefbfbdefbfbdc3b2"
+		}
+	],
+	"Hash": "efbfbdefbfbdefbfbd0b2fefbfbdefbfbd22496defbfbdefbfbd10efbfbdefbfbd64"
 }

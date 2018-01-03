@@ -1,23 +1,25 @@
-﻿namespace FG.Common.CallContext
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
+namespace FG.Common.CallContext
+{
     public class BaseCallContextWrapper<TBaseCallContext, TValueType> : IDisposable
         where TBaseCallContext : BaseCallContext<TBaseCallContext, TValueType>
     {
-        private readonly IEnumerable<KeyValuePair<string, TValueType>> previousProperties = Enumerable.Empty<KeyValuePair<string, TValueType>>();
+        private readonly IEnumerable<KeyValuePair<string, TValueType>> previousProperties =
+            Enumerable.Empty<KeyValuePair<string, TValueType>>();
 
-        public BaseCallContextWrapper(TBaseCallContext context, IEnumerable<KeyValuePair<string, TValueType>> previousProperties)
+        public BaseCallContextWrapper(TBaseCallContext context,
+            IEnumerable<KeyValuePair<string, TValueType>> previousProperties)
         {
-            this.Context = context;
+            Context = context;
             this.previousProperties = previousProperties ?? throw new ArgumentNullException(nameof(previousProperties));
         }
 
         public BaseCallContextWrapper(TBaseCallContext context)
         {
-            this.Context = context;
+            Context = context;
         }
 
         public BaseCallContextWrapper(IEnumerable<KeyValuePair<string, TValueType>> previousProperties)
@@ -32,7 +34,7 @@
         /// <summary>
         ///     Gets all property names/keys
         /// </summary>
-        public IEnumerable<string> Keys => this.Context?.Keys ?? Array.Empty<string>();
+        public IEnumerable<string> Keys => Context?.Keys ?? Array.Empty<string>();
 
         protected TBaseCallContext Context { get; }
 
@@ -43,7 +45,7 @@
         /// </summary>
         public void Dispose()
         {
-            this.Dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -53,15 +55,13 @@
         /// <returns>The property names/keys</returns>
         public IEnumerable<string> GetAllKeys()
         {
-            return this.Keys;
+            return Keys;
         }
 
         private void Dispose(bool disposing)
         {
-            if (disposing && this.ShouldDispose)
-            {
-                this.Context?.Update(d => d.Clear().AddRange(this.previousProperties));
-            }
+            if (disposing && ShouldDispose)
+                Context?.Update(d => d.Clear().AddRange(previousProperties));
         }
     }
 }

@@ -5,13 +5,14 @@ using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Actors
 {
-	public interface IOutboundReliableMessageChannel
-	{
-		Task ProcessQueueAsync(CancellationToken cancellationToken);
+    public interface IOutboundReliableMessageChannel
+    {
+        Task ProcessQueueAsync(CancellationToken cancellationToken);
 
-		Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId, CancellationToken cancellationToken,
-			string applicationName = null,
-			string serviceName = null, string listerName = null)
-			where TActorInterface : IReliableMessageReceiverActor;
-	}
+        Task SendMessageAsync<TActorInterface>(ReliableMessage message, ActorId actorId,
+            CancellationToken cancellationToken,
+            string applicationName = null,
+            string serviceName = null, string listerName = null)
+            where TActorInterface : IReliableMessageReceiverActor;
+    }
 }

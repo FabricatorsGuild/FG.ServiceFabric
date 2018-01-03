@@ -1,4 +1,5 @@
 ﻿using System.Fabric;
+using System.Reflection;
 using System.Threading.Tasks;
 using FG.Common.Utils;
 using FG.ServiceFabric.Services.Remoting.Runtime.Client;
@@ -11,40 +12,43 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Services.Communication.Tests
 {
-	public class ServiceProxyFactoryBase_tests
-	{
-		[Test]
-		public void Should_be_able_to_get_the_Dispatcher()
-		{
-			var serviceType = typeof(IServiceForUnitTests);
+    public class ServiceProxyFactoryBase_tests
+    {
+        [Test]
+        public void Should_be_able_to_get_the_Dispatcher()
+        {
+            var serviceType = typeof(IServiceForUnitTests);
 
-			var dispatcher =
-				typeof(ServiceProxyFactoryBase).CallPrivateStaticMethod<MethodDispatcherBase>("GetServiceMethodInformation",
-					serviceType);
+            var dispatcherMethod =
+                typeof(ServiceProxyFactoryBase).CallPrivateStaticMethod<MethodInfo>(
+                    "GetGetOrCreateServiceMethodDispatcher");
 
-			dispatcher.Should().NotBeNull();
-		}
-	}
+            var dispatcher = dispatcherMethod.Invoke(null, new object[] {typeof(IServiceForUnitTests)});
 
-	public interface IServiceForUnitTests : IService
-	{
-		Task<string> GetValueAsync();
-	}
+            dispatcher.Should().NotBeNull();
+        }
+    }
 
-	public class ServiceForUnitTests : StatefulService, IServiceForUnitTests
-	{
-		public ServiceForUnitTests(StatefulServiceContext serviceContext) : base(serviceContext)
-		{
-		}
+    public interface IServiceForUnitTests : IService
+    {
+        Task<string> GetValueAsync();
+    }
 
-		public ServiceForUnitTests(StatefulServiceContext serviceContext,
-			IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext, reliableStateManagerReplica)
-		{
-		}
+    public class ServiceForUnitTests : StatefulService, IServiceForUnitTests
+    {
+        public ServiceForUnitTests(StatefulServiceContext serviceContext) : base(serviceContext)
+        {
+        }
 
-		public Task<string> GetValueAsync()
-		{
-			return Task.FromResult("hello");
-		}
-	}
+        public ServiceForUnitTests(StatefulServiceContext serviceContext,
+            IReliableStateManagerReplica2 reliableStateManagerReplica) : base(serviceContext,
+            reliableStateManagerReplica)
+        {
+        }
+
+        public Task<string> GetValueAsync()
+        {
+            return Task.FromResult("hello");
+        }
+    }
 }

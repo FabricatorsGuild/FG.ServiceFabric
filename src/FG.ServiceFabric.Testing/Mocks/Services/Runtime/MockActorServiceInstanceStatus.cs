@@ -5,6 +5,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
         Registered = 0,
         Built = 1,
         Running = 2,
-        Stopped,
+        Stopped
     }
 }

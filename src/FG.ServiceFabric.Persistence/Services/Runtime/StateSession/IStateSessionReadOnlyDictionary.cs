@@ -11,9 +11,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         Task<bool> Contains(string key, CancellationToken cancellationToken = default(CancellationToken));
 
         Task<FindByKeyPrefixResult> FindByKeyPrefixAsync(string keyPrefix, int maxNumResults = 100000,
-            ContinuationToken continuationToken = null, CancellationToken cancellationToken = default(CancellationToken));
+            ContinuationToken continuationToken = null,
+            CancellationToken cancellationToken = default(CancellationToken));
+
         Task<ConditionalValue<T>> TryGetValueAsync(string key,
             CancellationToken cancellationToken = default(CancellationToken));
+
         Task<T> GetValueAsync(string key, CancellationToken cancellationToken = default(CancellationToken));
         Task<IAsyncEnumerable<KeyValuePair<string, T>>> CreateEnumerableAsync();
         Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken));

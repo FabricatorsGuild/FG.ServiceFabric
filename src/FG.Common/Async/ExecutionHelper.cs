@@ -58,7 +58,6 @@ namespace FG.Common.Async
                 await Task.Delay(retryDelay, userCancellationToken);
                 retries++;
             }
-            return;
         }
     }
 }

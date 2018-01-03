@@ -17,20 +17,33 @@ namespace FG.ServiceFabric.Actors.Runtime
 {
     public class OverloadedStateSessionActorStateProvider : IActorStateProvider, IQueryableActorStateProvider
     {
-        private readonly IActorStateProvider _innerActorStateProvider;
         private readonly IStateSessionActorDocumentManager _actorDocumentManager;
+        private readonly IActorStateProvider _innerActorStateProvider;
 
         private ReplicaRole _currentRole;
 
         private Func<CancellationToken, Task<bool>> _onDataLossAsync;
         private Func<CancellationToken, Task> _onRestoreCompletedAsync;
 
-        public OverloadedStateSessionActorStateProvider(IActorStateProvider innerActorStateProvider, IStateSessionManager stateSessionManager)
+        public OverloadedStateSessionActorStateProvider(IActorStateProvider innerActorStateProvider,
+            IStateSessionManager stateSessionManager)
         {
-            _innerActorStateProvider = innerActorStateProvider;            
+            _innerActorStateProvider = innerActorStateProvider;
             _actorDocumentManager = stateSessionManager as IStateSessionActorDocumentManager ??
                                     new DefaultStateSessionActorDocumentManager(stateSessionManager);
         }
+
+        #region Queryable
+
+        public Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
+            CancellationToken cancellationToken = default(CancellationToken)) where T : class
+        {
+            return _actorDocumentManager.GetActorStatesAsync<T>(stateName, numItemsToReturn, continuationToken,
+                cancellationToken);
+        }
+
+        #endregion
 
         #region StateProviderReplica
 
@@ -41,10 +54,11 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public void Initialize(StatefulServiceInitializationParameters initializationParameters)
         {
-            _innerActorStateProvider.Initialize(initializationParameters);            
+            _innerActorStateProvider.Initialize(initializationParameters);
         }
 
-        public Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition, CancellationToken cancellationToken)
+        public Task<IReplicator> OpenAsync(ReplicaOpenMode openMode, IStatefulServicePartition partition,
+            CancellationToken cancellationToken)
         {
             return _innerActorStateProvider.OpenAsync(openMode, partition, cancellationToken);
         }
@@ -62,7 +76,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public void Abort()
         {
-            _innerActorStateProvider.Abort();            
+            _innerActorStateProvider.Abort();
         }
 
         public Task BackupAsync(Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
@@ -70,7 +84,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             return _innerActorStateProvider.BackupAsync(backupCallback);
         }
 
-        public Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken, Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
+        public Task BackupAsync(BackupOption option, TimeSpan timeout, CancellationToken cancellationToken,
+            Func<BackupInfo, CancellationToken, Task<bool>> backupCallback)
         {
             return _innerActorStateProvider.BackupAsync(option, timeout, cancellationToken, backupCallback);
         }
@@ -80,7 +95,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             return _innerActorStateProvider.RestoreAsync(backupFolderPath);
         }
 
-        public Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy, CancellationToken cancellationToken)
+        public Task RestoreAsync(string backupFolderPath, RestorePolicy restorePolicy,
+            CancellationToken cancellationToken)
         {
             return _innerActorStateProvider.RestoreAsync(backupFolderPath, restorePolicy, cancellationToken);
         }
@@ -108,13 +124,16 @@ namespace FG.ServiceFabric.Actors.Runtime
         #endregion
 
         #region Actor State
-        private async Task UpdateInnerStateFromStateSession(ActorDocumentState actorDocument, CancellationToken cancellationToken)
+
+        private async Task UpdateInnerStateFromStateSession(ActorDocumentState actorDocument,
+            CancellationToken cancellationToken)
         {
             var actorStateChanges = new List<ActorStateChange>();
             var actorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(actorDocument.ActorId);
             foreach (var actorState in actorDocument.States)
             {
-                var containsState = await _innerActorStateProvider.ContainsStateAsync(actorId, actorState.Key, cancellationToken);
+                var containsState =
+                    await _innerActorStateProvider.ContainsStateAsync(actorId, actorState.Key, cancellationToken);
                 actorStateChanges.Add(new ActorStateChange(actorState.Key, actorState.Value.GetType(),
                     actorState.Value, containsState ? StateChangeKind.Update : StateChangeKind.Add));
             }
@@ -122,7 +141,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             await _innerActorStateProvider.SaveStateAsync(actorId, actorStateChanges, cancellationToken);
         }
 
-        public async Task ActorActivatedAsync(ActorId actorId, CancellationToken cancellationToken = new CancellationToken())
+        public async Task ActorActivatedAsync(ActorId actorId,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             await _innerActorStateProvider.ActorActivatedAsync(actorId, cancellationToken);
 
@@ -135,7 +155,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             try
             {
-                var innerState = await _innerActorStateProvider.LoadStateAsync<T>(actorId, actorStateName, cancellationToken);
+                var innerState =
+                    await _innerActorStateProvider.LoadStateAsync<T>(actorId, actorStateName, cancellationToken);
                 return innerState;
             }
             catch (KeyNotFoundException)
@@ -145,11 +166,9 @@ namespace FG.ServiceFabric.Actors.Runtime
                 var document = await _actorDocumentManager.LoadActorDocument(actorId, cancellationToken);
                 await UpdateInnerStateFromStateSession(document, cancellationToken);
                 if (!document.States.ContainsKey(actorStateName))
-                {
                     throw;
-                }
 
-                return (T)document.States[actorStateName];                
+                return (T) document.States[actorStateName];
             }
         }
 
@@ -164,19 +183,19 @@ namespace FG.ServiceFabric.Actors.Runtime
         public async Task<bool> ContainsStateAsync(ActorId actorId, string actorStateName,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var containsInner = await _innerActorStateProvider.ContainsStateAsync(actorId, actorStateName, cancellationToken);
+            var containsInner =
+                await _innerActorStateProvider.ContainsStateAsync(actorId, actorStateName, cancellationToken);
             if (containsInner) return true;
 
             var document = await _actorDocumentManager.LoadActorDocument(actorId, cancellationToken);
             if (document == null)
-            {
                 return false;
-            }
             await UpdateInnerStateFromStateSession(document, cancellationToken);
             return document.States.ContainsKey(actorStateName);
         }
 
-        public async Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task RemoveActorAsync(ActorId actorId,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
@@ -188,7 +207,7 @@ namespace FG.ServiceFabric.Actors.Runtime
             }
 
             cancellationToken = cancellationToken.OrNone();
-           await  _actorDocumentManager.RemoveActorDocument(actorId, cancellationToken);
+            await _actorDocumentManager.RemoveActorDocument(actorId, cancellationToken);
         }
 
         public async Task<IEnumerable<string>> EnumerateStateNamesAsync(ActorId actorId,
@@ -196,9 +215,7 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             var innerStateNames = await _innerActorStateProvider.EnumerateStateNamesAsync(actorId, cancellationToken);
             if (innerStateNames != null && innerStateNames.Any())
-            {
                 return innerStateNames;
-            }
 
             cancellationToken = cancellationToken.OrNone();
             var stateNames = await _actorDocumentManager.GetAllStateNames(actorId, cancellationToken);
@@ -227,14 +244,16 @@ namespace FG.ServiceFabric.Actors.Runtime
             CancellationToken cancellationToken = default(CancellationToken))
         {
             await _innerActorStateProvider.ReminderCallbackCompletedAsync(actorId, reminder, cancellationToken);
-            await _actorDocumentManager.UpdateActorDocumentReminderComplete(actorId, reminder, cancellationToken.OrNone());
+            await _actorDocumentManager.UpdateActorDocumentReminderComplete(actorId, reminder,
+                cancellationToken.OrNone());
         }
 
         public async Task DeleteReminderAsync(ActorId actorId, string reminderName,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             await _innerActorStateProvider.DeleteReminderAsync(actorId, reminderName, cancellationToken);
-            await _actorDocumentManager.UpdateActorDocumentRemoveReminders(actorId, new[] {reminderName}, cancellationToken.OrNone());
+            await _actorDocumentManager.UpdateActorDocumentRemoveReminders(actorId, new[] {reminderName},
+                cancellationToken.OrNone());
         }
 
         public async Task DeleteRemindersAsync(IReadOnlyDictionary<ActorId, IReadOnlyCollection<string>> reminderNames,
@@ -244,8 +263,9 @@ namespace FG.ServiceFabric.Actors.Runtime
             foreach (var actorId in reminderNames.Keys)
             {
                 var reminderNamesForActorId = reminderNames[actorId];
-                await _actorDocumentManager.UpdateActorDocumentRemoveReminders(actorId, reminderNamesForActorId, cancellationToken.OrNone());
-            }            
+                await _actorDocumentManager.UpdateActorDocumentRemoveReminders(actorId, reminderNamesForActorId,
+                    cancellationToken.OrNone());
+            }
         }
 
         public async Task<IActorReminderCollection> LoadRemindersAsync(
@@ -267,22 +287,10 @@ namespace FG.ServiceFabric.Actors.Runtime
                 var reminders = remindersForActorId.Value;
 
                 foreach (var actorReminderState in reminders)
-                {
                     await _innerActorStateProvider.SaveReminderAsync(actorId, actorReminderState, cancellationToken);
-                }
             }
 
             return remindersByActorId;
-        }
-
-        #endregion
-
-        #region Queryable
-
-        public Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
-            CancellationToken cancellationToken = default(CancellationToken)) where T : class
-        {
-            return _actorDocumentManager.GetActorStatesAsync<T>(stateName, numItemsToReturn, continuationToken, cancellationToken);
         }
 
         #endregion

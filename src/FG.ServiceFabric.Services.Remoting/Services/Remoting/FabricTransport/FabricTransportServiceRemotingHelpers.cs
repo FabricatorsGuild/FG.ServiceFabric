@@ -1,25 +1,21 @@
-﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport
+﻿using System;
+using System.Collections.Generic;
+using FG.ServiceFabric.Diagnostics;
+using FG.ServiceFabric.Services.Remoting.ExceptionHandler;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Builder;
+using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
+using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1.FabricTransport.Client;
+
+namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-
-    using FG.ServiceFabric.Diagnostics;
-    using FG.ServiceFabric.Services.Remoting.ExceptionHandler;
-
-    using Microsoft.ServiceFabric.Services.Communication.Client;
-    using Microsoft.ServiceFabric.Services.Remoting.Builder;
-    using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
-    using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
-    using Microsoft.ServiceFabric.Services.Remoting.V1;
-    using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-    using Microsoft.ServiceFabric.Services.Remoting.V1.FabricTransport.Client;
-
     public static class FabricTransportServiceRemotingHelpers
     {
         /// <summary>
-        /// Creates a new remoting service client factory
+        ///     Creates a new remoting service client factory
         /// </summary>
         /// <param name="serviceInterfaceType">The service interface</param>
         /// <param name="callbackClient"></param>
@@ -43,22 +39,22 @@
                     null,
                     exceptionHandlers,
                     correlationId),
-                    logger,
-                    serviceMethodDispatcher);
+                logger,
+                serviceMethodDispatcher);
         }
 
-        public static IEnumerable<IExceptionHandler> GetExceptionHandlers(Type actorInterfaceType, params Type[] additionalTypes)
+        public static IEnumerable<IExceptionHandler> GetExceptionHandlers(Type actorInterfaceType,
+            params Type[] additionalTypes)
         {
             return ExceptionHandlerFactory.Default.GetExceptionHandlers(actorInterfaceType, additionalTypes);
         }
 
-        internal static FabricTransportRemotingListenerSettings GetDefaultFabricTransportListenerSettings(string sectionName = "TransportSettings")
+        internal static FabricTransportRemotingListenerSettings GetDefaultFabricTransportListenerSettings(
+            string sectionName = "TransportSettings")
         {
             FabricTransportRemotingListenerSettings listenerSettings = null;
             if (!FabricTransportRemotingListenerSettings.TryLoadFrom(sectionName, out listenerSettings, null))
-            {
                 listenerSettings = new FabricTransportRemotingListenerSettings();
-            }
 
             return listenerSettings;
         }
@@ -73,13 +69,12 @@
         ///     file, it will return the default Settings
         /// </param>
         /// <returns></returns>
-        private static FabricTransportRemotingSettings GetDefaultFabricTransportSettings(string sectionName = "TransportSettings")
+        private static FabricTransportRemotingSettings GetDefaultFabricTransportSettings(
+            string sectionName = "TransportSettings")
         {
             FabricTransportRemotingSettings settings = null;
             if (!FabricTransportRemotingSettings.TryLoadFrom(sectionName, out settings, null, null))
-            {
                 settings = new FabricTransportRemotingSettings();
-            }
 
             return settings;
         }

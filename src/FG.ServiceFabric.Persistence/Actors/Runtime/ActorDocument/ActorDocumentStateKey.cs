@@ -18,7 +18,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 
         public static implicit operator ActorId(ActorDocumentStateKey actordocStateKey)
         {
-            return ActorSchemaKey.TryGetActorIdFromSchemaKey(actordocStateKey.Key);
+            return TryGetActorIdFromSchemaKey(actordocStateKey.Key);
         }
     }
 }

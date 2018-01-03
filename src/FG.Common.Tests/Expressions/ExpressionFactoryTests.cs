@@ -1,15 +1,10 @@
-﻿namespace FG.Common.Tests.Expressions
+﻿using FG.Common.Expressions;
+using NUnit.Framework;
+
+namespace FG.Common.Tests.Expressions
 {
-    using FG.Common.Expressions;
-
-    using NUnit.Framework;
-
     public class ExpressionFactoryTests
     {
-        public interface ITest
-        {
-        }
-
         [Test]
         public void TestCreateInstance()
         {
@@ -26,6 +21,10 @@
         {
             var testFactory = CreateInstanceFactory.CreateInstance<Test, ITest>();
             Assert.NotNull(testFactory);
+        }
+
+        public interface ITest
+        {
         }
 
         private class Test : ITest

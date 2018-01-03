@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FG.Common.Extensions;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
@@ -16,30 +17,29 @@ using Newtonsoft.Json;
 
 namespace PersistancePerformanceTestBench
 {
-    using FG.Common.Extensions;
-
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             RunTest5().GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// Filesystem 
+        ///     Filesystem
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest0()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
             };
 
             var settingsProvider = new SettingsProvider();
-            var stateSessionManager = new FileSystemStateSessionManager("sample-service", Guid.NewGuid(), "range-0", @"c:\temp\storage\performance-test");
+            var stateSessionManager = new FileSystemStateSessionManager("sample-service", Guid.NewGuid(), "range-0",
+                @"c:\temp\storage\performance-test");
 
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
@@ -61,11 +61,17 @@ namespace PersistancePerformanceTestBench
                     {
                         var lastName = ObjectMother.LastNames[random.Next(0, ObjectMother.LastNames.Length - 1)];
                         var firstName = ObjectMother.FirstNames[random.Next(0, ObjectMother.FirstNames.Length - 1)];
-                        var description = ObjectMother.Descriptions[random.Next(0, ObjectMother.Descriptions.Length - 1)];
+                        var description =
+                            ObjectMother.Descriptions[random.Next(0, ObjectMother.Descriptions.Length - 1)];
                         var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                         var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                        var person = new Person() { Description = description, Title = title, Name = $"{firstName} {lastName}" };
+                        var person = new Person
+                        {
+                            Description = description,
+                            Title = title,
+                            Name = $"{firstName} {lastName}"
+                        };
 
                         await people.SetValueAsync(key, person, cancellationToken);
                         Console.Write(".");
@@ -74,7 +80,7 @@ namespace PersistancePerformanceTestBench
                 }
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)stopwatch.ElapsedMilliseconds / (float)rate;
+                var average = stopwatch.ElapsedMilliseconds / (float) rate;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average} ms/item");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -84,20 +90,22 @@ namespace PersistancePerformanceTestBench
         }
 
         /// <summary>
-        /// With DocumentDbStateSessionManagerWithTransactions
+        ///     With DocumentDbStateSessionManagerWithTransactions
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest1()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
             };
 
             var settingsProvider = new SettingsProvider();
-            var stateSessionManager = new DocumentDbStateSessionManagerWithTransactions("sample-service", Guid.NewGuid(), "range-0", settingsProvider);
+            var stateSessionManager =
+                new DocumentDbStateSessionManagerWithTransactions("sample-service", Guid.NewGuid(), "range-0",
+                    settingsProvider);
 
             var cancellationTokenSource = new CancellationTokenSource();
             var cancellationToken = cancellationTokenSource.Token;
@@ -119,11 +127,17 @@ namespace PersistancePerformanceTestBench
                     {
                         var lastName = ObjectMother.LastNames[random.Next(0, ObjectMother.LastNames.Length - 1)];
                         var firstName = ObjectMother.FirstNames[random.Next(0, ObjectMother.FirstNames.Length - 1)];
-                        var description = ObjectMother.Descriptions[random.Next(0, ObjectMother.Descriptions.Length - 1)];
+                        var description =
+                            ObjectMother.Descriptions[random.Next(0, ObjectMother.Descriptions.Length - 1)];
                         var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                         var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                        var person = new Person() { Description = description, Title = title, Name = $"{firstName} {lastName}" };
+                        var person = new Person
+                        {
+                            Description = description,
+                            Title = title,
+                            Name = $"{firstName} {lastName}"
+                        };
 
                         await people.SetValueAsync(key, person, cancellationToken);
                         Console.Write(".");
@@ -132,7 +146,7 @@ namespace PersistancePerformanceTestBench
                 }
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)stopwatch.ElapsedMilliseconds / (float)rate;
+                var average = stopwatch.ElapsedMilliseconds / (float) rate;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average} ms/item");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -142,13 +156,13 @@ namespace PersistancePerformanceTestBench
         }
 
         /// <summary>
-        /// Direct DocDb with Wrappers
+        ///     Direct DocDb with Wrappers
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest2()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
@@ -162,11 +176,11 @@ namespace PersistancePerformanceTestBench
             var collectionPrimaryKey = settingsProvider.PrimaryKey();
             var connectionPolicySetting = ConnectionPolicySetting.GatewayHttps;
             var client = await factory.OpenAsync(
-                databaseName: databaseName,
-                collection: new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
-                endpointUri: new Uri(endpointUri),
-                primaryKey: collectionPrimaryKey,
-                connectionPolicySetting: connectionPolicySetting
+                databaseName,
+                new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
+                new Uri(endpointUri),
+                collectionPrimaryKey,
+                connectionPolicySetting
             );
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -190,16 +204,23 @@ namespace PersistancePerformanceTestBench
                     var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                     var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                    var person = new Person() { Description = description, Title = title, Name = $"{firstName} {lastName}" };
-                    var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem) { Schema = "people", Key = key };
+                    var person = new Person
+                    {
+                        Description = description,
+                        Title = title,
+                        Name = $"{firstName} {lastName}"
+                    };
+                    var metadata = new ValueMetadata(StateWrapperType.ReliableQueueItem) {Schema = "people", Key = key};
                     var value = new FG.ServiceFabric.Services.Runtime.StateSession.StateWrapper<Person>(key, person,
-						new ServiceMetadata() {ServiceName = "sample-service2", ServicePartitionKey = "range-0"}, metadata);
+                        new ServiceMetadata {ServiceName = "sample-service2", ServicePartitionKey = "range-0"},
+                        metadata);
 
                     try
                     {
-                        await client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(databaseName, collection),
+                        await client.UpsertDocumentAsync(
+                            UriFactory.CreateDocumentCollectionUri(databaseName, collection),
                             value,
-                            new RequestOptions { PartitionKey = new PartitionKey("range-0") });
+                            new RequestOptions {PartitionKey = new PartitionKey("range-0")});
                     }
                     catch (DocumentClientException dcex)
                     {
@@ -215,7 +236,7 @@ namespace PersistancePerformanceTestBench
 
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)rate / (float)stopwatch.ElapsedMilliseconds;
+                var average = rate / (float) stopwatch.ElapsedMilliseconds;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average}/ms");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -225,13 +246,13 @@ namespace PersistancePerformanceTestBench
         }
 
         /// <summary>
-        /// Direct DocDb no wrappers
+        ///     Direct DocDb no wrappers
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest3()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
@@ -245,11 +266,11 @@ namespace PersistancePerformanceTestBench
             var collectionPrimaryKey = settingsProvider.PrimaryKey();
             var connectionPolicySetting = ConnectionPolicySetting.GatewayHttps;
             var client = await factory.OpenAsync(
-                databaseName: databaseName,
-                collection: new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
-                endpointUri: new Uri(endpointUri),
-                primaryKey: collectionPrimaryKey,
-                connectionPolicySetting: connectionPolicySetting
+                databaseName,
+                new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
+                new Uri(endpointUri),
+                collectionPrimaryKey,
+                connectionPolicySetting
             );
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -273,14 +294,22 @@ namespace PersistancePerformanceTestBench
                     var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                     var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                    var person = new Person() { Id = key, Description = description, Title = title, Name = $"{firstName} {lastName}", PartitionKey = "range-0" };
+                    var person = new Person
+                    {
+                        Id = key,
+                        Description = description,
+                        Title = title,
+                        Name = $"{firstName} {lastName}",
+                        PartitionKey = "range-0"
+                    };
                     var value = person;
 
                     try
                     {
-                        await client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(databaseName, collection),
+                        await client.UpsertDocumentAsync(
+                            UriFactory.CreateDocumentCollectionUri(databaseName, collection),
                             value,
-                            new RequestOptions { PartitionKey = new PartitionKey("range-0") });
+                            new RequestOptions {PartitionKey = new PartitionKey("range-0")});
                     }
                     catch (DocumentClientException dcex)
                     {
@@ -296,7 +325,7 @@ namespace PersistancePerformanceTestBench
 
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)rate / (float)stopwatch.ElapsedMilliseconds;
+                var average = rate / (float) stopwatch.ElapsedMilliseconds;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average}/ms");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -306,13 +335,13 @@ namespace PersistancePerformanceTestBench
         }
 
         /// <summary>
-        /// Direct DocDb no wrappers, single partition
+        ///     Direct DocDb no wrappers, single partition
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest4()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
@@ -326,11 +355,11 @@ namespace PersistancePerformanceTestBench
             var collectionPrimaryKey = settingsProvider.PrimaryKey();
             var connectionPolicySetting = ConnectionPolicySetting.GatewayHttps;
             var client = await factory.OpenAsync(
-                databaseName: databaseName,
-                collection: new CosmosDbCollectionDefinition(collection),
-                endpointUri: new Uri(endpointUri),
-                primaryKey: collectionPrimaryKey,
-                connectionPolicySetting: connectionPolicySetting
+                databaseName,
+                new CosmosDbCollectionDefinition(collection),
+                new Uri(endpointUri),
+                collectionPrimaryKey,
+                connectionPolicySetting
             );
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -354,14 +383,22 @@ namespace PersistancePerformanceTestBench
                     var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                     var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                    var person = new Person() { Id = key, Description = description, Title = title, Name = $"{firstName} {lastName}", PartitionKey = "range-0" };
+                    var person = new Person
+                    {
+                        Id = key,
+                        Description = description,
+                        Title = title,
+                        Name = $"{firstName} {lastName}",
+                        PartitionKey = "range-0"
+                    };
                     var value = person;
 
                     try
                     {
-                        await client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(databaseName, collection),
+                        await client.UpsertDocumentAsync(
+                            UriFactory.CreateDocumentCollectionUri(databaseName, collection),
                             value,
-                            new RequestOptions { });
+                            new RequestOptions());
                     }
                     catch (DocumentClientException dcex)
                     {
@@ -377,7 +414,7 @@ namespace PersistancePerformanceTestBench
 
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)rate / (float)stopwatch.ElapsedMilliseconds;
+                var average = rate / (float) stopwatch.ElapsedMilliseconds;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average}/ms");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -387,13 +424,13 @@ namespace PersistancePerformanceTestBench
         }
 
         /// <summary>
-        /// Direct DocDb no wrappers, TCP Direct
+        ///     Direct DocDb no wrappers, TCP Direct
         /// </summary>
         /// <returns></returns>
         public static async Task RunTest5()
         {
             var keepRunning = true;
-            Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs e)
             {
                 e.Cancel = true;
                 keepRunning = false;
@@ -407,11 +444,11 @@ namespace PersistancePerformanceTestBench
             var collectionPrimaryKey = settingsProvider.PrimaryKey();
             var connectionPolicySetting = ConnectionPolicySetting.DirectTcp;
             var client = await factory.OpenAsync(
-                databaseName: databaseName,
-                collection: new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
-                endpointUri: new Uri(endpointUri),
-                primaryKey: collectionPrimaryKey,
-                connectionPolicySetting: connectionPolicySetting
+                databaseName,
+                new CosmosDbCollectionDefinition(collection, $"/partitionKey"),
+                new Uri(endpointUri),
+                collectionPrimaryKey,
+                connectionPolicySetting
             );
 
             var cancellationTokenSource = new CancellationTokenSource();
@@ -435,14 +472,22 @@ namespace PersistancePerformanceTestBench
                     var title = ObjectMother.Titles[random.Next(0, ObjectMother.Titles.Length - 1)];
 
                     var key = $"[{title}] {firstName} {lastName.Substring(0, 1).ToUpper()}{lastName.Substring(1)}";
-                    var person = new Person() { Id = key, Description = description, Title = title, Name = $"{firstName} {lastName}", PartitionKey = "range-0" };
+                    var person = new Person
+                    {
+                        Id = key,
+                        Description = description,
+                        Title = title,
+                        Name = $"{firstName} {lastName}",
+                        PartitionKey = "range-0"
+                    };
                     var value = person;
 
                     try
                     {
-                        await client.UpsertDocumentAsync(UriFactory.CreateDocumentCollectionUri(databaseName, collection),
+                        await client.UpsertDocumentAsync(
+                            UriFactory.CreateDocumentCollectionUri(databaseName, collection),
                             value,
-                            new RequestOptions { PartitionKey = new PartitionKey("range-0") });
+                            new RequestOptions {PartitionKey = new PartitionKey("range-0")});
                     }
                     catch (DocumentClientException dcex)
                     {
@@ -458,7 +503,7 @@ namespace PersistancePerformanceTestBench
 
                 Console.WriteLine();
                 stopwatch.Stop();
-                var average = (float)stopwatch.ElapsedMilliseconds / (float)rate;
+                var average = stopwatch.ElapsedMilliseconds / (float) rate;
                 Console.WriteLine($"Done in {stopwatch.ElapsedMilliseconds} ms. {average} ms/item");
                 await Task.Delay(1000, cancellationToken);
                 Console.WriteLine();
@@ -472,6 +517,7 @@ namespace PersistancePerformanceTestBench
     {
         [JsonProperty("partitionKey")]
         public string PartitionKey { get; set; }
+
         public string Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -484,16 +530,25 @@ namespace PersistancePerformanceTestBench
 
         public SettingsProvider(string collection = "dev-col-0")
         {
-            _settings = new Dictionary<string, string>()
+            _settings = new Dictionary<string, string>
             {
-                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}" , "https://ce-labs-dev.documents.azure.com:443/"/* "https://172.27.88.224:8081/"*/},
-                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}" ,  "F3YcC30pRvxLfp8pVebpfZQN4C4BdRB1ppJ0tiCt4clKwuMyS6cJ7M1XReCa4EJOGuaj8Kt6wwtdt5H6I0gt9Q=="/*"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="*/},
-                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}" ,  "dummy"},
-                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}" , collection},
+                {
+                    $"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyEndpointUri}",
+                    "https://ce-labs-dev.documents.azure.com:443/" /* "https://172.27.88.224:8081/"*/
+                },
+                {
+                    $"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyPrimaryKey}",
+                    "F3YcC30pRvxLfp8pVebpfZQN4C4BdRB1ppJ0tiCt4clKwuMyS6cJ7M1XReCa4EJOGuaj8Kt6wwtdt5H6I0gt9Q==" /*"C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw=="*/
+                },
+                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyDatabaseName}", "dummy"},
+                {$"{CosmosDbSettingsProvider.ConfigSection}.{CosmosDbSettingsProvider.ConfigKeyCollection}", collection}
             };
         }
 
-        public bool Contains(string key) { return _settings.ContainsKey(key); }
+        public bool Contains(string key)
+        {
+            return _settings.ContainsKey(key);
+        }
 
         public string this[string key] => _settings.GetValueOrDefault(key, string.Empty);
 
@@ -502,16 +557,35 @@ namespace PersistancePerformanceTestBench
 
     public static class ObjectMother
     {
-        public static string[] Titles = new string[]
+        public static string[] Titles =
         {
             "Doctor",
             "Overlord",
             "Mister",
-            "Fraulein",
+            "Fraulein"
         };
-        public static string[] LastNames => new string[] { "albattani", "allen", "almeida", "agnesi", "archimedes", "ardinghelli", "aryabhata", "austin", "babbage", "banach", "bardeen", "bartik", "bassi", "beaver", "bell", "bhabha", "bhaskara", "blackwell", "bohr", "booth", "borg", "bose", "boyd", "brahmagupta", "brattain", "brown", "carson", "chandrasekhar", "shannon", "clarke", "colden", "cori", "cray", "curran", "curie", "darwin", "davinci", "dijkstra", "dubinsky", "easley", "edison", "einstein", "elion", "engelbart", "euclid", "euler", "fermat", "fermi", "feynman", "franklin", "galileo", "gates", "goldberg", "goldstine", "goldwasser", "golick", "goodall", "haibt", "hamilton", "hawking", "heisenberg", "heyrovsky", "hodgkin", "hoover", "hopper", "hugle", "hypatia", "jang", "jennings", "jepsen", "joliot", "jones", "kalam", "kare", "keller", "khorana", "kilby", "kirch", "knuth", "kowalevski", "lalande", "lamarr", "lamport", "leakey", "leavitt", "lewin", "lichterman", "liskov", "lovelace", "lumiere", "mahavira", "mayer", "mccarthy", "mcclintock", "mclean", "mcnulty", "meitner", "meninsky", "mestorf", "minsky", "mirzakhani", "morse", "murdock", "newton", "nightingale", "nobel", "noether", "northcutt", "noyce", "panini", "pare", "pasteur", "payne", "perlman", "pike", "poincare", "poitras", "ptolemy", "raman", "ramanujan", "ride", "montalcini", "ritchie", "roentgen", "rosalind", "saha", "sammet", "shaw", "shirley", "shockley", "sinoussi", "snyder", "spence", "stallman", "stonebraker", "swanson", "swartz", "swirles", "tesla", "thompson", "torvalds", "turing", "varahamihira", "visvesvaraya", "volhard", "wescoff", "wiles", "williams", "wilson", "wing", "wozniak", "wright", "yalow", "yonath" };
 
-        public static string[] Descriptions => new string[]
+        public static string[] LastNames => new[]
+        {
+            "albattani", "allen", "almeida", "agnesi", "archimedes", "ardinghelli", "aryabhata", "austin", "babbage",
+            "banach", "bardeen", "bartik", "bassi", "beaver", "bell", "bhabha", "bhaskara", "blackwell", "bohr",
+            "booth", "borg", "bose", "boyd", "brahmagupta", "brattain", "brown", "carson", "chandrasekhar", "shannon",
+            "clarke", "colden", "cori", "cray", "curran", "curie", "darwin", "davinci", "dijkstra", "dubinsky",
+            "easley", "edison", "einstein", "elion", "engelbart", "euclid", "euler", "fermat", "fermi", "feynman",
+            "franklin", "galileo", "gates", "goldberg", "goldstine", "goldwasser", "golick", "goodall", "haibt",
+            "hamilton", "hawking", "heisenberg", "heyrovsky", "hodgkin", "hoover", "hopper", "hugle", "hypatia", "jang",
+            "jennings", "jepsen", "joliot", "jones", "kalam", "kare", "keller", "khorana", "kilby", "kirch", "knuth",
+            "kowalevski", "lalande", "lamarr", "lamport", "leakey", "leavitt", "lewin", "lichterman", "liskov",
+            "lovelace", "lumiere", "mahavira", "mayer", "mccarthy", "mcclintock", "mclean", "mcnulty", "meitner",
+            "meninsky", "mestorf", "minsky", "mirzakhani", "morse", "murdock", "newton", "nightingale", "nobel",
+            "noether", "northcutt", "noyce", "panini", "pare", "pasteur", "payne", "perlman", "pike", "poincare",
+            "poitras", "ptolemy", "raman", "ramanujan", "ride", "montalcini", "ritchie", "roentgen", "rosalind", "saha",
+            "sammet", "shaw", "shirley", "shockley", "sinoussi", "snyder", "spence", "stallman", "stonebraker",
+            "swanson", "swartz", "swirles", "tesla", "thompson", "torvalds", "turing", "varahamihira", "visvesvaraya",
+            "volhard", "wescoff", "wiles", "williams", "wilson", "wing", "wozniak", "wright", "yalow", "yonath"
+        };
+
+        public static string[] Descriptions => new[]
         {
             "Muhammad ibn Jābir al-Ḥarrānī al-Battānī was a founding father of astronomy. ",
             " Frances E. Allen, became the first female IBM Fellow in 1989. In 2006, she became the first female recipient of the ACM's Turing Award. ",
@@ -546,7 +620,8 @@ namespace PersistancePerformanceTestBench
             " Gerty Theresa Cori - American biochemist who became the third woman—and first American woman—to win a Nobel Prize in science, and the first woman to be awarded the Nobel Prize in Physiology or Medicine. Cori was born in Prague. ",
             " Seymour Roger Cray was an American electrical engineer and supercomputer architect who designed a series of computers that were the fastest in the world for decades. ",
             " Samuel Curran was an Irish physicist who worked alongside his wife during WWII and invented the proximity fuse. ",
-            " Marie Curie discovered radioactivity. ", " Charles Darwin established the principles of natural evolution. ",
+            " Marie Curie discovered radioactivity. ",
+            " Charles Darwin established the principles of natural evolution. ",
             " Leonardo Da Vinci invented too many things to list here. ",
             " Edsger Wybe Dijkstra was a Dutch computer scientist and mathematical scientist. ",
             " Donna Dubinsky - played an integral role in the development of personal digital assistants (PDAs) serving as CEO of Palm, Inc. and co-founding Handspring. ",
@@ -597,7 +672,8 @@ namespace PersistancePerformanceTestBench
             "Daniel Lewin -  Mathematician, Akamai co-founder, soldier, 9/11 victim-- Developed optimization techniques for routing traffic on the internet. Died attempting to stop the 9-11 hijackers. ",
             " Ruth Lichterman - one of the original programmers of the ENIAC. https://en.wikipedia.org/wiki/ENIAC - ",
             " Barbara Liskov - co-developed the Liskov substitution principle. Liskov was also the winner of the Turing Prize in 2008. - ",
-            " Ada Lovelace invented the first algorithm. ", " Auguste and Louis Lumière - the first filmmakers in history - ",
+            " Ada Lovelace invented the first algorithm. ",
+            " Auguste and Louis Lumière - the first filmmakers in history - ",
             " Mahavira - Ancient Indian mathematician during 9th century AD who discovered basic algebraic identities - ",
             " Maria Mayer - American theoretical physicist and Nobel laureate in Physics for proposing the nuclear shell model of the atomic nucleus - ",
             " John McCarthy invented LISP: ",
@@ -610,7 +686,8 @@ namespace PersistancePerformanceTestBench
             " Marvin Minsky - Pioneer in Artificial Intelligence, co-founder of the MIT's AI Lab, won the Turing Award in 1969. ",
             " Maryam Mirzakhani - an Iranian mathematician and the first woman to win the Fields Medal. ",
             " Samuel Morse - contributed to the invention of a single-wire telegraph system based on European telegraphs and was a co-developer of the Morse code - ",
-            " Ian Murdock - founder of the Debian project - ", " Isaac Newton invented classic mechanics and modern optics. ",
+            " Ian Murdock - founder of the Debian project - ",
+            " Isaac Newton invented classic mechanics and modern optics. ",
             " Florence Nightingale, more prominently known as a nurse, was also the first female member of the Royal Statistical Society and a pioneer in statistical graphics ",
             " Alfred Nobel - a Swedish chemist, engineer, innovator, and armaments manufacturer (inventor of dynamite) - ",
             " Emmy Noether, German mathematician. Noether's Theorem is named after her. ",
@@ -646,7 +723,8 @@ namespace PersistancePerformanceTestBench
             " Aaron Swartz was influential in creating RSS, Markdown, Creative Commons, Reddit, and much of the internet as we know it today. He was devoted to freedom of information on the web. ",
             " Bertha Swirles was a theoretical physicist who made a number of contributions to early quantum theory. ",
             " Nikola Tesla invented the AC electric system and every gadget ever used by a James Bond villain. ",
-            " Ken Thompson - co-creator of UNIX and the C programming language - ", " Linus Torvalds invented Linux and Git. ",
+            " Ken Thompson - co-creator of UNIX and the C programming language - ",
+            " Linus Torvalds invented Linux and Git. ",
             " Alan Turing was a founding father of computer science. ",
             " Varahamihira - Ancient Indian mathematician who discovered trigonometric formulae during 505-587 CE - ",
             " Sir Mokshagundam Visvesvaraya - is a notable Indian engineer.  He is a recipient of the Indian Republic's highest honour, the Bharat Ratna, in 1955. On his birthday, 15 September is celebrated as Engineer's Day in India in his memory - ",
@@ -661,7 +739,8 @@ namespace PersistancePerformanceTestBench
             " Rosalyn Sussman Yalow - Rosalyn Sussman Yalow was an American medical physicist, and a co-winner of the 1977 Nobel Prize in Physiology or Medicine for development of the radioimmunoassay technique. ",
             " Ada Yonath - an Israeli crystallographer, the first woman from the Middle East to win a Nobel prize in the sciences. "
         };
-        public static string[] FirstNames => new string[]
+
+        public static string[] FirstNames => new[]
         {
             "Carley",
             "Bradley",

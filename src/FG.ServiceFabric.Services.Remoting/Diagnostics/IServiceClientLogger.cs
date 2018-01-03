@@ -1,18 +1,16 @@
+using System;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+
 namespace FG.ServiceFabric.Diagnostics
 {
-    using System;
-
-    using FG.ServiceFabric.Services.Remoting.FabricTransport;
-
-    using Microsoft.ServiceFabric.Services.Remoting.V1;
-
     /// <summary>
-    /// Provides logging for the service client
+    ///     Provides logging for the service client
     /// </summary>
     public interface IServiceClientLogger : IServiceRemotingLogger
     {
         /// <summary>
-        /// Logs a service call
+        ///     Logs a service call
         /// </summary>
         /// <param name="requestUri">The service uri</param>
         /// <param name="serviceMethodName">The service method name</param>
@@ -26,7 +24,7 @@ namespace FG.ServiceFabric.Diagnostics
             CustomServiceRequestHeader customServiceRequestHeader);
 
         /// <summary>
-        /// Logs a failed service call
+        ///     Logs a failed service call
         /// </summary>
         /// <param name="requestUri">The service uri</param>
         /// <param name="serviceMethodName">The service method name</param>
@@ -41,7 +39,7 @@ namespace FG.ServiceFabric.Diagnostics
             Exception ex);
 
         /// <summary>
-        /// Logs a when the service client fails
+        ///     Logs a when the service client fails
         /// </summary>
         /// <param name="requestUri">The service uri</param>
         /// <param name="customServiceRequestHeader">The custom service request header</param>

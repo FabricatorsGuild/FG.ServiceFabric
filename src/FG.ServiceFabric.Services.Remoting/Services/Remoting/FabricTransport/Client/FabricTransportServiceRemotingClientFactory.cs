@@ -1,18 +1,17 @@
-﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
+﻿using System;
+using System.Fabric;
+using System.Threading;
+using System.Threading.Tasks;
+using FG.ServiceFabric.Diagnostics;
+using Microsoft.ServiceFabric.Services.Client;
+using Microsoft.ServiceFabric.Services.Communication.Client;
+using Microsoft.ServiceFabric.Services.Remoting.Builder;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
+
+namespace FG.ServiceFabric.Services.Remoting.FabricTransport.Client
 {
-    using System;
-    using System.Fabric;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using FG.ServiceFabric.Diagnostics;
-
-    using Microsoft.ServiceFabric.Services.Client;
-    using Microsoft.ServiceFabric.Services.Communication.Client;
-    using Microsoft.ServiceFabric.Services.Remoting.Builder;
-    using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-
-    public class FabricTransportServiceRemotingClientFactory : IServiceRemotingClientFactory, ICommunicationClientFactory<IServiceRemotingClient>
+    public class FabricTransportServiceRemotingClientFactory : IServiceRemotingClientFactory,
+        ICommunicationClientFactory<IServiceRemotingClient>
     {
         private readonly ICommunicationClientFactory<IServiceRemotingClient> _innerClientFactory;
 
@@ -25,11 +24,11 @@
             IServiceClientLogger logger,
             MethodDispatcherBase serviceMethodDispatcher)
         {
-            this._innerClientFactory = innerClientFactory;
-            this._logger = logger;
-            this._serviceMethodDispatcher = serviceMethodDispatcher;
-            this._innerClientFactory.ClientConnected += this.OnClientConnected;
-            this._innerClientFactory.ClientDisconnected += this.OnClientDisconnected;
+            _innerClientFactory = innerClientFactory;
+            _logger = logger;
+            _serviceMethodDispatcher = serviceMethodDispatcher;
+            _innerClientFactory.ClientConnected += OnClientConnected;
+            _innerClientFactory.ClientDisconnected += OnClientDisconnected;
         }
 
         public event EventHandler<CommunicationClientEventArgs<IServiceRemotingClient>> ClientConnected;
@@ -44,8 +43,10 @@
             OperationRetrySettings retrySettings,
             CancellationToken cancellationToken)
         {
-            var client = await this._innerClientFactory.GetClientAsync(serviceUri, partitionKey, targetReplicaSelector, listenerName, retrySettings, cancellationToken);
-            return new FabricTransportServiceRemotingClient(client, serviceUri, this._logger, new[] { this._serviceMethodDispatcher });
+            var client = await _innerClientFactory.GetClientAsync(serviceUri, partitionKey, targetReplicaSelector,
+                listenerName, retrySettings, cancellationToken);
+            return new FabricTransportServiceRemotingClient(client, serviceUri, _logger,
+                new[] {_serviceMethodDispatcher});
         }
 
         public async Task<IServiceRemotingClient> GetClientAsync(
@@ -55,8 +56,10 @@
             OperationRetrySettings retrySettings,
             CancellationToken cancellationToken)
         {
-            var client = await this._innerClientFactory.GetClientAsync(previousRsp, targetReplicaSelector, listenerName, retrySettings, cancellationToken);
-            return new FabricTransportServiceRemotingClient(client, previousRsp.ServiceName, this._logger, new[] { this._serviceMethodDispatcher });
+            var client = await _innerClientFactory.GetClientAsync(previousRsp, targetReplicaSelector, listenerName,
+                retrySettings, cancellationToken);
+            return new FabricTransportServiceRemotingClient(client, previousRsp.ServiceName, _logger,
+                new[] {_serviceMethodDispatcher});
         }
 
         public Task<OperationRetryControl> ReportOperationExceptionAsync(
@@ -66,11 +69,11 @@
             CancellationToken cancellationToken)
         {
             var fabricTransportServiceRemotingClient = client as FabricTransportServiceRemotingClient;
-            this._logger?.ServiceClientFailed(
+            _logger?.ServiceClientFailed(
                 fabricTransportServiceRemotingClient?.ResolvedServicePartition.ServiceName,
                 ServiceRequestContext.Current?.GetCustomHeader(),
                 exceptionInformation.Exception);
-            return this._innerClientFactory.ReportOperationExceptionAsync(
+            return _innerClientFactory.ReportOperationExceptionAsync(
                 fabricTransportServiceRemotingClient?.InnerClient,
                 exceptionInformation,
                 retrySettings,
@@ -79,22 +82,22 @@
 
         private void OnClientConnected(object sender, CommunicationClientEventArgs<IServiceRemotingClient> e)
         {
-            this.ClientConnected?.Invoke(
+            ClientConnected?.Invoke(
                 this,
                 new CommunicationClientEventArgs<IServiceRemotingClient>
-                    {
-                        Client = e.Client
-                    });
+                {
+                    Client = e.Client
+                });
         }
 
         private void OnClientDisconnected(object sender, CommunicationClientEventArgs<IServiceRemotingClient> e)
         {
-            this.ClientDisconnected?.Invoke(
+            ClientDisconnected?.Invoke(
                 this,
                 new CommunicationClientEventArgs<IServiceRemotingClient>
-                    {
-                        Client = e.Client
-                    });
+                {
+                    Client = e.Client
+                });
         }
     }
 }

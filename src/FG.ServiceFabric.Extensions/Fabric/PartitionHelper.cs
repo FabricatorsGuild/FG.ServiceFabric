@@ -1,13 +1,13 @@
-﻿namespace FG.ServiceFabric.Fabric
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Fabric;
-    using System.Linq;
-    using System.Text;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Fabric;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
+namespace FG.ServiceFabric.Fabric
+{
     public class PartitionHelper
     {
         private readonly ConcurrentDictionary<Uri, Int64RangePartitionInformation[]> _int64Partitions;
@@ -18,9 +18,9 @@
 
         public PartitionHelper(Func<IPartitionEnumerationManager> partitionEnumerationManagerFactory)
         {
-            this._partitionEnumerationManagerFactory = partitionEnumerationManagerFactory;
-            this._int64Partitions = new ConcurrentDictionary<Uri, Int64RangePartitionInformation[]>();
-            this._namedPartitions = new ConcurrentDictionary<Uri, NamedPartitionInformation[]>();
+            _partitionEnumerationManagerFactory = partitionEnumerationManagerFactory;
+            _int64Partitions = new ConcurrentDictionary<Uri, Int64RangePartitionInformation[]>();
+            _namedPartitions = new ConcurrentDictionary<Uri, NamedPartitionInformation[]>();
         }
 
         // ReSharper disable once UnusedMember.Global - Used for logging!
@@ -32,14 +32,10 @@
             {
                 partitionsString.Append(delimiter);
                 if (partition is Int64RangePartitionInformation int64Partition)
-                {
                     partitionsString.Append($"{int64Partition.LowKey}-{int64Partition.HighKey}");
-                }
 
                 if (partition is NamedPartitionInformation namedPartition)
-                {
                     partitionsString.Append($"{namedPartition.Name}");
-                }
 
                 delimiter = ",";
             }
@@ -47,11 +43,12 @@
             return partitionsString.ToString();
         }
 
-        public async Task<IEnumerable<Int64RangePartitionInformation>> GetInt64Partitions(Uri serviceUri, IPartitionHelperLogger logger)
+        public async Task<IEnumerable<Int64RangePartitionInformation>> GetInt64Partitions(Uri serviceUri,
+            IPartitionHelperLogger logger)
         {
             logger.EnumeratingPartitions(serviceUri);
 
-            if (this._int64Partitions.TryGetValue(serviceUri, out var partitions))
+            if (_int64Partitions.TryGetValue(serviceUri, out var partitions))
             {
                 logger.EnumeratedExistingPartitions(serviceUri, partitions);
                 return partitions;
@@ -59,20 +56,20 @@
 
             try
             {
-                var partitionEnumerationManager = this._partitionEnumerationManagerFactory();
+                var partitionEnumerationManager = _partitionEnumerationManagerFactory();
                 var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);
-                IList<Int64RangePartitionInformation> partitionKeys = new List<Int64RangePartitionInformation>(servicePartitionList.Count);
+                IList<Int64RangePartitionInformation> partitionKeys =
+                    new List<Int64RangePartitionInformation>(servicePartitionList.Count);
                 foreach (var partition in servicePartitionList)
                 {
                     if (!(partition.PartitionInformation is Int64RangePartitionInformation partitionInfo))
-                    {
-                        throw new InvalidOperationException($"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
-                    }
+                        throw new InvalidOperationException(
+                            $"The service {serviceUri} should have a uniform Int64 partition. Instead: {partition.PartitionInformation.Kind}");
 
                     partitionKeys.Add(partitionInfo);
                 }
 
-                this._int64Partitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
+                _int64Partitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
 
                 logger.EnumeratedAndCachedPartitions(serviceUri, partitionKeys);
                 return partitionKeys;
@@ -84,11 +81,12 @@
             }
         }
 
-        public async Task<IEnumerable<NamedPartitionInformation>> GetNamedPartitions(Uri serviceUri, IPartitionHelperLogger logger)
+        public async Task<IEnumerable<NamedPartitionInformation>> GetNamedPartitions(Uri serviceUri,
+            IPartitionHelperLogger logger)
         {
             logger.EnumeratingPartitions(serviceUri);
 
-            if (this._namedPartitions.TryGetValue(serviceUri, out var partitions))
+            if (_namedPartitions.TryGetValue(serviceUri, out var partitions))
             {
                 logger.EnumeratedExistingPartitions(serviceUri, partitions);
                 return partitions;
@@ -96,20 +94,20 @@
 
             try
             {
-                var partitionEnumerationManager = this._partitionEnumerationManagerFactory();
+                var partitionEnumerationManager = _partitionEnumerationManagerFactory();
                 var servicePartitionList = await partitionEnumerationManager.GetPartitionListAsync(serviceUri);
-                IList<NamedPartitionInformation> partitionKeys = new List<NamedPartitionInformation>(servicePartitionList.Count);
+                IList<NamedPartitionInformation> partitionKeys =
+                    new List<NamedPartitionInformation>(servicePartitionList.Count);
                 foreach (var partition in servicePartitionList)
                 {
                     if (!(partition.PartitionInformation is NamedPartitionInformation partitionInfo))
-                    {
-                        throw new InvalidOperationException($"The service {serviceUri} should have a Named partition. Instead: {partition.PartitionInformation.Kind}");
-                    }
+                        throw new InvalidOperationException(
+                            $"The service {serviceUri} should have a Named partition. Instead: {partition.PartitionInformation.Kind}");
 
                     partitionKeys.Add(partitionInfo);
                 }
 
-                this._namedPartitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
+                _namedPartitions.GetOrAdd(serviceUri, su => partitionKeys.ToArray());
 
                 logger.EnumeratedAndCachedPartitions(serviceUri, partitionKeys);
                 return partitionKeys;

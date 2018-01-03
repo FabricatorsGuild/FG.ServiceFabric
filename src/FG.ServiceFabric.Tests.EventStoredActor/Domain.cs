@@ -4,159 +4,158 @@ using System.Linq;
 using System.Runtime.Serialization;
 using FG.CQRS;
 using FG.CQRS.Exceptions;
-using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 
 namespace FG.ServiceFabric.Tests.EventStoredActor
 {
-	#region Domain event interfaces
+    #region Domain event interfaces
 
-	public interface IRootEvent : IAggregateRootEvent
-	{
-	}
+    public interface IRootEvent : IAggregateRootEvent
+    {
+    }
 
-	public interface ISomePropertyUpdated : IRootEvent
-	{
-		string SomeProperty { get; }
-	}
+    public interface ISomePropertyUpdated : IRootEvent
+    {
+        string SomeProperty { get; }
+    }
 
-	public interface IChildEvent : IRootEvent
-	{
-		int ChildId { get; }
-	}
+    public interface IChildEvent : IRootEvent
+    {
+        int ChildId { get; }
+    }
 
-	public interface IChildAdded : IChildEvent
-	{
-	}
+    public interface IChildAdded : IChildEvent
+    {
+    }
 
-	public interface IChildPropertyUpdated : IChildEvent
-	{
-		string ChildProperty { get; set; }
-	}
+    public interface IChildPropertyUpdated : IChildEvent
+    {
+        string ChildProperty { get; set; }
+    }
 
-	#endregion
+    #endregion
 
-	#region Domain events
+    #region Domain events
 
-	[DataContract]
-	public class CreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
-	{
-		[DataMember]
-		public string SomeProperty { get; set; }
-	}
+    [DataContract]
+    public class CreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
+    {
+        [DataMember]
+        public string SomeProperty { get; set; }
+    }
 
-	[DataContract]
-	public class InvalidCreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
-	{
-		[DataMember]
-		public string SomeProperty { get; set; }
-	}
+    [DataContract]
+    public class InvalidCreatedEvent : AggregateRootEventBase, ISomePropertyUpdated, IAggregateRootCreatedEvent
+    {
+        [DataMember]
+        public string SomeProperty { get; set; }
+    }
 
-	[DataContract]
-	public class ChildAddedEvent : AggregateRootEventBase, IChildAdded, IChildPropertyUpdated
-	{
-		[DataMember]
-		public int ChildId { get; set; }
+    [DataContract]
+    public class ChildAddedEvent : AggregateRootEventBase, IChildAdded, IChildPropertyUpdated
+    {
+        [DataMember]
+        public int ChildId { get; set; }
 
-		[DataMember]
-		public string ChildProperty { get; set; }
-	}
+        [DataMember]
+        public string ChildProperty { get; set; }
+    }
 
-	#endregion
+    #endregion
 
-	#region Event stream (service fabric specific)
+    #region Event stream (service fabric specific)
 
-	[DataContract]
-	[KnownType(typeof(CreatedEvent))]
-	[KnownType(typeof(ChildAddedEvent))]
-	public class TheEventStream : DomainEventStreamBase
-	{
-	}
+    [DataContract]
+    [KnownType(typeof(CreatedEvent))]
+    [KnownType(typeof(ChildAddedEvent))]
+    public class TheEventStream : DomainEventStreamBase
+    {
+    }
 
-	#endregion
+    #endregion
 
-	#region Aggregate
+    #region Aggregate
 
-	public class Domain : AggregateRoot<IRootEvent>
-	{
-		private readonly List<Child> _children = new List<Child>();
-		private int _maxChildId = 0;
+    public class Domain : AggregateRoot<IRootEvent>
+    {
+        private readonly List<Child> _children = new List<Child>();
+        private int _maxChildId;
 
-		public Domain()
-		{
-			RegisterEventAppliers()
-				.For<ISomePropertyUpdated>(e => SomeProperty = e.SomeProperty)
-				.For<IChildAdded>(e =>
-				{
-					_children.Add(new Child(this, e.ChildId));
-					_maxChildId = Math.Max(_maxChildId, e.ChildId);
-				})
-				.For<IChildEvent>(e => _children.Single(c => c.ChildId == e.ChildId).ApplyEvent(e))
-				;
-		}
+        public Domain()
+        {
+            RegisterEventAppliers()
+                .For<ISomePropertyUpdated>(e => SomeProperty = e.SomeProperty)
+                .For<IChildAdded>(e =>
+                {
+                    _children.Add(new Child(this, e.ChildId));
+                    _maxChildId = Math.Max(_maxChildId, e.ChildId);
+                })
+                .For<IChildEvent>(e => _children.Single(c => c.ChildId == e.ChildId).ApplyEvent(e))
+                ;
+        }
 
-		public string SomeProperty { get; private set; }
-		public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
+        public string SomeProperty { get; private set; }
+        public IReadOnlyCollection<Child> Children => _children.AsReadOnly();
 
-		public override void AssertInvariantsAreMet()
-		{
-			if (string.IsNullOrWhiteSpace(SomeProperty))
-				throw new InvariantsNotMetException(nameof(SomeProperty));
+        public override void AssertInvariantsAreMet()
+        {
+            if (string.IsNullOrWhiteSpace(SomeProperty))
+                throw new InvariantsNotMetException(nameof(SomeProperty));
 
-			base.AssertInvariantsAreMet();
-		}
+            base.AssertInvariantsAreMet();
+        }
 
-		public void Create(Guid aggregateRootId, string someProperty)
-		{
-			if (string.IsNullOrWhiteSpace(someProperty))
-				throw new Exception("Can not be empty.");
+        public void Create(Guid aggregateRootId, string someProperty)
+        {
+            if (string.IsNullOrWhiteSpace(someProperty))
+                throw new Exception("Can not be empty.");
 
-			RaiseEvent(new CreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
-		}
+            RaiseEvent(new CreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
+        }
 
-		public void CreateInvalid(Guid aggregateRootId, string someProperty)
-		{
-			if (string.IsNullOrWhiteSpace(someProperty))
-				throw new Exception("Can not be empty.");
+        public void CreateInvalid(Guid aggregateRootId, string someProperty)
+        {
+            if (string.IsNullOrWhiteSpace(someProperty))
+                throw new Exception("Can not be empty.");
 
-			RaiseEvent(new InvalidCreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
-		}
+            RaiseEvent(new InvalidCreatedEvent {AggregateRootId = aggregateRootId, SomeProperty = someProperty});
+        }
 
-		public int AddChild()
-		{
-			var childId = _maxChildId + 1;
-			RaiseEvent(new ChildAddedEvent {ChildId = childId});
-			return childId;
-		}
+        public int AddChild()
+        {
+            var childId = _maxChildId + 1;
+            RaiseEvent(new ChildAddedEvent {ChildId = childId});
+            return childId;
+        }
 
-		public class Child : Entity<Domain, IChildEvent>
-		{
-			public Child(Domain aggregateRoot, int id) : base(aggregateRoot)
-			{
-				ChildId = id;
+        public class Child : Entity<Domain, IChildEvent>
+        {
+            public Child(Domain aggregateRoot, int id) : base(aggregateRoot)
+            {
+                ChildId = id;
 
-				RegisterEventAppliers().For<IChildPropertyUpdated>(e => ChildProperty = e.ChildProperty);
-			}
+                RegisterEventAppliers().For<IChildPropertyUpdated>(e => ChildProperty = e.ChildProperty);
+            }
 
-			public int ChildId { get; }
+            public int ChildId { get; }
 
-			public string ChildProperty { get; private set; }
-		}
-	}
+            public string ChildProperty { get; private set; }
+        }
+    }
 
-	#endregion
+    #endregion
 
-	#region Read Models
+    #region Read Models
 
-	public class ReadModelGenerator : AggregateRootReadModelGenerator<TheEventStream, IRootEvent, ReadModel>
-	{
-		public ReadModelGenerator(IEventStreamReader<TheEventStream> eventStreamReader) : base(eventStreamReader)
-		{
-			RegisterEventAppliers()
-				.For<ISomePropertyUpdated>(e => ReadModel.SomeProperty = e.SomeProperty)
-				;
-		}
-	}
+    public class ReadModelGenerator : AggregateRootReadModelGenerator<TheEventStream, IRootEvent, ReadModel>
+    {
+        public ReadModelGenerator(IEventStreamReader<TheEventStream> eventStreamReader) : base(eventStreamReader)
+        {
+            RegisterEventAppliers()
+                .For<ISomePropertyUpdated>(e => ReadModel.SomeProperty = e.SomeProperty)
+                ;
+        }
+    }
 
-	#endregion
+    #endregion
 }

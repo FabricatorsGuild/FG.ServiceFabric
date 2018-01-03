@@ -1,11 +1,7 @@
+using FG.Common.CallContext;
+
 namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-
-    using FG.Common.CallContext;
-
     /// <summary>
     ///     Provides a scope for the current service context
     /// </summary>
@@ -29,11 +25,12 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         ///     The custom service request header
         /// </param>
         /// <param name="serviceRequestContext">The service request context to use</param>
-        public ServiceRequestContextWrapper(CustomServiceRequestHeader customHeader, ServiceRequestContext serviceRequestContext)
+        public ServiceRequestContextWrapper(CustomServiceRequestHeader customHeader,
+            ServiceRequestContext serviceRequestContext)
             : base(serviceRequestContext)
         {
             ServiceRequestContext.Current.Update(customHeader.GetHeaders(), (headers, d) => d.SetItems(headers));
-            this.ShouldDispose = true;
+            ShouldDispose = true;
         }
 
         /// <summary>
@@ -48,41 +45,42 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
         /// <summary>
         ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
         /// </summary>
-        protected ServiceRequestContextWrapper() : base(ServiceRequestContext.Current, ServiceRequestContext.Current.Properties)
+        protected ServiceRequestContextWrapper() : base(ServiceRequestContext.Current,
+            ServiceRequestContext.Current.Properties)
         {
-            this.ShouldDispose = true;
+            ShouldDispose = true;
         }
 
         /// <summary>
-        /// Gets a new service request context scope
+        ///     Gets a new service request context scope
         /// </summary>
         public static ServiceRequestContextWrapper Current => new ServiceRequestContextWrapper();
 
         /// <summary>
-        /// Gets or sets the correlation id
+        ///     Gets or sets the correlation id
         /// </summary>
         public string CorrelationId
         {
-            get => this.Context.CorrelationId();
-            set => this.Context.CorrelationId(value);
+            get => Context.CorrelationId();
+            set => Context.CorrelationId(value);
         }
 
         /// <summary>
-        /// Gets or sets the request id
+        ///     Gets or sets the request id
         /// </summary>
         public string RequestUri
         {
-            get => this.Context[ServiceRequestContextKeys.RequestUri];
-            set => this.Context[ServiceRequestContextKeys.RequestUri] = value;
+            get => Context[ServiceRequestContextKeys.RequestUri];
+            set => Context[ServiceRequestContextKeys.RequestUri] = value;
         }
 
         /// <summary>
-        /// Gets or sets the user id
+        ///     Gets or sets the user id
         /// </summary>
         public string UserId
         {
-            get => this.Context[ServiceRequestContextKeys.UserId];
-            set => this.Context[ServiceRequestContextKeys.UserId] = value;
+            get => Context[ServiceRequestContextKeys.UserId];
+            set => Context[ServiceRequestContextKeys.UserId] = value;
         }
     }
 }

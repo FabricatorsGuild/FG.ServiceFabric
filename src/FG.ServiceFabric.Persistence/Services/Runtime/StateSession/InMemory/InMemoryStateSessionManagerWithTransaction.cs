@@ -21,11 +21,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
             IDictionary<string, string> state = null) :
             base(serviceName, partitionId, partitionKey)
         {
-            this._storage = state ?? new ConcurrentDictionary<string, string>();
+            _storage = state ?? new ConcurrentDictionary<string, string>();
         }
 
         protected override TextStateSession CreateSessionInternal
-            (StateSessionManagerBase<TextStateSession> manager,
+        (StateSessionManagerBase<TextStateSession> manager,
             IStateSessionReadOnlyObject[] stateSessionObjects)
         {
             return new InMemoryStateSession(this, stateSessionObjects);
@@ -47,7 +47,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
                 IStateSessionReadOnlyObject[] stateSessionObjects)
                 : base(manager, stateSessionObjects)
             {
-                this._manager = manager;
+                _manager = manager;
             }
 
             public InMemoryStateSession(
@@ -55,14 +55,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
                 IStateSessionObject[] stateSessionObjects)
                 : base(manager, stateSessionObjects)
             {
-                this._manager = manager;
+                _manager = manager;
             }
 
-            private IDictionary<string, string> Storage => this._manager._storage;
+            private IDictionary<string, string> Storage => _manager._storage;
 
             protected override async Task<string> ReadAsync(string id, bool checkExistsOnly = false)
             {
-                if (this.Storage.TryGetValue(id, out var value))
+                if (Storage.TryGetValue(id, out var value))
                 {
                     // Quick return not-null value if check for existance only
                     await Task.Delay(1);
@@ -75,45 +75,44 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
             protected override async Task DeleteAsync(string id)
             {
-                this.Storage.Remove(id);
+                Storage.Remove(id);
                 await Task.Delay(1);
             }
 
             protected override async Task WriteAsync(string id, string content)
             {
-                this.Storage[id] = content;
+                Storage[id] = content;
                 await Task.Delay(1);
             }
 
             protected override FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
-                ContinuationToken continuationToken = null, CancellationToken cancellationToken = new CancellationToken())
+                ContinuationToken continuationToken = null,
+                CancellationToken cancellationToken = new CancellationToken())
             {
                 var results = new List<string>();
                 var nextMarker = continuationToken?.Marker ?? string.Empty;
-                var keys = this.Storage.Keys.OrderBy(f => f);
+                var keys = Storage.Keys.OrderBy(f => f);
                 var resultCount = 0;
                 foreach (var nextKey in keys)
-                {
                     if (nextKey.CompareTo(nextMarker) > 0)
-                    {
                         if (nextKey.StartsWith(idPrefix))
                         {
                             results.Add(nextKey);
                             resultCount++;
                             if (resultCount >= maxNumResults)
-                            {
-                                return new FindByKeyPrefixResult() { ContinuationToken = new ContinuationToken(nextKey), Items = results };
-                            }
+                                return new FindByKeyPrefixResult
+                                {
+                                    ContinuationToken = new ContinuationToken(nextKey),
+                                    Items = results
+                                };
                         }
-                    }
-                }
 
-                return new FindByKeyPrefixResult() { ContinuationToken = null, Items = results };
+                return new FindByKeyPrefixResult {ContinuationToken = null, Items = results};
             }
 
             protected override Task<long> GetCountInternalAsync(string schema, CancellationToken cancellationToken)
             {
-                var items = this.Storage.Keys.Where(item => item.StartsWith(schema));
+                var items = Storage.Keys.Where(item => item.StartsWith(schema));
                 var resultCount = items.LongCount();
                 return Task.FromResult(resultCount);
             }

@@ -34,9 +34,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 // e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
                 var state = await session.TryGetValueAsync<ActorDocumentState>(key.Schema, key.Key, cancellationToken);
                 if (!state.HasValue)
-                {
                     return null;
-                }
 
                 return state.Value;
             }
@@ -56,30 +54,24 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 
                 // No changes to the state document, bail out
                 if (state.HasValue && (actorStateChanges == null || !actorStateChanges.Any()))
-                {
                     return actorDocument;
-                }
 
                 foreach (var actorStateChange in actorStateChanges ?? new ActorStateChange[0])
-                {
                     switch (actorStateChange.ChangeKind)
                     {
-                        case (StateChangeKind.Add):
-                        case (StateChangeKind.Update):
+                        case StateChangeKind.Add:
+                        case StateChangeKind.Update:
 
                             actorDocument.States[actorStateChange.StateName] = actorStateChange.Value;
                             break;
-                        case (StateChangeKind.Remove):
+                        case StateChangeKind.Remove:
 
                             if (actorDocument.States.ContainsKey(actorStateChange.StateName))
-                            {
                                 actorDocument.States.Remove(actorStateChange.StateName);
-                            }
                             break;
-                        case (StateChangeKind.None):
+                        case StateChangeKind.None:
                             break;
                     }
-                }
 
                 var metadata = new ActorStateValueMetadata(StateWrapperType.ActorState, actorId);
                 await session.SetValueAsync(key.Schema, key.Key, actorDocument, metadata, cancellationToken);
@@ -127,7 +119,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 ContinuationToken continuationToken = null;
                 do
                 {
-                    var result = await session.FindByKeyPrefixAsync(schemaName, null, 100, continuationToken, cancellationToken);
+                    var result = await session.FindByKeyPrefixAsync(schemaName, null, 100, continuationToken,
+                        cancellationToken);
 
                     // e.g.: servicename_partition1_ACTORDOC_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
                     var actorIds = result.Items.Select(ActorSchemaKey.TryGetActorIdFromSchemaKey).ToArray();
@@ -135,7 +128,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                     foreach (var actorId in actorIds)
                     {
                         var key = new ActorDocumentStateKey(actorId);
-                        var actorDocument = await session.GetValueAsync<ActorDocumentState>(key.Schema, key.Key, cancellationToken);
+                        var actorDocument =
+                            await session.GetValueAsync<ActorDocumentState>(key.Schema, key.Key, cancellationToken);
 
                         foreach (var reminder in actorDocument.Reminders.Values)
                         {
@@ -145,7 +139,6 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                     }
 
                     continuationToken = result.ContinuationToken;
-
                 } while (continuationToken != null);
 
                 return reminderCollection;
@@ -160,7 +153,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocument(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges, CancellationToken cancellationToken)
+        public async Task UpdateActorDocument(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges,
+            CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -172,28 +166,24 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 var actorDocument = !state.HasValue ? new ActorDocumentState(actorId) : state.Value;
 
                 // No changes to the state document, bail out
-                if (state.HasValue && (actorStateChanges == null || !actorStateChanges.Any())) { return; }
+                if (state.HasValue && (actorStateChanges == null || !actorStateChanges.Any())) return;
 
                 foreach (var actorStateChange in actorStateChanges)
-                {
                     switch (actorStateChange.ChangeKind)
                     {
-                        case (StateChangeKind.Add):
-                        case (StateChangeKind.Update):
+                        case StateChangeKind.Add:
+                        case StateChangeKind.Update:
 
                             actorDocument.States[actorStateChange.StateName] = actorStateChange.Value;
                             break;
-                        case (StateChangeKind.Remove):
+                        case StateChangeKind.Remove:
 
                             if (actorDocument.States.ContainsKey(actorStateChange.StateName))
-                            {
                                 actorDocument.States.Remove(actorStateChange.StateName);
-                            }
                             break;
-                        case (StateChangeKind.None):
+                        case StateChangeKind.None:
                             break;
                     }
-                }
 
                 var metadata = new ActorStateValueMetadata(StateWrapperType.ActorState, actorId);
                 await session.SetValueAsync(key.Schema, key.Key, actorDocument, metadata, cancellationToken);
@@ -202,7 +192,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
+        public async Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder,
+            CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -225,7 +216,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentReminderComplete(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
+        public async Task UpdateActorDocumentReminderComplete(ActorId actorId, IActorReminder reminder,
+            CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -251,7 +243,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentRemoveReminders(ActorId actorId, IReadOnlyCollection<string> reminderNamesToDelete, CancellationToken cancellationToken)
+        public async Task UpdateActorDocumentRemoveReminders(ActorId actorId,
+            IReadOnlyCollection<string> reminderNamesToDelete, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -263,12 +256,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 var actorDocument = !state.HasValue ? new ActorDocumentState(actorId) : state.Value;
 
                 foreach (var reminderNameToDelete in reminderNamesToDelete)
-                {
                     if (actorDocument.Reminders.ContainsKey(reminderNameToDelete))
-                    {
                         actorDocument.Reminders.Remove(reminderNameToDelete);
-                    }
-                }
 
                 var metadata = new ActorStateValueMetadata(StateWrapperType.ActorState, actorId);
                 await session.SetValueAsync(key.Schema, key.Key, actorDocument, metadata, cancellationToken);
@@ -289,15 +278,14 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 // e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
                 var state = await session.TryGetValueAsync<ActorDocumentState>(key.Schema, key.Key, cancellationToken);
                 if (!state.HasValue)
-                {
                     throw new KeyNotFoundException($"ActorDocument with id {key} was not found");
-                }
 
                 return state.Value.States.Select(actorState => actorState.Key).ToArray();
             }
         }
 
-        public async Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken,
+        public async Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var session = _stateSessionManager.CreateSession();
@@ -305,10 +293,11 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             {
                 var schemaName = ActorDocumentStateKey.ActorDocumentStateSchemaName;
 
-                var result = await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken, cancellationToken);
+                var result = await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken,
+                    cancellationToken);
                 // e.g.: servicename_partition1_ACTORID_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
                 var actorIds = result.Items.Select(ActorSchemaKey.TryGetActorIdFromSchemaKey).ToArray();
-                return new PagedResult<ActorId>() { Items = actorIds, ContinuationToken = result.ContinuationToken };
+                return new PagedResult<ActorId> {Items = actorIds, ContinuationToken = result.ContinuationToken};
             }
             catch (Exception ex)
             {
@@ -320,7 +309,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken)) where T : class
         {
             var session = _stateSessionManager.CreateSession();
@@ -328,7 +318,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             {
                 var schemaName = ActorDocumentStateKey.ActorDocumentStateSchemaName;
 
-                var page = await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken, cancellationToken);
+                var page = await session.FindByKeyPrefixAsync(schemaName, null, numItemsToReturn, continuationToken,
+                    cancellationToken);
                 // e.g.: servicename_partition1_ACTORID_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
                 var actorIds = page.Items.Select(ActorSchemaKey.TryGetActorIdFromSchemaKey).ToArray();
                 var result = new List<KeyValuePair<ActorId, T>>();
@@ -339,7 +330,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                     result.Add(new KeyValuePair<ActorId, T>(actorId, state));
                 }
 
-                return new PagedLookupResult<ActorId, T>() {Items = result, ContinuationToken = page.ContinuationToken};
+                return new PagedLookupResult<ActorId, T> {Items = result, ContinuationToken = page.ContinuationToken};
             }
             catch (Exception ex)
             {

@@ -14,36 +14,37 @@ using ActorReference = FG.ServiceFabric.Actors.ActorReference;
 
 namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
 {
-	public class When_message_is_dropped : ReliableMessgeTestBase
-	{
-		private readonly List<ReliableMessage> _droppedMessages = new List<ReliableMessage>();
+    public class When_message_is_dropped : ReliableMessgeTestBase
+    {
+        private readonly List<ReliableMessage> _droppedMessages = new List<ReliableMessage>();
 
-		[SetUp]
-		public void SetupChanelWithFailingActorBinder()
-		{
-			OutboundChannel = new OutboundReliableMessageChannel(new MockActorStateManager(),
-				FabricRuntime.ActorProxyFactory, null, HandleDroppedMessage, new MockFailingActorBinder());
-		}
+        [SetUp]
+        public void SetupChanelWithFailingActorBinder()
+        {
+            OutboundChannel = new OutboundReliableMessageChannel(new MockActorStateManager(),
+                FabricRuntime.ActorProxyFactory, null, HandleDroppedMessage, new MockFailingActorBinder());
+        }
 
-		private Task HandleDroppedMessage(ReliableMessage message, ActorReference actorReference)
-		{
-			_droppedMessages.Add(message);
-			return Task.FromResult(true);
-		}
+        private Task HandleDroppedMessage(ReliableMessage message, ActorReference actorReference)
+        {
+            _droppedMessages.Add(message);
+            return Task.FromResult(true);
+        }
 
-		[SetUp]
-		public async Task SendMessage()
-		{
-			var message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
-			await OutboundChannel.SendMessageAsync<IIndexActor>(message, new ActorId("PersonIndex"), CancellationToken.None,
-				_fabricApplication.ApplicationInstanceName);
-			await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
-		}
+        [SetUp]
+        public async Task SendMessage()
+        {
+            var message = ReliableMessage.Create(new IndexCommand {PersonId = Guid.NewGuid()});
+            await OutboundChannel.SendMessageAsync<IIndexActor>(message, new ActorId("PersonIndex"),
+                CancellationToken.None,
+                _fabricApplication.ApplicationInstanceName);
+            await OutboundChannel.ProcessQueueAsync(CancellationToken.None);
+        }
 
-		[Test]
-		public void Then_messsage_is_delivered_to_message_drop_handler()
-		{
-			_droppedMessages.Count.Should().Be(1);
-		}
-	}
+        [Test]
+        public void Then_messsage_is_delivered_to_message_drop_handler()
+        {
+            _droppedMessages.Count.Should().Be(1);
+        }
+    }
 }

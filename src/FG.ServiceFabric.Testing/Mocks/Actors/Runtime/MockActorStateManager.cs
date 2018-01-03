@@ -13,106 +13,106 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Runtime
 {
-	public class MockActorStateManager : IActorStateManager
-	{
-		private readonly ConcurrentDictionary<string, object> _store = new ConcurrentDictionary<string, object>();
+    public class MockActorStateManager : IActorStateManager
+    {
+        private readonly ConcurrentDictionary<string, object> _store = new ConcurrentDictionary<string, object>();
 
-		public Task<T> AddOrUpdateStateAsync<T>(string stateName, T addValue, Func<string, T, T> updateValueFactory,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			var result = this._store.AddOrUpdate(stateName, (k) => addValue, (k, v) => updateValueFactory(k, (T) v));
-			return Task.FromResult((T) result);
-		}
+        public Task<T> AddOrUpdateStateAsync<T>(string stateName, T addValue, Func<string, T, T> updateValueFactory,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var result = _store.AddOrUpdate(stateName, k => addValue, (k, v) => updateValueFactory(k, (T) v));
+            return Task.FromResult((T) result);
+        }
 
-		public Task AddStateAsync<T>(string stateName, T value,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			this._store.TryAdd(stateName, value);
-			return Task.FromResult(true);
-		}
+        public Task AddStateAsync<T>(string stateName, T value,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            _store.TryAdd(stateName, value);
+            return Task.FromResult(true);
+        }
 
-		public Task<bool> ContainsStateAsync(string stateName,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			var result = this._store.ContainsKey(stateName);
-			return Task.FromResult(result);
-		}
+        public Task<bool> ContainsStateAsync(string stateName,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var result = _store.ContainsKey(stateName);
+            return Task.FromResult(result);
+        }
 
-		public Task<T> GetOrAddStateAsync<T>(string stateName, T value,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			object result;
-			if (!this._store.TryGetValue(stateName, out result))
-			{
-				this._store.TryAdd(stateName, value);
-				return Task.FromResult((T) value);
-			}
-			return Task.FromResult((T) result);
-		}
+        public Task<T> GetOrAddStateAsync<T>(string stateName, T value,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            object result;
+            if (!_store.TryGetValue(stateName, out result))
+            {
+                _store.TryAdd(stateName, value);
+                return Task.FromResult(value);
+            }
+            return Task.FromResult((T) result);
+        }
 
-		public Task<T> GetStateAsync<T>(string stateName, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			object result;
-			this._store.TryGetValue(stateName, out result);
-			return Task.FromResult((T) result);
-		}
+        public Task<T> GetStateAsync<T>(string stateName,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            object result;
+            _store.TryGetValue(stateName, out result);
+            return Task.FromResult((T) result);
+        }
 
-		public Task<IEnumerable<string>> GetStateNamesAsync(CancellationToken cancellationToken = default(CancellationToken))
-		{
-			var result = (IEnumerable<string>) this._store.Keys;
-			return Task.FromResult(result);
-		}
+        public Task<IEnumerable<string>> GetStateNamesAsync(
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var result = (IEnumerable<string>) _store.Keys;
+            return Task.FromResult(result);
+        }
 
-		public Task RemoveStateAsync(string stateName, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			object value;
-			this._store.TryRemove(stateName, out value);
-			return Task.FromResult(true);
-		}
+        public Task RemoveStateAsync(string stateName, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            object value;
+            _store.TryRemove(stateName, out value);
+            return Task.FromResult(true);
+        }
 
-		public Task SetStateAsync<T>(string stateName, T value,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			this._store.AddOrUpdate(stateName, value, (key, oldvalue) => value);
-			return Task.FromResult(true);
-		}
+        public Task SetStateAsync<T>(string stateName, T value,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            _store.AddOrUpdate(stateName, value, (key, oldvalue) => value);
+            return Task.FromResult(true);
+        }
 
-		public Task<bool> TryAddStateAsync<T>(string stateName, T value,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			var tryAdd = this._store.TryAdd(stateName, value);
-			return Task.FromResult(tryAdd);
-		}
+        public Task<bool> TryAddStateAsync<T>(string stateName, T value,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var tryAdd = _store.TryAdd(stateName, value);
+            return Task.FromResult(tryAdd);
+        }
 
-		public Task<ConditionalValue<T>> TryGetStateAsync<T>(string stateName,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			object item;
-			var result = this._store.TryGetValue(stateName, out item);
-			if (result)
-			{
-				return Task.FromResult(new ConditionalValue<T>(result, (T) item));
-			}
-			return Task.FromResult(new ConditionalValue<T>(result, default(T)));
-		}
+        public Task<ConditionalValue<T>> TryGetStateAsync<T>(string stateName,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            object item;
+            var result = _store.TryGetValue(stateName, out item);
+            if (result)
+                return Task.FromResult(new ConditionalValue<T>(result, (T) item));
+            return Task.FromResult(new ConditionalValue<T>(result, default(T)));
+        }
 
-		public Task<bool> TryRemoveStateAsync(string stateName,
-			CancellationToken cancellationToken = default(CancellationToken))
-		{
-			object value;
-			var result = this._store.TryRemove(stateName, out value);
-			return Task.FromResult(result);
-		}
+        public Task<bool> TryRemoveStateAsync(string stateName,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            object value;
+            var result = _store.TryRemove(stateName, out value);
+            return Task.FromResult(result);
+        }
 
-		public Task ClearCacheAsync(CancellationToken cancellationToken = default(CancellationToken))
-		{
-			this._store.Clear();
-			return Task.FromResult(true);
-		}
+        public Task ClearCacheAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            _store.Clear();
+            return Task.FromResult(true);
+        }
 
-		public Task SaveStateAsync(CancellationToken cancellationToken = new CancellationToken())
-		{
-			return Task.FromResult(true);
-		}
-	}
+        public Task SaveStateAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            return Task.FromResult(true);
+        }
+    }
 }

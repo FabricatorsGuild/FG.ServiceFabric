@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -7,8 +6,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("FG.ServiceFabric.Testing")]
 [assembly:
-	AssemblyDescription(
-		"Provides Mocks for common Service Fabric classes allowing for unit and integration testing of Actors and Services")]
+    AssemblyDescription(
+        "Provides Mocks for common Service Fabric classes allowing for unit and integration testing of Actors and Services")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fabricators Guild")]
 [assembly: AssemblyProduct("FG.ServiceFabric.Testing")]

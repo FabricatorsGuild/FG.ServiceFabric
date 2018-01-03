@@ -3,25 +3,25 @@ using System.Runtime.Serialization;
 
 namespace FG.ServiceFabric.Fabric
 {
-	[Serializable]
-	public class PartitionEnumerationException : Exception
-	{
-		public PartitionEnumerationException()
-		{
-		}
+    [Serializable]
+    public class PartitionEnumerationException : Exception
+    {
+        public PartitionEnumerationException()
+        {
+        }
 
-		public PartitionEnumerationException(Uri serviceUri) : base(serviceUri?.ToString())
-		{
-		}
+        public PartitionEnumerationException(Uri serviceUri) : base(serviceUri?.ToString())
+        {
+        }
 
-		public PartitionEnumerationException(Uri serviceUri, Exception inner) : base(serviceUri?.ToString(), inner)
-		{
-		}
+        public PartitionEnumerationException(Uri serviceUri, Exception inner) : base(serviceUri?.ToString(), inner)
+        {
+        }
 
-		protected PartitionEnumerationException(
-			SerializationInfo info,
-			StreamingContext context) : base(info, context)
-		{
-		}
-	}
+        protected PartitionEnumerationException(
+            SerializationInfo info,
+            StreamingContext context) : base(info, context)
+        {
+        }
+    }
 }

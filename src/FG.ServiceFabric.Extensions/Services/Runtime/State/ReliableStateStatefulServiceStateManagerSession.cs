@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceFabric.Data;
@@ -14,7 +13,7 @@ namespace FG.ServiceFabric.Services.Runtime.State
     {
         public SessionCommittedEventArgs(IReadOnlyCollection<ReliableStateChange> stateChanges)
         {
-            this.StateChanges = stateChanges;
+            StateChanges = stateChanges;
         }
 
         public IReadOnlyCollection<ReliableStateChange> StateChanges { get; }
@@ -34,29 +33,29 @@ namespace FG.ServiceFabric.Services.Runtime.State
 
         public ReliableStateStatefulServiceStateManagerSession(IReliableStateManager innerStateManagerReplica)
         {
-            this._innerStateManagerReplica = innerStateManagerReplica;
+            _innerStateManagerReplica = innerStateManagerReplica;
 
-            this._isAborted = false;
-            this._isCommitted = false;
-            this._isOpen = false;
+            _isAborted = false;
+            _isCommitted = false;
+            _isOpen = false;
 
-            this._reliableStatesOpen = new ConcurrentDictionary<string, object>();
+            _reliableStatesOpen = new ConcurrentDictionary<string, object>();
 
-            this._stateChanges = new List<ReliableStateChange>();
+            _stateChanges = new List<ReliableStateChange>();
         }
 
         public IReadOnlyCollection<ReliableStateChange> StateChanges =>
-            new ReadOnlyCollection<ReliableStateChange>(this._stateChanges);
+            new ReadOnlyCollection<ReliableStateChange>(_stateChanges);
 
         public async Task<IStatefulServiceStateManagerSession> ForDictionary<T>(string schema)
         {
-            await this.GetOrCreateReliableDictionaryAsync<T>(schema);
+            await GetOrCreateReliableDictionaryAsync<T>(schema);
             return this;
         }
 
         public async Task<IStatefulServiceStateManagerSession> ForQueue<T>(string schema)
         {
-            await this.GetOrCreateReliableQueue<T>(schema);
+            await GetOrCreateReliableQueue<T>(schema);
             return this;
         }
 
@@ -67,207 +66,187 @@ namespace FG.ServiceFabric.Services.Runtime.State
 
         public void Dispose()
         {
-            if (!this._isAborted)
-            {
-                if (!this._isCommitted)
-                {
-                    this.CommitInteralAsync().GetAwaiter().GetResult();
-                }
-            }
+            if (!_isAborted)
+                if (!_isCommitted)
+                    CommitInteralAsync().GetAwaiter().GetResult();
 
-            this._transaction?.Dispose();
+            _transaction?.Dispose();
         }
 
         public async Task SetAsync<T>(string schema, string storageKey, T value)
         {
-            var reliableDictionary = await this.GetOrCreateReliableDictionaryAsync<T>(schema);
+            var reliableDictionary = await GetOrCreateReliableDictionaryAsync<T>(schema);
 
-            await reliableDictionary.SetAsync(this.GetTransaction(), storageKey, value);
+            await reliableDictionary.SetAsync(GetTransaction(), storageKey, value);
 
-            this._stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), value,
+            _stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), value,
                 ReliableStateChangeKind.AddOrUpdate));
         }
 
         public async Task<T> GetOrAddAsync<T>(string schema, string storageKey, Func<string, T> newValue)
         {
-            var reliableDictionary = await this.GetOrCreateReliableDictionaryAsync<T>(schema);
+            var reliableDictionary = await GetOrCreateReliableDictionaryAsync<T>(schema);
 
             var exists = true;
             var value = await reliableDictionary.GetOrAddAsync(
-                            this.GetTransaction(), storageKey, (key) =>
-            {
-                exists = false;
-                return newValue(key);
-            });
+                GetTransaction(), storageKey, key =>
+                {
+                    exists = false;
+                    return newValue(key);
+                });
 
             if (!exists)
-            {
-                this._stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), value, ReliableStateChangeKind.Add));
-            }
+                _stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), value,
+                    ReliableStateChangeKind.Add));
 
             return value;
         }
 
         public async Task<ConditionalValue<T>> TryGetAsync<T>(string schema, string storageKey)
         {
-            var reliableDictionary = await this.GetOrCreateReliableDictionaryAsync<T>(schema);
+            var reliableDictionary = await GetOrCreateReliableDictionaryAsync<T>(schema);
 
-            var value = await reliableDictionary.TryGetValueAsync(this.GetTransaction(), storageKey);
+            var value = await reliableDictionary.TryGetValueAsync(GetTransaction(), storageKey);
             return value;
         }
 
         public async Task RemoveAsync<T>(string schema, string storageKey)
         {
-            var reliableDictionary = await this.GetReliableDictionaryAsync<T>(schema);
+            var reliableDictionary = await GetReliableDictionaryAsync<T>(schema);
 
             if (reliableDictionary != null)
             {
-                var exists = await reliableDictionary.TryRemoveAsync(this.GetTransaction(), storageKey);
+                var exists = await reliableDictionary.TryRemoveAsync(GetTransaction(), storageKey);
                 if (exists.HasValue)
-                {
-                    this._stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), exists.Value,
+                    _stateChanges.Add(new ReliableStateChange(schema, storageKey, typeof(T), exists.Value,
                         ReliableStateChangeKind.Remove));
-                }
             }
         }
 
         public async Task EnqueueAsync<T>(string schema, T value)
         {
-            var reliableQueue = await this.GetOrCreateReliableQueue<T>(schema);
+            var reliableQueue = await GetOrCreateReliableQueue<T>(schema);
 
-            await reliableQueue.EnqueueAsync(this.GetTransaction(), value);
+            await reliableQueue.EnqueueAsync(GetTransaction(), value);
 
-            this._stateChanges.Add(new ReliableStateChange(schema, typeof(T), value, ReliableStateChangeKind.Enqueue));
+            _stateChanges.Add(new ReliableStateChange(schema, typeof(T), value, ReliableStateChangeKind.Enqueue));
         }
 
         public async Task<ConditionalValue<T>> DequeueAsync<T>(string schema)
         {
-            var reliableQueue = await this.GetOrCreateReliableQueue<T>(schema);
+            var reliableQueue = await GetOrCreateReliableQueue<T>(schema);
 
-            var value = await reliableQueue.TryDequeueAsync(this.GetTransaction());
+            var value = await reliableQueue.TryDequeueAsync(GetTransaction());
 
-            this._stateChanges.Add(new ReliableStateChange(schema, typeof(T), value, ReliableStateChangeKind.Dequeue));
+            _stateChanges.Add(new ReliableStateChange(schema, typeof(T), value, ReliableStateChangeKind.Dequeue));
             return value;
         }
 
         public async Task<ConditionalValue<T>> PeekAsync<T>(string schema)
         {
-            var reliableQueue = await this.GetOrCreateReliableQueue<T>(schema);
-            var value = await reliableQueue.TryPeekAsync(this.GetTransaction());
+            var reliableQueue = await GetOrCreateReliableQueue<T>(schema);
+            var value = await reliableQueue.TryPeekAsync(GetTransaction());
             return value;
         }
 
         public async Task CommitAsync()
         {
-            await this.CommitInteralAsync();
+            await CommitInteralAsync();
         }
 
         public Task AbortAsync()
         {
-            this._transaction?.Abort();
-            this._isAborted = true;
+            _transaction?.Abort();
+            _isAborted = true;
 
-            this._isOpen = false;
+            _isOpen = false;
             return Task.FromResult(true);
         }
 
         public async Task<IEnumerable<KeyValuePair<string, T>>> EnumerateDictionary<T>(string schema)
         {
-            this.CheckIsOpen();
+            CheckIsOpen();
 
-            var reliableQueue = await this.GetOrCreateReliableDictionaryAsync<T>(schema);
+            var reliableQueue = await GetOrCreateReliableDictionaryAsync<T>(schema);
             var results = new List<KeyValuePair<string, T>>();
 
-            var asyncEnumerable = await reliableQueue.CreateEnumerableAsync(this.GetTransaction());
+            var asyncEnumerable = await reliableQueue.CreateEnumerableAsync(GetTransaction());
             var enumerator = asyncEnumerable.GetAsyncEnumerator();
 
             while (await enumerator.MoveNextAsync(CancellationToken.None))
-            {
                 results.Add(enumerator.Current);
-            }
 
             return results;
         }
 
         public async Task<IEnumerable<T>> EnumerateQueue<T>(string schema)
         {
-            this.CheckIsOpen();
+            CheckIsOpen();
 
-            var reliableQueue = await this.GetOrCreateReliableQueue<T>(schema);
+            var reliableQueue = await GetOrCreateReliableQueue<T>(schema);
             var results = new List<T>();
 
-            var asyncEnumerable = await reliableQueue.CreateEnumerableAsync(this.GetTransaction());
+            var asyncEnumerable = await reliableQueue.CreateEnumerableAsync(GetTransaction());
             var enumerator = asyncEnumerable.GetAsyncEnumerator();
 
             while (await enumerator.MoveNextAsync(CancellationToken.None))
-            {
                 results.Add(enumerator.Current);
-            }
 
             return results;
         }
 
         private void CheckIsOpen()
         {
-            if (!this._isOpen)
-            {
+            if (!_isOpen)
                 throw new ReliableStateStatefulServiceStateManagerSessionException(
-                    $"The session (and underlying transaction) {(this._isCommitted ? "has been Committed" : (this._isAborted ? "has been Aborted" : " is not open for unknown reason"))} ") ;
-            }
+                    $"The session (and underlying transaction) {(_isCommitted ? "has been Committed" : (_isAborted ? "has been Aborted" : " is not open for unknown reason"))} ");
         }
 
         private async Task CommitInteralAsync()
         {
-            await this._transaction?.CommitAsync();
-            this._isCommitted = true;
+            await _transaction?.CommitAsync();
+            _isCommitted = true;
 
-            this._isOpen = false;
-            this.SessionCommitted?.Invoke(this, new SessionCommittedEventArgs(this.StateChanges));
+            _isOpen = false;
+            SessionCommitted?.Invoke(this, new SessionCommittedEventArgs(StateChanges));
         }
 
         private ITransaction GetTransaction()
         {
-            if (this._transaction == null)
+            if (_transaction == null)
             {
-                this._transaction = this._innerStateManagerReplica.CreateTransaction();
-                this._isOpen = true;
+                _transaction = _innerStateManagerReplica.CreateTransaction();
+                _isOpen = true;
             }
 
-            return this._transaction;
+            return _transaction;
         }
 
 
         private async Task<IReliableDictionary2<string, T>> GetOrCreateReliableDictionaryAsync<T>(string schema)
         {
-            if (this._reliableStatesOpen.TryGetValue(schema, out var reliableDictionary))
-            {
-                return (IReliableDictionary2<string, T>)reliableDictionary;
-            }
-            else
-            {
-                // Dont create the dictionary in the transaction, see https://github.com/Azure/service-fabric-issues/issues/24
-                reliableDictionary = await this._innerStateManagerReplica.GetOrAddAsync<IReliableDictionary2<string, T>>(schema);
-                this._reliableStatesOpen.TryAdd(schema, reliableDictionary);
-            }
+            if (_reliableStatesOpen.TryGetValue(schema, out var reliableDictionary))
+                return (IReliableDictionary2<string, T>) reliableDictionary;
+            // Dont create the dictionary in the transaction, see https://github.com/Azure/service-fabric-issues/issues/24
+            reliableDictionary = await _innerStateManagerReplica.GetOrAddAsync<IReliableDictionary2<string, T>>(schema);
+            _reliableStatesOpen.TryAdd(schema, reliableDictionary);
 
             return null;
         }
 
         private async Task<IReliableDictionary2<string, T>> GetReliableDictionaryAsync<T>(string schema)
         {
-            if (this._reliableStatesOpen.TryGetValue(schema, out var reliableDictionary))
+            if (_reliableStatesOpen.TryGetValue(schema, out var reliableDictionary))
             {
-                return (IReliableDictionary2<string, T>)reliableDictionary;
+                return (IReliableDictionary2<string, T>) reliableDictionary;
             }
-            else
+            // Dont create the dictionary in the transaction, see https://github.com/Azure/service-fabric-issues/issues/24
+            var reliableDictionaryValue =
+                await _innerStateManagerReplica.TryGetAsync<IReliableDictionary2<string, T>>(schema);
+            if (reliableDictionaryValue.HasValue)
             {
-                // Dont create the dictionary in the transaction, see https://github.com/Azure/service-fabric-issues/issues/24
-                var reliableDictionaryValue = await this._innerStateManagerReplica.TryGetAsync<IReliableDictionary2<string, T>>(schema);
-                if (reliableDictionaryValue.HasValue)
-                {
-                    reliableDictionary = reliableDictionaryValue.Value;
-                    this._reliableStatesOpen.TryAdd(schema, reliableDictionary);
-                }
+                reliableDictionary = reliableDictionaryValue.Value;
+                _reliableStatesOpen.TryAdd(schema, reliableDictionary);
             }
 
             return null;
@@ -275,16 +254,14 @@ namespace FG.ServiceFabric.Services.Runtime.State
 
         private async Task<IReliableQueue<T>> GetOrCreateReliableQueue<T>(string schema)
         {
-            if (this._reliableStatesOpen.TryGetValue(schema, out var reliableQueue))
-            {
-                return (IReliableQueue<T>)reliableQueue;
-            }
+            if (_reliableStatesOpen.TryGetValue(schema, out var reliableQueue))
+                return (IReliableQueue<T>) reliableQueue;
 
             // Dont create the queue in the transaction, see https://github.com/Azure/service-fabric-issues/issues/24
-            reliableQueue = await this._innerStateManagerReplica.GetOrAddAsync<IReliableQueue<T>>(schema);
-            this._reliableStatesOpen.TryAdd(schema, reliableQueue);
+            reliableQueue = await _innerStateManagerReplica.GetOrAddAsync<IReliableQueue<T>>(schema);
+            _reliableStatesOpen.TryAdd(schema, reliableQueue);
 
-            return (IReliableQueue<T>)reliableQueue;
+            return (IReliableQueue<T>) reliableQueue;
         }
     }
 }

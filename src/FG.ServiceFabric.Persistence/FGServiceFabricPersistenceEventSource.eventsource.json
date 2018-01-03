@@ -14,24 +14,24 @@
 		{
 			"Name": "IDocumentDbStateSessionLogger",
 			"StartId": 5000,
-					"ImplicitArguments": [
-						{
-							"Name": "managerInstance",
-							"Type": "string"
-						},
-						{
-							"Name": "sessionInstance",
-							"Type": "string"
-						}
-					],
+			"ImplicitArguments": [
+				{
+					"Name": "managerInstance",
+					"Type": "string"
+				},
+				{
+					"Name": "sessionInstance",
+					"Type": "string"
+				}
+			],
 			"OverrideArguments": []
 		}
 	],
-  "Name": "FGServiceFabricPersistenceEventSource",
-  "ProviderName": "FG-ServiceFabric",
-  "Keywords": [
-    "DocumentDbStateSessionManager"
-  ],
+	"Name": "FGServiceFabricPersistenceEventSource",
+	"ProviderName": "FG-ServiceFabric",
+	"Keywords": [
+		"DocumentDbStateSessionManager"
+	],
 	"TypeTemplates": [
 		{
 			"Name": "Exception",
@@ -92,9 +92,9 @@
 			]
 		}
 	],
-  "Settings": {
-    "Modules": [
-    ],
-    "AutogenerateLoggerInterfaces": true
-  }
+	"Settings": {
+		"Modules": [
+		],
+		"AutogenerateLoggerInterfaces": true
+	}
 }

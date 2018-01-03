@@ -6,50 +6,51 @@ using StatelessService = Microsoft.ServiceFabric.Services.Runtime.StatelessServi
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
-	internal class MockStatelessServiceInstance : MockServiceInstance
-	{
-		private StatelessService GetMockStatelessService(
-			StatelessServiceContext serviceContext)
-		{
-			return new MockStatelessService(
-				codePackageActivationContext: serviceContext.CodePackageActivationContext,
-				serviceProxyFactory: FabricRuntime.ServiceProxyFactory,
-				nodeContext: FabricRuntime.BuildNodeContext(),
-				statelessServiceContext: serviceContext);
-		}
+    internal class MockStatelessServiceInstance : MockServiceInstance
+    {
+        private StatelessService GetMockStatelessService(
+            StatelessServiceContext serviceContext)
+        {
+            return new MockStatelessService(
+                serviceContext.CodePackageActivationContext,
+                FabricRuntime.ServiceProxyFactory,
+                FabricRuntime.BuildNodeContext(),
+                serviceContext);
+        }
 
-		protected override void Build()
-		{
-			var isStateless = (!ServiceRegistration?.IsStateful) ?? false;
+        protected override void Build()
+        {
+            var isStateless = !ServiceRegistration?.IsStateful ?? false;
 
-			if (!isStateless)
-			{
-				base.Build();
-				return;
-			}
+            if (!isStateless)
+            {
+                base.Build();
+                return;
+            }
 
 
-			var statelessServiceContext = FabricRuntime.BuildStatelessServiceContext(
-				applicationName: ServiceRegistration.GetApplicationName(), 
-				serviceName: ServiceRegistration.Name,
-				serviceManifest: this.ServiceManifest,
-				serviceConfig: this.ServiceConfig);
-			var serviceFactory = ServiceRegistration.CreateStatelessService ?? GetMockStatelessService;
-			// TODO: consider this further, is it really what should be done???
+            var statelessServiceContext = FabricRuntime.BuildStatelessServiceContext(
+                ServiceRegistration.GetApplicationName(),
+                ServiceRegistration.Name,
+                ServiceManifest,
+                ServiceConfig);
+            var serviceFactory = ServiceRegistration.CreateStatelessService ?? GetMockStatelessService;
+            // TODO: consider this further, is it really what should be done???
 
-			var statelessService = serviceFactory(statelessServiceContext);
-			if (statelessService is FG.ServiceFabric.Services.Runtime.StatelessService)
-			{
-				var applicationUriBuilder = new ApplicationUriBuilder(statelessServiceContext.CodePackageActivationContext,
-					statelessServiceContext.CodePackageActivationContext.ApplicationName);
-				statelessService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
-				statelessService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
-				statelessService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
-			}
+            var statelessService = serviceFactory(statelessServiceContext);
+            if (statelessService is ServiceFabric.Services.Runtime.StatelessService)
+            {
+                var applicationUriBuilder = new ApplicationUriBuilder(
+                    statelessServiceContext.CodePackageActivationContext,
+                    statelessServiceContext.CodePackageActivationContext.ApplicationName);
+                statelessService.SetPrivateField("_serviceProxyFactory", FabricRuntime.ServiceProxyFactory);
+                statelessService.SetPrivateField("_actorProxyFactory", FabricRuntime.ActorProxyFactory);
+                statelessService.SetPrivateField("_applicationUriBuilder", applicationUriBuilder);
+            }
 
-			ServiceInstance = statelessService;
+            ServiceInstance = statelessService;
 
-			base.Build();
-		}
-	}
+            base.Build();
+        }
+    }
 }

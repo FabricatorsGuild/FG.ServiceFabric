@@ -19,11 +19,9 @@ namespace FG.ServiceFabric.Utils
         {
             get
             {
-                if (!_values.TryGetValue(key, out string value))
-                {
+                if (!_values.TryGetValue(key, out var value))
                     throw new IndexOutOfRangeException(
                         $"Setting not found. Check your service configuration, configuration overloads and make sure to configure your {nameof(GetType)} with a setting named {key}.");
-                }
 
                 return value;
             }
@@ -48,9 +46,7 @@ namespace FG.ServiceFabric.Utils
             {
                 var configSection = settingsFile.Sections[section];
                 foreach (var parameter in configSection.Parameters)
-                {
                     yield return new KeyValuePair<string, string>(parameter.Name, parameter.Value);
-                }
             }
         }
 
@@ -61,9 +57,7 @@ namespace FG.ServiceFabric.Utils
             {
                 var configSection = settingsFile.Sections[section];
                 if (configSection.Parameters.Contains(key))
-                {
                     return configSection.Parameters[key].Value;
-                }
             }
 
             throw new ArgumentException($"Key {key} not found in section {section}.");
@@ -72,9 +66,7 @@ namespace FG.ServiceFabric.Utils
         public ISettingsProvider With(ISettingsProvider combine)
         {
             foreach (var key in combine.Keys)
-            {
-                this._values[key] = combine[key];
-            }
+                _values[key] = combine[key];
             return this;
         }
 
@@ -90,9 +82,7 @@ namespace FG.ServiceFabric.Utils
             public RegistrationBuilder FromSettings(IEnumerable<string> sections, KeyNameBuilder keyNameBuilder = null)
             {
                 foreach (var section in sections)
-                {
                     FromSettings(section, keyNameBuilder);
-                }
                 return this;
             }
 
@@ -121,11 +111,13 @@ namespace FG.ServiceFabric.Utils
 
                 protected KeyNameBuilder(Func<string, string, string> builder)
                 {
-                    this._builder = builder;
+                    _builder = builder;
                 }
 
                 public static KeyNameBuilder Default => KeyNameOnly;
-                public static KeyNameBuilder SectionAndKeyName { get; } = new KeyNameBuilder((section, key) => $"{section}.{key}");
+
+                public static KeyNameBuilder SectionAndKeyName { get; } =
+                    new KeyNameBuilder((section, key) => $"{section}.{key}");
 
                 public static KeyNameBuilder KeyNameOnly { get; } = new KeyNameBuilder((section, key) => key);
 

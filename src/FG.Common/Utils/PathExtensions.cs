@@ -1,12 +1,12 @@
+using System;
+using System.IO;
+using System.Text;
+
 namespace FG.Common.Utils
 {
-    using System;
-    using System.IO;
-    using System.Text;
-
     public static class PathExtensions
     {
-        private static readonly char[] DirectorySeparatorCharArray = { Path.DirectorySeparatorChar };
+        private static readonly char[] DirectorySeparatorCharArray = {Path.DirectorySeparatorChar};
 
         public static string GetAbsolutePath(string relativePath)
         {
@@ -18,9 +18,7 @@ namespace FG.Common.Utils
         {
             var combinedPath = relativePath;
             if (!Path.IsPathRooted(relativePath))
-            {
                 combinedPath = Path.Combine(basePath, relativePath);
-            }
 
             return Path.GetFullPath(new Uri(combinedPath).LocalPath);
         }
@@ -28,9 +26,7 @@ namespace FG.Common.Utils
         public static string GetEvaluatedPath(string path)
         {
             if (!Path.IsPathRooted(path))
-            {
                 return GetAbsolutePath(path);
-            }
 
             return Path.GetFullPath(new Uri(path).LocalPath);
         }
@@ -42,12 +38,11 @@ namespace FG.Common.Utils
             var pathCommonToBase = path.RemoveCommonPrefix(basePath, Path.DirectorySeparatorChar);
             var commonPrefix = path.RemoveFromEnd(pathCommonToBase);
             if (commonPrefix.EndsWith(Path.DirectorySeparatorChar.ToString()))
-            {
                 commonPrefix = commonPrefix.RemoveFromEnd(Path.DirectorySeparatorChar.ToString());
-            }
 
             var basePathFromCommonPrefix = basePath.RemoveFromStart(commonPrefix);
-            var backTrailingComponents = basePathFromCommonPrefix.Split(DirectorySeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
+            var backTrailingComponents =
+                basePathFromCommonPrefix.Split(DirectorySeparatorCharArray, StringSplitOptions.RemoveEmptyEntries);
 
             var builder = new StringBuilder();
             foreach (var backTrailingComponent in backTrailingComponents)
@@ -73,31 +68,23 @@ namespace FG.Common.Utils
         public static string MakeRelativePathX(string fromPath, string toPath)
         {
             if (string.IsNullOrEmpty(fromPath))
-            {
                 throw new ArgumentNullException(nameof(fromPath));
-            }
 
             if (string.IsNullOrEmpty(toPath))
-            {
                 throw new ArgumentNullException(nameof(toPath));
-            }
 
             var fromUri = new Uri(fromPath);
             var toUri = new Uri(toPath);
 
             if (fromUri.Scheme != toUri.Scheme)
-            {
                 return toPath;
-            }
- // path can't be made relative.
+            // path can't be made relative.
 
             var relativeUri = fromUri.MakeRelativeUri(toUri);
             var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
 
             if (toUri.Scheme.Equals("file", StringComparison.InvariantCultureIgnoreCase))
-            {
                 relativePath = relativePath.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
-            }
 
             return relativePath;
         }

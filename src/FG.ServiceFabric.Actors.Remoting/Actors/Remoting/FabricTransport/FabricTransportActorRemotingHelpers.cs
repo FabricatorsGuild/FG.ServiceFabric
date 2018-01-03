@@ -2,21 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FG.ServiceFabric.Actors.Remoting.FabricTransport.Client;
 using FG.ServiceFabric.Diagnostics;
 using Microsoft.ServiceFabric.Actors.Generator;
 using Microsoft.ServiceFabric.Actors.Remoting;
 using Microsoft.ServiceFabric.Actors.Runtime;
-using Microsoft.ServiceFabric.Services.Client;
 using Microsoft.ServiceFabric.Services.Communication.Client;
-using Microsoft.ServiceFabric.Services.Remoting;
 using Microsoft.ServiceFabric.Services.Remoting.Builder;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
 using Microsoft.ServiceFabric.Services.Remoting.V1;
 using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-using FabricTransportActorRemotingClientFactory =
-    FG.ServiceFabric.Actors.Remoting.FabricTransport.Client.FabricTransportActorRemotingClientFactory;
 
 namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
 {
@@ -25,24 +21,18 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
         internal static ActorRemotingProviderAttribute GetProvider(IEnumerable<Type> types = null)
         {
             if (types != null)
-            {
                 foreach (var t in types)
                 {
                     var attribute = t.GetTypeInfo().Assembly.GetCustomAttribute<ActorRemotingProviderAttribute>();
                     if (attribute != null)
-                    {
                         return attribute;
-                    }
                 }
-            }
             var assembly = Assembly.GetEntryAssembly();
             if (assembly != null)
             {
                 var attribute = assembly.GetCustomAttribute<ActorRemotingProviderAttribute>();
                 if (attribute != null)
-                {
                     return attribute;
-                }
             }
             return new FabricTransportActorRemotingProviderAttribute();
         }
@@ -50,16 +40,16 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
         public static IEnumerable<IExceptionHandler> GetExceptionHandlers(Type actorInterfaceType,
             params Type[] additionalTypes)
         {
-            var types = new[] { actorInterfaceType }.Union(additionalTypes);
+            var types = new[] {actorInterfaceType}.Union(additionalTypes);
             foreach (var t in types)
             {
-                var attribute = t.GetTypeInfo().Assembly.GetCustomAttribute<FabricTransportRemotingExceptionHandlerAttribute>();
+                var attribute = t.GetTypeInfo().Assembly
+                    .GetCustomAttribute<FabricTransportRemotingExceptionHandlerAttribute>();
                 IExceptionHandler instance = null;
                 if (attribute != null)
                 {
                     var exceptionHandlerType = attribute.ExceptionHandlerType;
                     if (exceptionHandlerType.GetInterface(nameof(IExceptionHandler), false) != null)
-                    {
                         try
                         {
                             instance = Activator.CreateInstance(exceptionHandlerType) as IExceptionHandler;
@@ -68,12 +58,9 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
                         {
                             // TODO: Log this?
                         }
-                    }
                 }
                 if (instance != null)
-                {
                     yield return instance;
-                }
             }
         }
 
@@ -97,13 +84,14 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
             var fabricTransportSettings = GetDefaultFabricTransportSettings("TransportSettings");
             var exceptionHandlers = GetExceptionHandlers(interfaceType);
             return
-                (IServiceRemotingClientFactory)new FabricTransportActorRemotingClientFactory(
-                    new Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Client.FabricTransportActorRemotingClientFactory(
-                        fabricTransportSettings,
-                        callbackClient,
-                        (IServicePartitionResolver)null,
-                        exceptionHandlers,
-                        traceId: correlationId),
+                new FabricTransportActorRemotingClientFactory(
+                    new Microsoft.ServiceFabric.Actors.Remoting.V1.FabricTransport.Client.
+                        FabricTransportActorRemotingClientFactory(
+                            fabricTransportSettings,
+                            callbackClient,
+                            null,
+                            exceptionHandlers,
+                            correlationId),
                     logger,
                     serviceMethodDispatchers);
         }
@@ -122,11 +110,9 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
         private static FabricTransportRemotingSettings GetDefaultFabricTransportSettings(
             string sectionName = "TransportSettings")
         {
-            FabricTransportRemotingSettings settings = (FabricTransportRemotingSettings)null;
-            if (!FabricTransportRemotingSettings.TryLoadFrom(sectionName, out settings, (string)null, (string)null))
-            {
+            FabricTransportRemotingSettings settings = null;
+            if (!FabricTransportRemotingSettings.TryLoadFrom(sectionName, out settings, null, null))
                 settings = new FabricTransportRemotingSettings();
-            }
             return settings;
         }
 
@@ -134,8 +120,9 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
         {
             FabricTransportRemotingListenerSettings listenerSettings;
             if (!FabricTransportRemotingListenerSettings.TryLoadFrom(
-                ActorNameFormat.GetFabricServiceTransportSettingsSectionName(actorService.ActorTypeInformation.ImplementationType),
-                out listenerSettings, (string)null))
+                ActorNameFormat.GetFabricServiceTransportSettingsSectionName(actorService.ActorTypeInformation
+                    .ImplementationType),
+                out listenerSettings, null))
                 listenerSettings = GetDefaultFabricTransportListenerSettings("TransportSettings");
             return listenerSettings;
         }
@@ -143,11 +130,9 @@ namespace FG.ServiceFabric.Actors.Remoting.FabricTransport
         internal static FabricTransportRemotingListenerSettings GetDefaultFabricTransportListenerSettings(
             string sectionName = "TransportSettings")
         {
-            FabricTransportRemotingListenerSettings listenerSettings = (FabricTransportRemotingListenerSettings)null;
-            if (!FabricTransportRemotingListenerSettings.TryLoadFrom(sectionName, out listenerSettings, (string)null))
-            {
+            FabricTransportRemotingListenerSettings listenerSettings = null;
+            if (!FabricTransportRemotingListenerSettings.TryLoadFrom(sectionName, out listenerSettings, null))
                 listenerSettings = new FabricTransportRemotingListenerSettings();
-            }
             return listenerSettings;
         }
     }

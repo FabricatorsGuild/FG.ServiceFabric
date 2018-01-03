@@ -1,18 +1,16 @@
-﻿namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
+﻿using System;
+using System.Collections.Concurrent;
+using System.Reflection;
+using FG.Common.Expressions;
+using FG.ServiceFabric.Diagnostics;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
+using Microsoft.ServiceFabric.Services.Remoting.Builder;
+using Microsoft.ServiceFabric.Services.Remoting.Client;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
+
+namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Reflection;
-
-    using FG.Common.Expressions;
-    using FG.ServiceFabric.Diagnostics;
-    using FG.ServiceFabric.Services.Remoting.FabricTransport;
-
-    using Microsoft.ServiceFabric.Services.Remoting.Builder;
-    using Microsoft.ServiceFabric.Services.Remoting.Client;
-    using Microsoft.ServiceFabric.Services.Remoting.V1;
-    using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-
     /// <summary>
     ///     Provides a base class for service proxy factories
     /// </summary>
@@ -20,9 +18,11 @@
     {
         private static readonly Func<Type, MethodDispatcherBase> GetOrCreateServiceMethodDispatcher;
 
-        private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ServiceMethodDispatcherMap = new ConcurrentDictionary<Type, MethodDispatcherBase>();
+        private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ServiceMethodDispatcherMap =
+            new ConcurrentDictionary<Type, MethodDispatcherBase>();
 
-        private static volatile Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
+        private static volatile Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory>
+            _serviceProxyFactoryInnerFactory;
 
         private readonly object _lock = new object();
 
@@ -32,17 +32,19 @@
         {
             SetInnerFactory(null);
             GetOrCreateServiceMethodDispatcher =
-                MethodCallProxyFactory.CreateMethodProxyFactory.CreateMethodProxy<Type, MethodDispatcherBase>(GetGetOrCreateServiceMethodDispatcher(), "type");
+                MethodCallProxyFactory.CreateMethodProxyFactory.CreateMethodProxy<Type, MethodDispatcherBase>(
+                    GetGetOrCreateServiceMethodDispatcher(), "type");
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ServiceProxyFactoryBase"/> class. 
+        ///     Initializes a new instance of the <see cref="ServiceProxyFactoryBase" /> class.
         /// </summary>
-        /// <param name="logger">A <see cref="IServiceClientLogger"/>
+        /// <param name="logger">
+        ///     A <see cref="IServiceClientLogger" />
         /// </param>
         protected ServiceProxyFactoryBase(IServiceClientLogger logger)
         {
-            this.Logger = logger;
+            Logger = logger;
         }
 
         private IServiceClientLogger Logger { get; }
@@ -50,17 +52,15 @@
         internal static void SetInnerFactory(Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> innerFactory)
         {
             if (innerFactory == null)
-            {
                 innerFactory = (serviceProxyFactory, serviceInterfaceType) =>
                     new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
                         client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
-            }
 
             _serviceProxyFactoryInnerFactory = innerFactory;
         }
 
         /// <summary>
-        /// Updates the request context with a <see cref="Uri"/>
+        ///     Updates the request context with a <see cref="Uri" />
         /// </summary>
         /// <param name="serviceUri">The current service uri</param>
         protected static void UpdateRequestContext(Uri serviceUri)
@@ -69,30 +69,24 @@
 
             contextWrapper.RequestUri = serviceUri?.ToString();
             if (contextWrapper.CorrelationId == null)
-            {
                 contextWrapper.CorrelationId = Guid.NewGuid().ToString();
-            }
         }
 
         protected IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
         {
-            if (this._innerProxyFactory != null)
-            {
-                return this._innerProxyFactory;
-            }
+            if (_innerProxyFactory != null)
+                return _innerProxyFactory;
 
-            lock (this._lock)
+            lock (_lock)
             {
-                return this._innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
+                return _innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
             }
         }
 
         protected MethodDispatcherBase GetOrDiscoverServiceMethodDispatcher(Type serviceInterfaceType)
         {
             if (serviceInterfaceType == null)
-            {
                 return null;
-            }
 
             return ServiceMethodDispatcherMap.GetOrAdd(serviceInterfaceType, GetOrCreateServiceMethodDispatcher);
         }
@@ -103,19 +97,21 @@
                 typeof(Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory)?.Assembly.GetType(
                     "Microsoft.ServiceFabric.Services.Remoting.V1.Builder.ServiceCodeBuilder");
 
-            var getOrCreateMethodDispatcher = codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
+            var getOrCreateMethodDispatcher = codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher",
+                BindingFlags.Public | BindingFlags.Static);
             return getOrCreateMethodDispatcher;
         }
 
-        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
+        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
+            IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
         {
-            var serviceMethodDispatcher = this.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
+            var serviceMethodDispatcher = GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
 
             var contextWrapper = ServiceRequestContextWrapper.Current;
             return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
                 serviceInterfaceType,
                 serviceRemotingCallbackClient,
-                this.Logger,
+                Logger,
                 contextWrapper.CorrelationId,
                 serviceMethodDispatcher);
         }

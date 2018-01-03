@@ -2,9 +2,9 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-	public class ServiceRequestContextTypeTemplateExtension : BaseTemplateExtension
-	{
-		private string Definition = @"{
+    public class ServiceRequestContextTypeTemplateExtension : BaseTemplateExtension
+    {
+        private readonly string Definition = @"{
               ""Name"": ""ServiceRequestContext"",
               ""CLRType"": ""FG.ServiceFabric.Services.Remoting.FabricTransport.ServiceRequestContext"",
               ""Arguments"": [
@@ -26,11 +26,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
               ]
             }";
 
-		public override string Module => @"ServiceFabric";
+        public override string Module => @"ServiceFabric";
 
-		protected override string GetDefinition()
-		{
-			return Definition;
-		}
-	}
+        protected override string GetDefinition()
+        {
+            return Definition;
+        }
+    }
 }

@@ -1,17 +1,16 @@
 ﻿// ReSharper disable UnusedVariable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FG.Common.Extensions;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
+using NUnit.Framework;
+
 namespace FG.ServiceFabric.Services.Remoting.Tests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using FG.Common.Extensions;
-    using FG.ServiceFabric.Services.Remoting.FabricTransport;
-
-    using NUnit.Framework;
-
     [TestFixture]
     public class ServiceRequestContextTests
     {
@@ -49,21 +48,21 @@ namespace FG.ServiceFabric.Services.Remoting.Tests
 
             var t1 = Task.Run(
                 async () =>
-                    {
-                        // task part 1
-                        await Task.Delay(30);
-                        Assert.AreEqual(2, ServiceRequestContext.Current.Properties.Count);
-                        ServiceRequestContext.Current.Update(d => d.Add("c", "c1").Add("d", "d1"));
-                        Assert.AreEqual(4, ServiceRequestContext.Current.Properties.Count);
+                {
+                    // task part 1
+                    await Task.Delay(30);
+                    Assert.AreEqual(2, ServiceRequestContext.Current.Properties.Count);
+                    ServiceRequestContext.Current.Update(d => d.Add("c", "c1").Add("d", "d1"));
+                    Assert.AreEqual(4, ServiceRequestContext.Current.Properties.Count);
 
-                        semaphore.Release();
+                    semaphore.Release();
 
-                        // after this wait, the test task will clear it's properties
-                        await semaphore.WaitAsync();
+                    // after this wait, the test task will clear it's properties
+                    await semaphore.WaitAsync();
 
-                        Assert.AreEqual(4, ServiceRequestContext.Current.Properties.Count);
-                        semaphore.Release();
-                    });
+                    Assert.AreEqual(4, ServiceRequestContext.Current.Properties.Count);
+                    semaphore.Release();
+                });
 
             // Wait for part 1 of the task to complete
             await semaphore.WaitAsync();
@@ -140,7 +139,8 @@ namespace FG.ServiceFabric.Services.Remoting.Tests
             Assert.IsTrue(
                 properties.Any(
                     property => string.Compare(property.Key, propertyName, StringComparison.OrdinalIgnoreCase) == 0
-                                && string.Compare(property.Value, propertyValue, StringComparison.OrdinalIgnoreCase) == 0));
+                                && string.Compare(property.Value, propertyValue, StringComparison.OrdinalIgnoreCase) ==
+                                0));
         }
 
         [Test]
@@ -157,7 +157,7 @@ namespace FG.ServiceFabric.Services.Remoting.Tests
 
             Assert.IsTrue(context.Properties.Count == 0);
 
-            var items = new[] { new KeyValuePair<string, string>("a", "b"), new KeyValuePair<string, string>("c", "d") };
+            var items = new[] {new KeyValuePair<string, string>("a", "b"), new KeyValuePair<string, string>("c", "d")};
             context.Update(items, (i, d) => d.SetItems(i));
             Assert.IsTrue(context.Properties.Count == 2);
 

@@ -14,16 +14,16 @@ namespace FG.ServiceFabric.Services.Remoting.Runtime
             IServiceCommunicationLogger logger)
         {
             return new ServiceReplicaListener(ctxt =>
-                (IServiceRemotingListener)new FabricTransportServiceRemotingListener(
-                    serviceContext: ctxt,
-                    messageHandler: new ServiceRemotingDispatcher(
-                        service: service,
-                        innerMessageHandler: new Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher(context,
+                (IServiceRemotingListener) new FabricTransportServiceRemotingListener(
+                    ctxt,
+                    new ServiceRemotingDispatcher(
+                        service,
+                        new Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher(context,
                             service),
-                        logger: logger),
-                    listenerSettings: new FabricTransportRemotingListenerSettings()
+                        logger),
+                    new FabricTransportRemotingListenerSettings
                     {
-                        MaxConcurrentCalls = 1000,
+                        MaxConcurrentCalls = 1000
                     }
                 ));
         }

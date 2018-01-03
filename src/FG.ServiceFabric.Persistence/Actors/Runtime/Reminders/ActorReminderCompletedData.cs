@@ -6,37 +6,37 @@ using Newtonsoft.Json;
 
 namespace FG.ServiceFabric.Actors.Runtime.Reminders
 {
-	[DataContract]
-	internal sealed class ActorReminderCompletedData
-	{
-		private ActorReminderCompletedData()
-		{
-		}
+    [DataContract]
+    internal sealed class ActorReminderCompletedData
+    {
+        private ActorReminderCompletedData()
+        {
+        }
 
-		internal ActorReminderCompletedData(ActorId actorId, string reminderName, DateTime utcTime)
-		{
-			ActorId = actorId;
-			ReminderName = reminderName;
-			UtcTime = utcTime;
-		}
+        internal ActorReminderCompletedData(ActorId actorId, string reminderName, DateTime utcTime)
+        {
+            ActorId = actorId;
+            ReminderName = reminderName;
+            UtcTime = utcTime;
+        }
 
-		[JsonProperty("actorId")]
-		private string ActorIdValue
-		{
-			get => ActorSchemaKey.GetActorIdSchemaKey(ActorId);
-			set => ActorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(value);
-		}
+        [JsonProperty("actorId")]
+        private string ActorIdValue
+        {
+            get => ActorSchemaKey.GetActorIdSchemaKey(ActorId);
+            set => ActorId = ActorSchemaKey.TryGetActorIdFromSchemaKey(value);
+        }
 
-		[JsonIgnore]
-		[DataMember]
-		internal ActorId ActorId { get; private set; }
+        [JsonIgnore]
+        [DataMember]
+        internal ActorId ActorId { get; private set; }
 
-		[JsonProperty("reminderName")]
-		[DataMember]
-		internal string ReminderName { get; private set; }
+        [JsonProperty("reminderName")]
+        [DataMember]
+        internal string ReminderName { get; private set; }
 
-		[JsonProperty("utcTime")]
-		[DataMember]
-		internal DateTime UtcTime { get; private set; }
-	}
+        [JsonProperty("utcTime")]
+        [DataMember]
+        internal DateTime UtcTime { get; private set; }
+    }
 }

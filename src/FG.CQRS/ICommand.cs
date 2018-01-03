@@ -2,16 +2,16 @@
 
 namespace FG.CQRS
 {
-	public interface ICommand
-	{
-		Guid CommandId { get; }
-	}
+    public interface ICommand
+    {
+        Guid CommandId { get; }
+    }
 
-	public interface IDomainCommand : ICommand
-	{
-	}
+    public interface IDomainCommand : ICommand
+    {
+    }
 
-	public interface IServiceCommand : ICommand
-	{
-	}
+    public interface IServiceCommand : ICommand
+    {
+    }
 }

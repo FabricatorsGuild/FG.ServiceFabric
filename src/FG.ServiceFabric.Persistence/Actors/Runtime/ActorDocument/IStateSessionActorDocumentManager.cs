@@ -23,7 +23,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
         Task UpdateActorDocument(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges,
             CancellationToken cancellationToken);
 
-        Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder, 
+        Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder,
             CancellationToken cancellationToken);
 
         Task UpdateActorDocumentReminderComplete(ActorId actorId, IActorReminder reminder,
@@ -37,7 +37,8 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
         Task<PagedResult<ActorId>> GetActorsAsync(int numItemsToReturn, ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken)) where T : class;
     }
 }

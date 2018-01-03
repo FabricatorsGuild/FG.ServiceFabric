@@ -8,7 +8,8 @@ namespace FG.ServiceFabric.Actors.Runtime
 {
     public interface IQueryableActorStateProvider
     {
-        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken)) where T : class;
     }
 }

@@ -12,6 +12,5 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             CancellationToken cancellationToken = default(CancellationToken));
 
         IStateSession CreateSession(params IStateSessionObject[] stateSessionObjects);
-
     }
 }

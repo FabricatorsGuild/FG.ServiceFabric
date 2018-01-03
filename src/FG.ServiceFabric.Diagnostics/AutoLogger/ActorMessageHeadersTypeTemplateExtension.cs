@@ -2,9 +2,9 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-	public class ActorMessageHeadersTypeTemplateExtension : BaseTemplateExtension
-	{
-		private string Definition = @"{
+    public class ActorMessageHeadersTypeTemplateExtension : BaseTemplateExtension
+    {
+        private readonly string Definition = @"{
                   ""Name"": ""ActorMessageHeaders"",
                   ""CLRType"": ""FG.ServiceFabric.Actors.Remoting.Runtime.ActorMessageHeaders"",
                   ""Arguments"": [
@@ -26,11 +26,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
                   ]
                 }";
 
-		public override string Module => @"ServiceFabric";
+        public override string Module => @"ServiceFabric";
 
-		protected override string GetDefinition()
-		{
-			return Definition;
-		}
-	}
+        protected override string GetDefinition()
+        {
+            return Definition;
+        }
+    }
 }

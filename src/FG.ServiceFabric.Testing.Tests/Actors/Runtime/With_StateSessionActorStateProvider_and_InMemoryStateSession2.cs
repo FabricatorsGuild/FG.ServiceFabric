@@ -10,463 +10,478 @@ using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Actors.Runtime.StateSession;
 using FG.ServiceFabric.Actors.Runtime.StateSession.Metadata;
 using FG.ServiceFabric.Services.Runtime.StateSession;
-using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Testing.Mocks.Fabric;
 using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
-using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_DocumentDbStateSessionManagerWithTransaction;
 using FG.ServiceFabric.Tests.Actor;
 using FG.ServiceFabric.Tests.Actor.Interfaces;
 using FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors;
+using Newtonsoft.Json;
 using NUnit.Framework;
+using ActorDemo = FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo;
 
 namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
 {
-	namespace With_StateSessionActorStateProvider
-	{
-		namespace _and_InMemoryStateSession2
-		{
-			public abstract class TestBase<T>
-				where T : ActorBase, IActorDemo
-			{
-				protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
-				protected MockFabricApplication _fabricApplication;
-				protected MockFabricRuntime FabricRuntime;
-				private Guid _appId = Guid.NewGuid();
-				private string _collectionName;
-
-				protected TestBase()
-				{
-				}
-
-				private string ApplicationName => @"Overlord";
-
-				[SetUp]
-				public void Setup()
-				{
-					State.Clear();
-					FabricRuntime = new MockFabricRuntime() {DisableMethodCallOutput = true};
-					_fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
-
-					_fabricApplication.SetupActor(
-						activator: CreateActor,
-						createActorService: (context, information, provider, factory) =>
-							new ActorDemoActorService(context, information, stateProvider: provider),
-						createActorStateProvider: (context, actorInfo) =>
-							new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
-						serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
-
-
-					SetupActor().GetAwaiter().GetResult();
-				}
-
-				protected abstract T CreateActor(ActorDemoActorService service, ActorId actorId);
-
-				[TearDown]
-				public void TearDown()
-				{
-					Console.WriteLine($"States stored");
-					Console.WriteLine($"______________________");
-					foreach (var stateKey in State.Keys)
-					{
-						Console.WriteLine($"State: {stateKey}");
-						Console.WriteLine($"{State[stateKey]}");
-						Console.WriteLine($"______________________");
-					}
-				}
-
-				protected virtual Task SetupActor()
-				{
-					return Task.FromResult(true);
-				}
-
-				protected virtual Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
-				{
-					return Task.FromResult(true);
-				}
-
-				protected T2 GetState<T2>(string key)
-				{
-					return Newtonsoft.Json.JsonConvert.DeserializeObject<T2>(State[key]);
-				}
-
-				private IStateSessionManager CreateStateManager(StatefulServiceContext context)
-				{
-					//_collectionName = $"AppTest-{_appId}";
-					//var _cosmosDbSettingsProvider = CosmosDbForTestingSettingsProvider.DefaultForCollection(_collectionName);
-					//var stateManager = new DocumentDbStateSessionManagerWithTransactions(
-					//	"StatefulServiceDemo",
-					//	_appId,
-					//	StateSessionHelper.GetPartitionInfo(context, () => FabricRuntime.PartitionEnumerationManager).GetAwaiter()
-					//		.GetResult(),
-					//	_cosmosDbSettingsProvider
-					//);
-					var stateManager = new InMemoryStateSessionManagerWithTransaction(
-											StateSessionHelper.GetServiceName(context.ServiceName),
-											context.PartitionId,
-											StateSessionHelper.GetPartitionInfo(context,
-												() => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
-											State
-										);
-					SetUpStates(stateManager);
-					return stateManager;
-				}
-			}
-
-			public class _without_state : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo>
-			{
-				[Test]
-				public async Task _should_not_return_any_state_on_activate()
-				{
-					var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId("testivus"));
-					var i = await actorProxy.GetCountAsync();
-
-					i.Should().Be(1);
-
-					State.Keys.Should().HaveCount(2);
-
-					var actorId = new ActorId("testivus");
-					var actorIdSchemaKey = new ActorIdStateKey(actorId);
-					var actorIdKey = State.Keys.Single(k => k.Contains(ActorIdStateKey.ActorIdStateSchemaName));
-					var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
-					actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
-					actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
-					actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-					actorIdState.ServicePartitionKey.Should().Be("range-1");
-					actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
-					actorIdState.ActorId.GetStringId().Should().Be("testivus");
-					actorIdState.State.Should().Be(actorIdSchemaKey.Key);
-
-					var actorStateKey = State.Keys.Single(k => k.Contains(ActorStateKey.ActorStateSchemaName));
-					var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
-					actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
-					actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-					actorState.ServicePartitionKey.Should().Be("range-1");
-					actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
-					actorState.ActorId.GetStringId().Should().Be("testivus");
-					actorState.State.Should().Be(1);
-				}
-
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
-					ActorDemoActorService service, ActorId actorId)
-				{
-					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
-				}
-			}
-
-			public class _with_state : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo>
-			{
-				protected override async Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
-				{
-					if (stateSessionManager.GetPrivateProperty<InMemoryStateSessionManagerWithTransaction, string>("PartitionKey")
-						.Equals("range-1"))
-					{
-						using (var session = stateSessionManager.Writable.CreateSession())
-						{
-							var actorId = new ActorId("testivus");
-							var actorIdSchemaKey = new ActorIdStateKey(actorId);
-							await session.SetValueAsync(actorIdSchemaKey.Schema, actorIdSchemaKey.Key, actorIdSchemaKey.Key,
-								new ActorStateValueMetadata(StateWrapperType.ActorId, actorId));
-
-							var id = new ActorStateKey(actorId, "count");
-							await session.SetValueAsync(id.Schema, id.Key, 5,
-								new ActorStateValueMetadata(StateWrapperType.ActorState, actorId));
-
-							await session.CommitAsync();
-						}
-					}
-					await base.SetUpStates(stateSessionManager);
-				}
-
-				[Test]
-				public async Task _should_return_prior_state_on_activate()
-				{
-					var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId("testivus"));
-					var i = await actorProxy.GetCountAsync();
-
-					i.Should().Be(5);
-
-					var actorId = new ActorId("testivus");
-					var actorIdSchemaKey = new ActorIdStateKey(actorId);
-					var actorIdKey = State.Keys.Single(k => k.Contains(ActorIdStateKey.ActorIdStateSchemaName));
-					var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
-					actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
-					actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
-					actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-					actorIdState.ServicePartitionKey.Should().Be("range-1");
-					actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
-					actorIdState.ActorId.GetStringId().Should().Be("testivus");
-					actorIdState.State.Should().Be(actorIdSchemaKey.Key);
-
-					var actorStateKey = State.Keys.Single(k => k.Contains(ActorStateKey.ActorStateSchemaName));
-					var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
-					actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
-					actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-					actorState.ServicePartitionKey.Should().Be("range-1");
-					actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
-					actorState.ActorId.GetStringId().Should().Be("testivus");
-					actorState.State.Should().Be(5);
-				}
-
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
-					ActorDemoActorService service, ActorId actorId)
-				{
-					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
-				}
-			}
-
-			public class _with_multiple_activated_actors : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo>
-			{
-				[Test]
-				public async Task _should_return_prior_state_on_activate()
-				{
-					for (int j = 0; j < 100; j++)
-					{
-						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
-						var i = await actorProxy.GetCountAsync();
-
-						var actorId = new ActorId($"testivus-{j}");
-						var actorIdSchemaKey = new ActorIdStateKey(actorId);
-						var actorIdKey = State.Keys.Single(k =>
-							k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
-						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
-						actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
-						actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
-						actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-						actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
-						actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
-						actorIdState.State.Should().Be(actorIdSchemaKey.Key);
-
-						var actorStateKey = State.Keys.Single(k =>
-							k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
-						var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
-						actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
-						actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-						actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
-						actorState.ActorId.GetStringId().Should().Be($"testivus-{j}");
-						actorState.State.Should().Be(1);
-					}
-
-					State.Should().HaveCount(200);
-				}
-
-				[Test]
-				public async Task _should_be_able_to_delete_created_actors()
-				{
-					for (int j = 0; j < 10; j++)
-					{
-						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));						
-						var i = await actorProxy.GetCountAsync();
-					}
-
-					//State.Should().HaveCount(20);
-
-					var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
-					for (int j = 0; j < 10; j++)
-					{
-						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorService>(serviceUri, new ActorId($"testivus-{j}"));
-						await actorProxy.DeleteActorAsync(new ActorId($"testivus-{j}"), CancellationToken.None);
-					}
-
-					//State.Should().HaveCount(0);
-				}
-
-
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo CreateActor(
-					ActorDemoActorService service, ActorId actorId)
-				{
-					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.ActorDemo(service, actorId);
-				}
-			}
-
-			public class _with_multiple_activated_actors_with_multiple_states : TestBase<
-				FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo>
-			{
-				private IList<long> _partitionKeys;
-
-				protected override async Task SetupActor()
-				{
-					for (var j = 0; j < 100; j++)
-					{
-						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
-						var i = await actorProxy.GetCountAsync();
-					}
-
-					await base.SetupActor();
-
-					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
-
-					var partitions = new List<Guid>();
-					_partitionKeys = new List<long>();
-					for (var j = 0; j < 100; j++)
-					{
-						var partitionKey = new ActorId($"testivus-{j}").GetPartitionKey();
-						var partition = await FabricRuntime.PartitionEnumerationManager.GetPartition(serviceName, partitionKey);
-
-						if (!partitions.Contains(partition.Id))
-						{
-							partitions.Add(partition.Id);
-							_partitionKeys.Add(partitionKey);
-						}
-					}
-				}
-
-				[Test]
-				public void _should_store_state_for_all_actors()
-				{
-					for (var j = 0; j < 100; j++)
-					{
-
-						var actorId = new ActorId($"testivus-{j}");
-						var actorIdSchemaKey = new ActorIdStateKey(actorId);
-						var actorIdKey = State.Keys.SingleOrDefault(k =>
-							k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
-						if (actorIdKey == null)
-						{
-							throw new Exception($"Tried to find state for {ActorIdStateKey.ActorIdStateSchemaName} {actorIdSchemaKey.Key} but found no keys matching that");
-						}
-
-						var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
-						actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
-						actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
-						actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-						actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
-						actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
-						actorIdState.State.Should().Be(actorIdSchemaKey.Key);
-
-
-						CheckActorState<int>($"testivus-{j}", "state1", (value) => value.Should().Be(1));
-						CheckActorState<string>($"testivus-{j}", "state2", v => v.Should().Be($"the value for testivus-{j}"));
-						CheckActorState<ComplexState>($"testivus-{j}", "state3", v =>
-						{
-							v.Value.Should().Be($"Complex state for testivus-{j}");
-							(DateTime.Now - v.Time).TotalMinutes.Should().BeLessThan(30);
-						});
-						CheckActorState<int>($"testivus-{j}", "state4", v => v.Should().BeInRange(0, 100));
-					}
-
-					State.Should().HaveCount(500);
-				}
-
-				[Test]
-				public async Task _should_enumerate_all_actors()
-				{
-					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
-
-					var actors = new List<string>();
-					foreach (var partitionKey in _partitionKeys)
-					{
-						var actorDemoActorService = FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
-							serviceName, partitionKey);
-
-						var actorsAsync = await actorDemoActorService.GetActorsAsync(CancellationToken.None);
-						actors.AddRange(actorsAsync);
-					}
-
-					actors.Should().HaveCount(100);
-				}
-
-				[Test]
-				public async Task _should_enumerate_all_state_for_all_actors()
-				{
-					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
-
-					var actors = new List<string>();
-					foreach (var partitionKey in _partitionKeys)
-					{
-						var actorDemoActorService = FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
-							serviceName, partitionKey);
-
-						var actorsAsync = await actorDemoActorService.GetActorsAsync(CancellationToken.None);
-
-						foreach (var actor in actors)
-						{
-							var actorStates = await actorDemoActorService.GetStoredStates(new ActorId(actor), CancellationToken.None);
-
-							actorStates.Should().BeEquivalentTo(new[] {"state1", "state2", "state3", "state4"});
-						}
-					}
-				}
-
-				private void CheckActorState<T>(string actorName, string stateName, Action<T> checkValue)
-				{
-					var actorId = new ActorId(actorName);
-					var actorIdSchemaKey = new ActorIdStateKey(actorId);
-
-					var actorStateKey = State.Keys.SingleOrDefault(k =>
-						k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key) && k.Contains(stateName));
-					if (actorStateKey == null)
-					{
-						throw new Exception($"Tried to find state for {ActorStateKey.ActorStateSchemaName} | {actorIdSchemaKey.Key} | {stateName} but found no keys matching that");
-					}
-
-
-					var actorState = GetState<ActorStateWrapper<T>>(actorStateKey);
-					actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
-					actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
-					actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
-					actorState.ActorId.GetStringId().Should().Be(actorName);
-					checkValue(actorState.State);
-				}
-
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo CreateActor(
-					ActorDemoActorService service, ActorId actorId)
-				{
-					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo(service, actorId);
-				}
-			}
-
-			public class
-				_with_actors_with_reminders : TestBase<FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo>
-			{
-				private IList<long> _partitionKeys;
-
-				protected override async Task SetupActor()
-				{
-					for (int j = 0; j < 10; j++)
-					{
-						var actorProxy = FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
-						var i = await actorProxy.GetCountAsync();
-					}
-
-					await base.SetupActor();
-
-					var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
-
-					var partitions = new List<Guid>();
-					_partitionKeys = new List<long>();
-					for (int j = 0; j < 100; j++)
-					{
-						var partitionKey = new ActorId($"testivus-{j}").GetPartitionKey();
-						var partition = await FabricRuntime.PartitionEnumerationManager.GetPartition(serviceName, partitionKey);
-
-						if (!partitions.Contains(partition.Id))
-						{
-							partitions.Add(partition.Id);
-							_partitionKeys.Add(partitionKey);
-						}
-					}
-				}
-
-				[Test]
-				public void _should_store_reminder_state()
-				{
-					State.Should().HaveCount(30);
-
-					State.Where(i => i.Key.Contains(ActorIdStateKey.ActorIdStateSchemaName)).Should().HaveCount(10);
-					State.Where(i => i.Key.Contains(ActorReminderStateKey.ActorReminderSchemaName)).Should().HaveCount(10);
-					State.Where(i => i.Key.Contains(ActorStateKey.ActorStateSchemaName)).Should().HaveCount(10);
-				}
-
-				protected override FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo CreateActor(
-					ActorDemoActorService service, ActorId actorId)
-				{
-					return new FG.ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo(service, actorId);
-				}
-			}
-		}
-	}
+    namespace With_StateSessionActorStateProvider
+    {
+        namespace _and_InMemoryStateSession2
+        {
+            public abstract class TestBase<T>
+                where T : ActorBase, IActorDemo
+            {
+                protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
+                private Guid _appId = Guid.NewGuid();
+                private string _collectionName;
+                protected MockFabricApplication _fabricApplication;
+                protected MockFabricRuntime FabricRuntime;
+
+                private string ApplicationName => @"Overlord";
+
+                [SetUp]
+                public void Setup()
+                {
+                    State.Clear();
+                    FabricRuntime = new MockFabricRuntime {DisableMethodCallOutput = true};
+                    _fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
+
+                    _fabricApplication.SetupActor(
+                        CreateActor,
+                        (context, information, provider, factory) =>
+                            new ActorDemoActorService(context, information, stateProvider: provider),
+                        createActorStateProvider: (context, actorInfo) =>
+                            new StateSessionActorStateProvider(context, CreateStateManager(context), actorInfo),
+                        serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue,
+                            long.MaxValue));
+
+
+                    SetupActor().GetAwaiter().GetResult();
+                }
+
+                protected abstract T CreateActor(ActorDemoActorService service, ActorId actorId);
+
+                [TearDown]
+                public void TearDown()
+                {
+                    Console.WriteLine($"States stored");
+                    Console.WriteLine($"______________________");
+                    foreach (var stateKey in State.Keys)
+                    {
+                        Console.WriteLine($"State: {stateKey}");
+                        Console.WriteLine($"{State[stateKey]}");
+                        Console.WriteLine($"______________________");
+                    }
+                }
+
+                protected virtual Task SetupActor()
+                {
+                    return Task.FromResult(true);
+                }
+
+                protected virtual Task SetUpStates(InMemoryStateSessionManagerWithTransaction stateSessionManager)
+                {
+                    return Task.FromResult(true);
+                }
+
+                protected T2 GetState<T2>(string key)
+                {
+                    return JsonConvert.DeserializeObject<T2>(State[key]);
+                }
+
+                private IStateSessionManager CreateStateManager(StatefulServiceContext context)
+                {
+                    //_collectionName = $"AppTest-{_appId}";
+                    //var _cosmosDbSettingsProvider = CosmosDbForTestingSettingsProvider.DefaultForCollection(_collectionName);
+                    //var stateManager = new DocumentDbStateSessionManagerWithTransactions(
+                    //	"StatefulServiceDemo",
+                    //	_appId,
+                    //	StateSessionHelper.GetPartitionInfo(context, () => FabricRuntime.PartitionEnumerationManager).GetAwaiter()
+                    //		.GetResult(),
+                    //	_cosmosDbSettingsProvider
+                    //);
+                    var stateManager = new InMemoryStateSessionManagerWithTransaction(
+                        StateSessionHelper.GetServiceName(context.ServiceName),
+                        context.PartitionId,
+                        StateSessionHelper.GetPartitionInfo(context,
+                            () => new MockPartitionEnumerationManager(FabricRuntime)).GetAwaiter().GetResult(),
+                        State
+                    );
+                    SetUpStates(stateManager);
+                    return stateManager;
+                }
+            }
+
+            public class _without_state : TestBase<ActorDemo>
+            {
+                [Test]
+                public async Task _should_not_return_any_state_on_activate()
+                {
+                    var actorProxy =
+                        FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId("testivus"));
+                    var i = await actorProxy.GetCountAsync();
+
+                    i.Should().Be(1);
+
+                    State.Keys.Should().HaveCount(2);
+
+                    var actorId = new ActorId("testivus");
+                    var actorIdSchemaKey = new ActorIdStateKey(actorId);
+                    var actorIdKey = State.Keys.Single(k => k.Contains(ActorIdStateKey.ActorIdStateSchemaName));
+                    var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
+                    actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
+                    actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
+                    actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                    actorIdState.ServicePartitionKey.Should().Be("range-1");
+                    actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                    actorIdState.ActorId.GetStringId().Should().Be("testivus");
+                    actorIdState.State.Should().Be(actorIdSchemaKey.Key);
+
+                    var actorStateKey = State.Keys.Single(k => k.Contains(ActorStateKey.ActorStateSchemaName));
+                    var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
+                    actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
+                    actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                    actorState.ServicePartitionKey.Should().Be("range-1");
+                    actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                    actorState.ActorId.GetStringId().Should().Be("testivus");
+                    actorState.State.Should().Be(1);
+                }
+
+                protected override ActorDemo CreateActor(
+                    ActorDemoActorService service, ActorId actorId)
+                {
+                    return new ActorDemo(service, actorId);
+                }
+            }
+
+            public class _with_state : TestBase<ActorDemo>
+            {
+                protected override async Task SetUpStates(
+                    InMemoryStateSessionManagerWithTransaction stateSessionManager)
+                {
+                    if (stateSessionManager
+                        .GetPrivateProperty<InMemoryStateSessionManagerWithTransaction, string>("PartitionKey")
+                        .Equals("range-1"))
+                        using (var session = stateSessionManager.Writable.CreateSession())
+                        {
+                            var actorId = new ActorId("testivus");
+                            var actorIdSchemaKey = new ActorIdStateKey(actorId);
+                            await session.SetValueAsync(actorIdSchemaKey.Schema, actorIdSchemaKey.Key,
+                                actorIdSchemaKey.Key,
+                                new ActorStateValueMetadata(StateWrapperType.ActorId, actorId));
+
+                            var id = new ActorStateKey(actorId, "count");
+                            await session.SetValueAsync(id.Schema, id.Key, 5,
+                                new ActorStateValueMetadata(StateWrapperType.ActorState, actorId));
+
+                            await session.CommitAsync();
+                        }
+                    await base.SetUpStates(stateSessionManager);
+                }
+
+                [Test]
+                public async Task _should_return_prior_state_on_activate()
+                {
+                    var actorProxy =
+                        FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId("testivus"));
+                    var i = await actorProxy.GetCountAsync();
+
+                    i.Should().Be(5);
+
+                    var actorId = new ActorId("testivus");
+                    var actorIdSchemaKey = new ActorIdStateKey(actorId);
+                    var actorIdKey = State.Keys.Single(k => k.Contains(ActorIdStateKey.ActorIdStateSchemaName));
+                    var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
+                    actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
+                    actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
+                    actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                    actorIdState.ServicePartitionKey.Should().Be("range-1");
+                    actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                    actorIdState.ActorId.GetStringId().Should().Be("testivus");
+                    actorIdState.State.Should().Be(actorIdSchemaKey.Key);
+
+                    var actorStateKey = State.Keys.Single(k => k.Contains(ActorStateKey.ActorStateSchemaName));
+                    var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
+                    actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
+                    actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                    actorState.ServicePartitionKey.Should().Be("range-1");
+                    actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                    actorState.ActorId.GetStringId().Should().Be("testivus");
+                    actorState.State.Should().Be(5);
+                }
+
+                protected override ActorDemo CreateActor(
+                    ActorDemoActorService service, ActorId actorId)
+                {
+                    return new ActorDemo(service, actorId);
+                }
+            }
+
+            public class _with_multiple_activated_actors : TestBase<ActorDemo>
+            {
+                [Test]
+                public async Task _should_return_prior_state_on_activate()
+                {
+                    for (var j = 0; j < 100; j++)
+                    {
+                        var actorProxy =
+                            FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
+                        var i = await actorProxy.GetCountAsync();
+
+                        var actorId = new ActorId($"testivus-{j}");
+                        var actorIdSchemaKey = new ActorIdStateKey(actorId);
+                        var actorIdKey = State.Keys.Single(k =>
+                            k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
+                        var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
+                        actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
+                        actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
+                        actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                        actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                        actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
+                        actorIdState.State.Should().Be(actorIdSchemaKey.Key);
+
+                        var actorStateKey = State.Keys.Single(k =>
+                            k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
+                        var actorState = GetState<ActorStateWrapper<int>>(actorStateKey);
+                        actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
+                        actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                        actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                        actorState.ActorId.GetStringId().Should().Be($"testivus-{j}");
+                        actorState.State.Should().Be(1);
+                    }
+
+                    State.Should().HaveCount(200);
+                }
+
+                [Test]
+                public async Task _should_be_able_to_delete_created_actors()
+                {
+                    for (var j = 0; j < 10; j++)
+                    {
+                        var actorProxy =
+                            FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
+                        var i = await actorProxy.GetCountAsync();
+                    }
+
+                    //State.Should().HaveCount(20);
+
+                    var serviceUri = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+                    for (var j = 0; j < 10; j++)
+                    {
+                        var actorProxy =
+                            FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorService>(serviceUri,
+                                new ActorId($"testivus-{j}"));
+                        await actorProxy.DeleteActorAsync(new ActorId($"testivus-{j}"), CancellationToken.None);
+                    }
+
+                    //State.Should().HaveCount(0);
+                }
+
+
+                protected override ActorDemo CreateActor(
+                    ActorDemoActorService service, ActorId actorId)
+                {
+                    return new ActorDemo(service, actorId);
+                }
+            }
+
+            public class _with_multiple_activated_actors_with_multiple_states : TestBase<
+                ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo>
+            {
+                private IList<long> _partitionKeys;
+
+                protected override async Task SetupActor()
+                {
+                    for (var j = 0; j < 100; j++)
+                    {
+                        var actorProxy =
+                            FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
+                        var i = await actorProxy.GetCountAsync();
+                    }
+
+                    await base.SetupActor();
+
+                    var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+
+                    var partitions = new List<Guid>();
+                    _partitionKeys = new List<long>();
+                    for (var j = 0; j < 100; j++)
+                    {
+                        var partitionKey = new ActorId($"testivus-{j}").GetPartitionKey();
+                        var partition =
+                            await FabricRuntime.PartitionEnumerationManager.GetPartition(serviceName, partitionKey);
+
+                        if (!partitions.Contains(partition.Id))
+                        {
+                            partitions.Add(partition.Id);
+                            _partitionKeys.Add(partitionKey);
+                        }
+                    }
+                }
+
+                [Test]
+                public void _should_store_state_for_all_actors()
+                {
+                    for (var j = 0; j < 100; j++)
+                    {
+                        var actorId = new ActorId($"testivus-{j}");
+                        var actorIdSchemaKey = new ActorIdStateKey(actorId);
+                        var actorIdKey = State.Keys.SingleOrDefault(k =>
+                            k.Contains(ActorIdStateKey.ActorIdStateSchemaName) && k.Contains(actorIdSchemaKey.Key));
+                        if (actorIdKey == null)
+                            throw new Exception(
+                                $"Tried to find state for {ActorIdStateKey.ActorIdStateSchemaName} {actorIdSchemaKey.Key} but found no keys matching that");
+
+                        var actorIdState = GetState<ActorStateWrapper<string>>(actorIdKey);
+                        actorIdState.Schema.Should().Be(ActorIdStateKey.ActorIdStateSchemaName);
+                        actorIdState.Key.Should().Be(actorIdSchemaKey.Key);
+                        actorIdState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                        actorIdState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                        actorIdState.ActorId.GetStringId().Should().Be($"testivus-{j}");
+                        actorIdState.State.Should().Be(actorIdSchemaKey.Key);
+
+
+                        CheckActorState<int>($"testivus-{j}", "state1", value => value.Should().Be(1));
+                        CheckActorState<string>($"testivus-{j}", "state2",
+                            v => v.Should().Be($"the value for testivus-{j}"));
+                        CheckActorState<ComplexState>($"testivus-{j}", "state3", v =>
+                        {
+                            v.Value.Should().Be($"Complex state for testivus-{j}");
+                            (DateTime.Now - v.Time).TotalMinutes.Should().BeLessThan(30);
+                        });
+                        CheckActorState<int>($"testivus-{j}", "state4", v => v.Should().BeInRange(0, 100));
+                    }
+
+                    State.Should().HaveCount(500);
+                }
+
+                [Test]
+                public async Task _should_enumerate_all_actors()
+                {
+                    var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+
+                    var actors = new List<string>();
+                    foreach (var partitionKey in _partitionKeys)
+                    {
+                        var actorDemoActorService =
+                            FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
+                                serviceName, partitionKey);
+
+                        var actorsAsync = await actorDemoActorService.GetActorsAsync(CancellationToken.None);
+                        actors.AddRange(actorsAsync);
+                    }
+
+                    actors.Should().HaveCount(100);
+                }
+
+                [Test]
+                public async Task _should_enumerate_all_state_for_all_actors()
+                {
+                    var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+
+                    var actors = new List<string>();
+                    foreach (var partitionKey in _partitionKeys)
+                    {
+                        var actorDemoActorService =
+                            FabricRuntime.ActorProxyFactory.CreateActorServiceProxy<IActorDemoActorService>(
+                                serviceName, partitionKey);
+
+                        var actorsAsync = await actorDemoActorService.GetActorsAsync(CancellationToken.None);
+
+                        foreach (var actor in actors)
+                        {
+                            var actorStates =
+                                await actorDemoActorService.GetStoredStates(new ActorId(actor), CancellationToken.None);
+
+                            actorStates.Should().BeEquivalentTo("state1", "state2", "state3", "state4");
+                        }
+                    }
+                }
+
+                private void CheckActorState<T>(string actorName, string stateName, Action<T> checkValue)
+                {
+                    var actorId = new ActorId(actorName);
+                    var actorIdSchemaKey = new ActorIdStateKey(actorId);
+
+                    var actorStateKey = State.Keys.SingleOrDefault(k =>
+                        k.Contains(ActorStateKey.ActorStateSchemaName) && k.Contains(actorIdSchemaKey.Key) &&
+                        k.Contains(stateName));
+                    if (actorStateKey == null)
+                        throw new Exception(
+                            $"Tried to find state for {ActorStateKey.ActorStateSchemaName} | {actorIdSchemaKey.Key} | {stateName} but found no keys matching that");
+
+
+                    var actorState = GetState<ActorStateWrapper<T>>(actorStateKey);
+                    actorState.Schema.Should().StartWith(ActorStateKey.ActorStateSchemaName);
+                    actorState.ServiceName.Should().Be("Overlord-ActorDemoActorService");
+                    actorState.ActorId.Kind.Should().Be(ActorIdKind.String);
+                    actorState.ActorId.GetStringId().Should().Be(actorName);
+                    checkValue(actorState.State);
+                }
+
+                protected override ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo
+                    CreateActor(
+                        ActorDemoActorService service, ActorId actorId)
+                {
+                    return new ServiceFabric.Tests.Actor.WithoutInternalErrors.WithMultipleStates.ActorDemo(service,
+                        actorId);
+                }
+            }
+
+            public class
+                _with_actors_with_reminders : TestBase<
+                    ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo>
+            {
+                private IList<long> _partitionKeys;
+
+                protected override async Task SetupActor()
+                {
+                    for (var j = 0; j < 10; j++)
+                    {
+                        var actorProxy =
+                            FabricRuntime.ActorProxyFactory.CreateActorProxy<IActorDemo>(new ActorId($"testivus-{j}"));
+                        var i = await actorProxy.GetCountAsync();
+                    }
+
+                    await base.SetupActor();
+
+                    var serviceName = _fabricApplication.ApplicationUriBuilder.Build("ActorDemoActorService").ToUri();
+
+                    var partitions = new List<Guid>();
+                    _partitionKeys = new List<long>();
+                    for (var j = 0; j < 100; j++)
+                    {
+                        var partitionKey = new ActorId($"testivus-{j}").GetPartitionKey();
+                        var partition =
+                            await FabricRuntime.PartitionEnumerationManager.GetPartition(serviceName, partitionKey);
+
+                        if (!partitions.Contains(partition.Id))
+                        {
+                            partitions.Add(partition.Id);
+                            _partitionKeys.Add(partitionKey);
+                        }
+                    }
+                }
+
+                [Test]
+                public void _should_store_reminder_state()
+                {
+                    State.Should().HaveCount(30);
+
+                    State.Where(i => i.Key.Contains(ActorIdStateKey.ActorIdStateSchemaName)).Should().HaveCount(10);
+                    State.Where(i => i.Key.Contains(ActorReminderStateKey.ActorReminderSchemaName)).Should()
+                        .HaveCount(10);
+                    State.Where(i => i.Key.Contains(ActorStateKey.ActorStateSchemaName)).Should().HaveCount(10);
+                }
+
+                protected override ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo CreateActor(
+                    ActorDemoActorService service, ActorId actorId)
+                {
+                    return new ServiceFabric.Tests.Actor.WithoutInternalErrors.WithReminders.ActorDemo(service,
+                        actorId);
+                }
+            }
+        }
+    }
 }

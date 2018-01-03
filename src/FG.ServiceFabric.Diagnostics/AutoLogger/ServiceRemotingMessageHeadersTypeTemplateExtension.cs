@@ -2,9 +2,9 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-	public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension
-	{
-		private string Definition = @"{
+    public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension
+    {
+        private readonly string Definition = @"{
                   ""Name"": ""ServiceRemotingMessageHeaders"",
                   ""CLRType"": ""Microsoft.ServiceFabric.Services.Remoting.V1.ServiceRemotingMessageHeaders"",
                   ""Arguments"": [
@@ -21,11 +21,11 @@ namespace FG.ServiceFabric.Diagnostics.AutoLogger
                   ]
                 }";
 
-		public override string Module => @"ServiceFabric";
+        public override string Module => @"ServiceFabric";
 
-		protected override string GetDefinition()
-		{
-			return Definition;
-		}
-	}
+        protected override string GetDefinition()
+        {
+            return Definition;
+        }
+    }
 }

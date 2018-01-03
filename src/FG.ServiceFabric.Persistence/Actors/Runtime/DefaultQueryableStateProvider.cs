@@ -17,7 +17,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             _actorStateProvider = actorStateProvider;
         }
 
-        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn, ContinuationToken continuationToken,
+        public async Task<PagedLookupResult<ActorId, T>> GetActorStatesAsync<T>(string stateName, int numItemsToReturn,
+            ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken)) where T : class
         {
             var page = await _actorStateProvider.GetActorsAsync(numItemsToReturn, continuationToken, cancellationToken);
@@ -28,7 +29,7 @@ namespace FG.ServiceFabric.Actors.Runtime
                 result.Add(new KeyValuePair<ActorId, T>(actorId, actorState));
             }
 
-            return new PagedLookupResult<ActorId, T>() {Items = result, ContinuationToken = page.ContinuationToken};
+            return new PagedLookupResult<ActorId, T> {Items = result, ContinuationToken = page.ContinuationToken};
         }
     }
 }

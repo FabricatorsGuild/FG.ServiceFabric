@@ -1,25 +1,24 @@
-﻿namespace FG.ServiceFabric.Actors.Remoting.Runtime
+﻿using System;
+using System.Collections.Concurrent;
+using System.Threading.Tasks;
+using FG.Common.Utils;
+using FG.ServiceFabric.Diagnostics;
+using FG.ServiceFabric.Services.Remoting.FabricTransport;
+using FG.ServiceFabric.Services.Remoting.Runtime;
+using Microsoft.ServiceFabric.Actors.Runtime;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
+using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
+using ServiceRemotingDispatcher = Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher;
+
+namespace FG.ServiceFabric.Actors.Remoting.Runtime
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Threading.Tasks;
-
-    using FG.Common.Utils;
-    using FG.ServiceFabric.Diagnostics;
-    using FG.ServiceFabric.Services.Remoting.FabricTransport;
-    using FG.ServiceFabric.Services.Remoting.Runtime;
-
-    using Microsoft.ServiceFabric.Actors.Runtime;
-    using Microsoft.ServiceFabric.Services.Remoting.V1;
-    using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
-
-    using ServiceRemotingDispatcher = Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher;
-
     public class ActorServiceRemotingDispatcher : IServiceRemotingMessageHandler
     {
-        private static readonly ConcurrentDictionary<long, string> ActorMethodMap = new ConcurrentDictionary<long, string>();
+        private static readonly ConcurrentDictionary<long, string> ActorMethodMap =
+            new ConcurrentDictionary<long, string>();
 
-        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
+        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap =
+            new ConcurrentDictionary<long, string>();
 
         private readonly ActorService _actorService;
 
@@ -27,36 +26,37 @@
 
         private readonly IActorServiceCommunicationLogger _logger;
 
-        public ActorServiceRemotingDispatcher(ActorService actorService, IServiceRemotingMessageHandler innerMessageHandler, IActorServiceCommunicationLogger logger)
+        public ActorServiceRemotingDispatcher(ActorService actorService,
+            IServiceRemotingMessageHandler innerMessageHandler, IActorServiceCommunicationLogger logger)
         {
-            this._actorService = actorService;
-            this._innerMessageHandler = innerMessageHandler;
-            this._logger = logger;
+            _actorService = actorService;
+            _innerMessageHandler = innerMessageHandler;
+            _logger = logger;
         }
 
-        public void HandleOneWay(IServiceRemotingRequestContext requestContext, ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
+        public void HandleOneWay(IServiceRemotingRequestContext requestContext,
+            ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
         {
             throw new NotImplementedException();
         }
 
-        public Task<byte[]> RequestResponseAsync(IServiceRemotingRequestContext requestContext, ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
+        public Task<byte[]> RequestResponseAsync(IServiceRemotingRequestContext requestContext,
+            ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
         {
-            var customHeader = messageHeaders.GetCustomServiceRequestHeader(this._logger) ?? new CustomServiceRequestHeader();
-            var actorMessageHeaders = messageHeaders.GetActorMessageHeaders(this._logger);
+            var customHeader = messageHeaders.GetCustomServiceRequestHeader(_logger) ??
+                               new CustomServiceRequestHeader();
+            var actorMessageHeaders = messageHeaders.GetActorMessageHeaders(_logger);
             if (actorMessageHeaders == null)
-            {
-                return this.RequestResponseServiceMessageAsync(requestContext, messageHeaders, requestBody, customHeader);
-            }
+                return RequestResponseServiceMessageAsync(requestContext, messageHeaders, requestBody, customHeader);
 
-            return this.RequestResponseActorMessageAsync(requestContext, messageHeaders, requestBody, actorMessageHeaders, customHeader);
+            return RequestResponseActorMessageAsync(requestContext, messageHeaders, requestBody, actorMessageHeaders,
+                customHeader);
         }
 
         private string GetActorMethodName(ActorMessageHeaders actorMessageHeaders)
         {
             if (actorMessageHeaders == null)
-            {
                 return null;
-            }
 
             try
             {
@@ -64,14 +64,15 @@
 
                 return ActorMethodMap.GetOrAdd(
                     lookup,
-                    ((Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher)this._innerMessageHandler).GetMethodDispatcherMapName(
+                    ((Microsoft.ServiceFabric.Actors.Remoting.V1.Runtime.ActorServiceRemotingDispatcher)
+                        _innerMessageHandler).GetMethodDispatcherMapName(
                         actorMessageHeaders.InterfaceId,
                         actorMessageHeaders.MethodId));
             }
             catch (Exception ex)
             {
                 // ignored
-                this._logger?.FailedToGetActorMethodName(actorMessageHeaders, ex);
+                _logger?.FailedToGetActorMethodName(actorMessageHeaders, ex);
             }
 
             return null;
@@ -82,12 +83,14 @@
             try
             {
                 var lookup = HashUtil.Combine(interfaceId, methodId);
-                return ServiceMethodMap.GetOrAdd(lookup, lu => ((ServiceRemotingDispatcher)this._innerMessageHandler).GetMethodDispatcherMapName(interfaceId, methodId));
+                return ServiceMethodMap.GetOrAdd(lookup,
+                    lu => ((ServiceRemotingDispatcher) _innerMessageHandler).GetMethodDispatcherMapName(interfaceId,
+                        methodId));
             }
             catch (Exception ex)
             {
                 // Ignored
-                this._logger?.FailedToGetServiceMethodName(this._actorService.Context.ServiceName, interfaceId, methodId, ex);
+                _logger?.FailedToGetServiceMethodName(_actorService.Context.ServiceName, interfaceId, methodId, ex);
             }
 
             return null;
@@ -100,20 +103,23 @@
             ActorMessageHeaders actorMessageHeaders,
             CustomServiceRequestHeader customHeader)
         {
-            var methodName = this.GetActorMethodName(actorMessageHeaders);
+            var methodName = GetActorMethodName(actorMessageHeaders);
 
             byte[] result = null;
             using (new ServiceRequestContextWrapper(customHeader))
             {
-                using (this._logger?.RecieveActorMessage(this._actorService.Context.ServiceName, methodName, actorMessageHeaders, customHeader))
+                using (_logger?.RecieveActorMessage(_actorService.Context.ServiceName, methodName, actorMessageHeaders,
+                    customHeader))
                 {
                     try
                     {
-                        result = await this._innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders, requestBody);
+                        result = await _innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders,
+                            requestBody);
                     }
                     catch (Exception ex)
                     {
-                        this._logger?.RecieveActorMessageFailed(this._actorService.Context.ServiceName, methodName, actorMessageHeaders, customHeader, ex);
+                        _logger?.RecieveActorMessageFailed(_actorService.Context.ServiceName, methodName,
+                            actorMessageHeaders, customHeader, ex);
                         throw;
                     }
                 }
@@ -128,20 +134,23 @@
             byte[] requestBody,
             CustomServiceRequestHeader customHeader)
         {
-            var methodName = this.GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
+            var methodName = GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
 
             byte[] result = null;
             using (new ServiceRequestContextWrapper(customHeader))
             {
-                using (this._logger?.RecieveServiceMessage(this._actorService.Context.ServiceName, methodName, messageHeaders, customHeader))
+                using (_logger?.RecieveServiceMessage(_actorService.Context.ServiceName, methodName, messageHeaders,
+                    customHeader))
                 {
                     try
                     {
-                        result = await this._innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders, requestBody);
+                        result = await _innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders,
+                            requestBody);
                     }
                     catch (Exception ex)
                     {
-                        this._logger?.RecieveServiceMessageFailed(this._actorService.Context.ServiceName, methodName, messageHeaders, customHeader, ex);
+                        _logger?.RecieveServiceMessageFailed(_actorService.Context.ServiceName, methodName,
+                            messageHeaders, customHeader, ex);
                         throw;
                     }
                 }

@@ -1,22 +1,18 @@
-﻿namespace FG.ServiceFabric.Actors.Runtime
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+using FG.Common.Async;
+using FG.ServiceFabric.Diagnostics;
+using Microsoft.ServiceFabric.Actors;
+using Microsoft.ServiceFabric.Actors.Client;
+using Microsoft.ServiceFabric.Actors.Runtime;
+
+namespace FG.ServiceFabric.Actors.Runtime
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.Serialization;
-    using System.Threading;
-    using System.Threading.Tasks;
-
-    using FG.Common.Async;
-    using FG.ServiceFabric.Diagnostics;
-
-    using Microsoft.ServiceFabric.Actors;
-    using Microsoft.ServiceFabric.Actors.Client;
-    using Microsoft.ServiceFabric.Actors.Runtime;
-
-    using ActorReference = FG.ServiceFabric.Actors.ActorReference;
-
     public interface IReceiverActorBinder
     {
         IReliableMessageReceiverActor Bind(ActorReference actorReference);
@@ -26,7 +22,7 @@
     {
         public IReliableMessageReceiverActor Bind(ActorReference actorReference)
         {
-            return (IReliableMessageReceiverActor)actorReference.Bind(typeof(IReliableMessageReceiverActor));
+            return (IReliableMessageReceiverActor) actorReference.Bind(typeof(IReliableMessageReceiverActor));
         }
     }
 
@@ -45,48 +41,48 @@
     {
         public ReliableMessageChannelState()
         {
-            this.InnerQueue = new Queue<ActorReliableMessage>();
+            InnerQueue = new Queue<ActorReliableMessage>();
         }
 
         public ReliableMessageChannelState(ActorReliableMessage message)
             : this()
         {
-            this.InnerQueue = new Queue<ActorReliableMessage>(new[] { message });
+            InnerQueue = new Queue<ActorReliableMessage>(new[] {message});
         }
 
-        public int Depth => this.InnerQueue.Count;
+        public int Depth => InnerQueue.Count;
 
-        public bool IsEmpty => this.InnerQueue.Count == 0;
+        public bool IsEmpty => InnerQueue.Count == 0;
 
         [DataMember]
         private Queue<ActorReliableMessage> InnerQueue { get; set; }
 
+        public IEnumerator<ActorReliableMessage> GetEnumerator()
+        {
+            return InnerQueue.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         public ActorReliableMessage Dequeue()
         {
-            var value = this.InnerQueue.Dequeue();
-            this.InnerQueue = new Queue<ActorReliableMessage>(this.InnerQueue);
+            var value = InnerQueue.Dequeue();
+            InnerQueue = new Queue<ActorReliableMessage>(InnerQueue);
             return value;
         }
 
         public ReliableMessageChannelState Enqueue(ActorReliableMessage message)
         {
-            this.InnerQueue = new Queue<ActorReliableMessage>(this.InnerQueue.Union(new[] { message }));
+            InnerQueue = new Queue<ActorReliableMessage>(InnerQueue.Union(new[] {message}));
             return this;
-        }
-
-        public IEnumerator<ActorReliableMessage> GetEnumerator()
-        {
-            return this.InnerQueue.GetEnumerator();
         }
 
         public ActorReliableMessage Peek()
         {
-            return this.InnerQueue.Peek();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
+            return InnerQueue.Peek();
         }
     }
 
@@ -113,43 +109,35 @@
             Func<ReliableMessage, ActorReference, Task> messageDrop = null,
             IReceiverActorBinder actorBinder = null)
         {
-            this._stateManager = stateManager;
-            this._actorProxyFactory = actorProxyFactory;
-            this._messageDrop = messageDrop;
-            this._loggerFactory = loggerFactory ?? DefaultLoggerFactory();
-            this._actorBinder = actorBinder ?? new DefaultActorBinder();
-        }
-
-        public async Task<IEnumerable<DeadLetter>> GetDeadLetters(CancellationToken cancellationToken)
-        {
-            var channelState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, this._stateManager, cancellationToken);
-            return channelState.Select(message => new DeadLetter(message)).ToList();
-        }
-
-        public async Task<ReliableMessage> PeekQueue(CancellationToken cancellationToken)
-        {
-            var channelState = await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, this._stateManager, cancellationToken);
-            return channelState.Peek().Message;
+            _stateManager = stateManager;
+            _actorProxyFactory = actorProxyFactory;
+            _messageDrop = messageDrop;
+            _loggerFactory = loggerFactory ?? DefaultLoggerFactory();
+            _actorBinder = actorBinder ?? new DefaultActorBinder();
         }
 
         public async Task ProcessQueueAsync(CancellationToken cancellationToken)
         {
-            var channelState = await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, this._stateManager, cancellationToken);
+            var channelState =
+                await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, _stateManager, cancellationToken);
             while (channelState != null && !channelState.IsEmpty)
             {
                 var actorMessage = channelState.Dequeue();
                 try
                 {
-                    await this.SendAsync(actorMessage.Message, actorMessage.ActorReference);
-                    await this._stateManager.AddOrUpdateStateAsync(ReliableMessageQueueStateKey, channelState, (k, v) => channelState, cancellationToken);
+                    await SendAsync(actorMessage.Message, actorMessage.ActorReference);
+                    await _stateManager.AddOrUpdateStateAsync(ReliableMessageQueueStateKey, channelState,
+                        (k, v) => channelState, cancellationToken);
 
-                    this._loggerFactory()
-                        ?.MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, actorMessage.Message.Payload, actorMessage.Message.MessageType);
+                    _loggerFactory()
+                        ?.MessageSent(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri,
+                            actorMessage.Message.Payload, actorMessage.Message.MessageType);
                 }
                 catch (Exception e)
                 {
-                    this._loggerFactory()?.FailedToSendMessage(actorMessage.ActorReference.ActorId, actorMessage.ActorReference.ServiceUri, e);
-                    await this.DropMessageAsync(actorMessage, cancellationToken);
+                    _loggerFactory()?.FailedToSendMessage(actorMessage.ActorReference.ActorId,
+                        actorMessage.ActorReference.ServiceUri, e);
+                    await DropMessageAsync(actorMessage, cancellationToken);
                 }
             }
         }
@@ -163,23 +151,39 @@
             string listerName = null)
             where TActorInterface : IReliableMessageReceiverActor
         {
-            var proxy = this._actorProxyFactory.CreateActorProxy<TActorInterface>(actorId, applicationName, serviceName, listerName);
+            var proxy = _actorProxyFactory.CreateActorProxy<TActorInterface>(actorId, applicationName, serviceName,
+                listerName);
 
-            var channelState = await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, this._stateManager, cancellationToken);
+            var channelState =
+                await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, _stateManager, cancellationToken);
 
             channelState.Enqueue(
                 new ActorReliableMessage
-                    {
-                        ActorReference = ActorReference.Get((IActorProxy)proxy),
-                        Message = message
-                    });
-            await AddOrUpdateStateWithRetriesAsync(ReliableMessageQueueStateKey, channelState, this._stateManager, cancellationToken);
+                {
+                    ActorReference = ActorReference.Get((IActorProxy) proxy),
+                    Message = message
+                });
+            await AddOrUpdateStateWithRetriesAsync(ReliableMessageQueueStateKey, channelState, _stateManager,
+                cancellationToken);
+        }
+
+        public async Task<IEnumerable<DeadLetter>> GetDeadLetters(CancellationToken cancellationToken)
+        {
+            var channelState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
+            return channelState.Select(message => new DeadLetter(message)).ToList();
+        }
+
+        public async Task<ReliableMessage> PeekQueue(CancellationToken cancellationToken)
+        {
+            var channelState =
+                await GetOrAddStateWithRetriesAsync(ReliableMessageQueueStateKey, _stateManager, cancellationToken);
+            return channelState.Peek().Message;
         }
 
         // ReSharper disable once SuggestBaseTypeForParameter
         internal Task SendAsync(ReliableMessage message, ActorReference actorReference)
         {
-            return this._actorBinder.Bind(actorReference).ReceiveMessageAsync(message);
+            return _actorBinder.Bind(actorReference).ReceiveMessageAsync(message);
         }
 
         private static Task AddOrUpdateStateWithRetriesAsync(
@@ -200,7 +204,8 @@
             return () => null;
         }
 
-        private static Task<ReliableMessageChannelState> GetOrAddStateWithRetriesAsync(string stateName, IActorStateManager stateManager, CancellationToken cancellationToken)
+        private static Task<ReliableMessageChannelState> GetOrAddStateWithRetriesAsync(string stateName,
+            IActorStateManager stateManager, CancellationToken cancellationToken)
         {
             return ExecutionHelper.ExecuteWithRetriesAsync(
                 ct => stateManager.GetOrAddStateAsync(stateName, new ReliableMessageChannelState(), ct),
@@ -211,22 +216,20 @@
 
         private async Task DropMessageAsync(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
         {
-            if (this._messageDrop == null)
-            {
-                await this.MoveToDeadLetters(actorMessage, cancellationToken);
-            }
+            if (_messageDrop == null)
+                await MoveToDeadLetters(actorMessage, cancellationToken);
             else
-            {
-                await this._messageDrop(actorMessage.Message, actorMessage.ActorReference);
-            }
+                await _messageDrop(actorMessage.Message, actorMessage.ActorReference);
         }
 
         private async Task MoveToDeadLetters(ActorReliableMessage actorMessage, CancellationToken cancellationToken)
         {
-            var deadLetterState = await GetOrAddStateWithRetriesAsync(DeadLetterQueue, this._stateManager, cancellationToken);
+            var deadLetterState =
+                await GetOrAddStateWithRetriesAsync(DeadLetterQueue, _stateManager, cancellationToken);
             deadLetterState.Enqueue(actorMessage);
-            await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, this._stateManager, cancellationToken);
-            this._loggerFactory()?.MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType, actorMessage.Message.Payload, deadLetterState.Depth);
+            await AddOrUpdateStateWithRetriesAsync(DeadLetterQueue, deadLetterState, _stateManager, cancellationToken);
+            _loggerFactory()?.MessageMovedToDeadLetterQueue(actorMessage.Message.MessageType,
+                actorMessage.Message.Payload, deadLetterState.Depth);
         }
     }
 }
