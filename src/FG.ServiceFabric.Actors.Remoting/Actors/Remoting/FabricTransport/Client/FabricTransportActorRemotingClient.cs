@@ -67,8 +67,7 @@
 
         private static ActorMessageHeaders GetActorMessageHeaders(ServiceRemotingMessageHeaders messageHeaders)
         {
-            ActorMessageHeaders actorMessageHeaders = null;
-            if (ActorMessageHeaders.TryFromServiceMessageHeaders(messageHeaders, out actorMessageHeaders))
+            if (ActorMessageHeaders.TryFromServiceMessageHeaders(messageHeaders, out var actorMessageHeaders))
             {
             }
 

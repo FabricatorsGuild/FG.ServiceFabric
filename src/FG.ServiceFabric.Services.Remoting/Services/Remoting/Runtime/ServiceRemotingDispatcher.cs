@@ -1,99 +1,106 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using FG.ServiceFabric.Diagnostics;
-using FG.ServiceFabric.Services.Remoting.FabricTransport;
-using FG.ServiceFabric.Services.Runtime;
-using FG.Common.Utils;
-using Microsoft.ServiceFabric.Services.Remoting;
-using Microsoft.ServiceFabric.Services.Remoting.Runtime;
-using Microsoft.ServiceFabric.Services.Remoting.V1;
-using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
-
-namespace FG.ServiceFabric.Services.Remoting.Runtime
+﻿namespace FG.ServiceFabric.Services.Remoting.Runtime
 {
-	// ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
-	public class ServiceRemotingDispatcher : IServiceRemotingMessageHandler
-	{
-		private static readonly IDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
-		private readonly IServiceRemotingMessageHandler _innerMessageHandler;
-		private readonly IServiceCommunicationLogger _logger;
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
-		private readonly IService _service;
+    using FG.Common.Utils;
+    using FG.ServiceFabric.Diagnostics;
+    using FG.ServiceFabric.Services.Remoting.FabricTransport;
+    using FG.ServiceFabric.Services.Runtime;
 
-		public ServiceRemotingDispatcher(IService service, IServiceRemotingMessageHandler innerMessageHandler,
-			IServiceCommunicationLogger logger)
-		{
-			_service = service;
-			_innerMessageHandler = innerMessageHandler;
-			_logger = logger;
-		}
+    using Microsoft.ServiceFabric.Services.Remoting;
+    using Microsoft.ServiceFabric.Services.Remoting.V1;
+    using Microsoft.ServiceFabric.Services.Remoting.V1.Runtime;
 
-		public Task<byte[]> RequestResponseAsync(IServiceRemotingRequestContext requestContext,
-			ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
-		{
-			var customHeader = messageHeaders.GetCustomServiceRequestHeader(_logger) ?? new CustomServiceRequestHeader();
-			return RequestResponseServiceMessageAsync(requestContext, messageHeaders, requestBody, customHeader);
-		}
+    /// <summary>
+    /// Provides dispathching services for service remoting
+    /// </summary>
+    public class ServiceRemotingDispatcher : IServiceRemotingMessageHandler
+    {
+        private static readonly ConcurrentDictionary<long, string> ServiceMethodMap = new ConcurrentDictionary<long, string>();
 
-		public void HandleOneWay(IServiceRemotingRequestContext requestContext, ServiceRemotingMessageHeaders messageHeaders,
-			byte[] requestBody)
-		{
-			throw new NotImplementedException();
-		}
+        private readonly IServiceRemotingMessageHandler _innerMessageHandler;
 
-		private string GetServiceMethodName(int interfaceId, int methodId)
-		{
-			try
-			{
-				var lookup = HashUtil.Combine(interfaceId, methodId);
-				if (ServiceMethodMap.ContainsKey(lookup))
-				{
-					return ServiceMethodMap[lookup];
-				}
-				var methodName =
-					((Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher) _innerMessageHandler)
-					.GetMethodDispatcherMapName(interfaceId, methodId);
-				ServiceMethodMap[lookup] = methodName;
-				return methodName;
-			}
-			catch (Exception ex)
-			{
-				// Ignored
-				_logger?.FailedToGetServiceMethodName(_service.GetServiceContext().ServiceName, interfaceId, methodId, ex);
-			}
-			return null;
-		}
+        private readonly IServiceCommunicationLogger _logger;
 
-		private async Task<byte[]> RequestResponseServiceMessageAsync(
-			IServiceRemotingRequestContext requestContext,
-			ServiceRemotingMessageHeaders messageHeaders,
-			byte[] requestBody,
-			CustomServiceRequestHeader customHeader)
-		{
-			var methodName = GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
+        private readonly IService _service;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceRemotingDispatcher"/> class. 
+        /// </summary>
+        /// <param name="service">The service interface
+        /// </param>
+        /// <param name="innerMessageHandler">The inner message handler
+        /// </param>
+        /// <param name="logger">A service communication logger
+        /// </param>
+        public ServiceRemotingDispatcher(IService service, IServiceRemotingMessageHandler innerMessageHandler, IServiceCommunicationLogger logger)
+        {
+            this._service = service;
+            this._innerMessageHandler = innerMessageHandler;
+            this._logger = logger;
+        }
 
-			byte[] result = null;
-			using (new ServiceRequestContextWrapper(customHeader))
-			{
-				using (_logger?.RecieveServiceMessage(_service.GetServiceContext().ServiceName, methodName, messageHeaders,
-					customHeader))
-				{
-					try
-					{
-						result = await _innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders, requestBody);
-					}
-					catch (Exception ex)
-					{
-						_logger?.RecieveServiceMessageFailed(_service.GetServiceContext().ServiceName, methodName, messageHeaders,
-							customHeader, ex);
-						throw;
-					}
-				}
-			}
-			return result;
-		}
-	}
+        public void HandleOneWay(IServiceRemotingRequestContext requestContext, ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<byte[]> RequestResponseAsync(IServiceRemotingRequestContext requestContext, ServiceRemotingMessageHeaders messageHeaders, byte[] requestBody)
+        {
+            var customHeader = messageHeaders.GetCustomServiceRequestHeader(this._logger) ?? new CustomServiceRequestHeader();
+            return this.RequestResponseServiceMessageAsync(requestContext, messageHeaders, requestBody, customHeader);
+        }
+
+        private string GetServiceMethodName(int interfaceId, int methodId)
+        {
+            try
+            {
+                var lookup = HashUtil.Combine(interfaceId, methodId);
+
+                return ServiceMethodMap.GetOrAdd(
+                    lookup,
+                    lu => ((Microsoft.ServiceFabric.Services.Remoting.V1.Runtime.ServiceRemotingDispatcher)this._innerMessageHandler).GetMethodDispatcherMapName(
+                        interfaceId,
+                        methodId));
+            }
+            catch (Exception ex)
+            {
+                // Ignored
+                this._logger?.FailedToGetServiceMethodName(this._service.GetServiceContext().ServiceName, interfaceId, methodId, ex);
+            }
+
+            return null;
+        }
+
+        private async Task<byte[]> RequestResponseServiceMessageAsync(
+            IServiceRemotingRequestContext requestContext,
+            ServiceRemotingMessageHeaders messageHeaders,
+            byte[] requestBody,
+            CustomServiceRequestHeader customHeader)
+        {
+            var methodName = this.GetServiceMethodName(messageHeaders.InterfaceId, messageHeaders.MethodId);
+
+            byte[] result = null;
+            using (new ServiceRequestContextWrapper(customHeader))
+            {
+                using (this._logger?.RecieveServiceMessage(this._service.GetServiceContext().ServiceName, methodName, messageHeaders, customHeader))
+                {
+                    try
+                    {
+                        result = await this._innerMessageHandler.RequestResponseAsync(requestContext, messageHeaders, requestBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        this._logger?.RecieveServiceMessageFailed(this._service.GetServiceContext().ServiceName, methodName, messageHeaders, customHeader, ex);
+                        throw;
+                    }
+                }
+            }
+
+            return result;
+        }
+    }
 }

@@ -2,101 +2,87 @@ namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
 
-    public class ServiceRequestContextWrapper : MarshalByRefObject, IDisposable
+    using FG.Common.CallContext;
+
+    /// <summary>
+    ///     Provides a scope for the current service context
+    /// </summary>
+    public class ServiceRequestContextWrapper : BaseCallContextWrapper<ServiceRequestContext, string>
     {
-        private readonly bool _shouldDispose;
-
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
+        /// </summary>
+        /// <param name="customHeader">
+        ///     The custom service request header
+        /// </param>
         public ServiceRequestContextWrapper(CustomServiceRequestHeader customHeader)
-            : this()
+            : this(customHeader, ServiceRequestContext.Current)
         {
-            if (ServiceRequestContext.Current == null)
-            {
-                return;
-            }
-
-            foreach (var header in customHeader.GetHeaders())
-            {
-                ServiceRequestContext.Current[header.Key] = header.Value;
-            }
         }
 
-        protected ServiceRequestContextWrapper()
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
+        /// </summary>
+        /// <param name="customHeader">
+        ///     The custom service request header
+        /// </param>
+        /// <param name="serviceRequestContext">The service request context to use</param>
+        public ServiceRequestContextWrapper(CustomServiceRequestHeader customHeader, ServiceRequestContext serviceRequestContext)
+            : base(serviceRequestContext)
         {
-            if (ServiceRequestContext.Current == null)
-            {
-                this._shouldDispose = true;
-                ServiceRequestContext.Current = new ServiceRequestContext();
-            }
+            ServiceRequestContext.Current.Update(customHeader.GetHeaders(), (headers, d) => d.SetItems(headers));
+            this.ShouldDispose = true;
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
+        /// </summary>
+        /// <param name="serviceRequestContext">The service request context to use</param>
+        public ServiceRequestContextWrapper(ServiceRequestContext serviceRequestContext)
+            : base(serviceRequestContext ?? ServiceRequestContext.Current)
+        {
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="ServiceRequestContextWrapper" /> class.
+        /// </summary>
+        protected ServiceRequestContextWrapper() : base(ServiceRequestContext.Current, ServiceRequestContext.Current.Properties)
+        {
+            this.ShouldDispose = true;
+        }
+
+        /// <summary>
+        /// Gets a new service request context scope
+        /// </summary>
         public static ServiceRequestContextWrapper Current => new ServiceRequestContextWrapper();
 
+        /// <summary>
+        /// Gets or sets the correlation id
+        /// </summary>
         public string CorrelationId
         {
-            get => ServiceRequestContext.Current?[ServiceRequestContextKeys.CorrelationId];
-            set
-            {
-                if (ServiceRequestContext.Current != null)
-                {
-                    ServiceRequestContext.Current[ServiceRequestContextKeys.CorrelationId] = value;
-                }
-            }
+            get => this.Context.CorrelationId();
+            set => this.Context.CorrelationId(value);
         }
 
+        /// <summary>
+        /// Gets or sets the request id
+        /// </summary>
         public string RequestUri
         {
-            get => ServiceRequestContext.Current?[ServiceRequestContextKeys.RequestUri];
-            set
-            {
-                if (ServiceRequestContext.Current != null)
-                {
-                    ServiceRequestContext.Current[ServiceRequestContextKeys.RequestUri] = value;
-                }
-            }
+            get => this.Context[ServiceRequestContextKeys.RequestUri];
+            set => this.Context[ServiceRequestContextKeys.RequestUri] = value;
         }
 
+        /// <summary>
+        /// Gets or sets the user id
+        /// </summary>
         public string UserId
         {
-            get => ServiceRequestContext.Current?[ServiceRequestContextKeys.UserId];
-            set
-            {
-                if (ServiceRequestContext.Current != null)
-                {
-                    ServiceRequestContext.Current[ServiceRequestContextKeys.UserId] = value;
-                }
-            }
-        }
-
-        public void Dispose()
-        {
-            this.Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public IEnumerable<string> GetAllKeys()
-        {
-            return ServiceRequestContext.Current?.Keys ?? new string[0];
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (this._shouldDispose)
-                {
-                    ServiceRequestContext.Current = null;
-                }
-            }
-        }
-
-        private static class ServiceRequestContextKeys
-        {
-            public const string CorrelationId = "correlationId";
-
-            public const string RequestUri = "requestUri";
-
-            public const string UserId = "userId";
+            get => this.Context[ServiceRequestContextKeys.UserId];
+            set => this.Context[ServiceRequestContextKeys.UserId] = value;
         }
     }
 }

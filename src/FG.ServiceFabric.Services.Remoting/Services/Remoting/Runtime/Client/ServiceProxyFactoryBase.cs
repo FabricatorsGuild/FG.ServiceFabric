@@ -1,122 +1,123 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Reflection;
-using FG.ServiceFabric.Diagnostics;
-using FG.ServiceFabric.Services.Remoting.FabricTransport;
-using Microsoft.ServiceFabric.Services.Remoting.Builder;
-using Microsoft.ServiceFabric.Services.Remoting.Client;
-using Microsoft.ServiceFabric.Services.Remoting.V1;
-using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
-
-namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
+﻿namespace FG.ServiceFabric.Services.Remoting.Runtime.Client
 {
-	public abstract class ServiceProxyFactoryBase
-	{
-		private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ServiceMethodDispatcherMap =
-			new ConcurrentDictionary<Type, MethodDispatcherBase>();
+    using System;
+    using System.Collections.Concurrent;
+    using System.Reflection;
 
-		private static volatile Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
-		private readonly object _lock = new object();
-		private IServiceProxyFactory _innerProxyFactory;
+    using FG.Common.Expressions;
+    using FG.ServiceFabric.Diagnostics;
+    using FG.ServiceFabric.Services.Remoting.FabricTransport;
 
-		static ServiceProxyFactoryBase()
-		{
-			SetInnerFactory(null);
-		}
+    using Microsoft.ServiceFabric.Services.Remoting.Builder;
+    using Microsoft.ServiceFabric.Services.Remoting.Client;
+    using Microsoft.ServiceFabric.Services.Remoting.V1;
+    using Microsoft.ServiceFabric.Services.Remoting.V1.Client;
 
-		protected ServiceProxyFactoryBase(IServiceClientLogger logger)
-		{
-			Logger = logger;
-		}
+    /// <summary>
+    ///     Provides a base class for service proxy factories
+    /// </summary>
+    public abstract class ServiceProxyFactoryBase
+    {
+        private static readonly Func<Type, MethodDispatcherBase> GetOrCreateServiceMethodDispatcher;
 
-		private IServiceClientLogger Logger { get; set; }
+        private static readonly ConcurrentDictionary<Type, MethodDispatcherBase> ServiceMethodDispatcherMap = new ConcurrentDictionary<Type, MethodDispatcherBase>();
 
-		internal static void SetInnerFactory(Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> innerFactory)
-		{
-			if (innerFactory == null)
-			{
-				innerFactory = (serviceProxyFactory, serviceInterfaceType) =>
-					new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
-						client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
-			}
-			_serviceProxyFactoryInnerFactory = innerFactory;
-		}
+        private static volatile Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> _serviceProxyFactoryInnerFactory;
 
-		protected MethodDispatcherBase GetOrDiscoverServiceMethodDispatcher(Type serviceInterfaceType)
-		{
-			if (serviceInterfaceType == null) return null;
+        private readonly object _lock = new object();
 
-			if (ServiceMethodDispatcherMap.ContainsKey(serviceInterfaceType))
-			{
-				return ServiceMethodDispatcherMap[serviceInterfaceType];
-			}
+        private IServiceProxyFactory _innerProxyFactory;
 
-			lock (_lock)
-			{
-				if (ServiceMethodDispatcherMap.ContainsKey(serviceInterfaceType))
-				{
-					return ServiceMethodDispatcherMap[serviceInterfaceType];
-				}
-				var serviceMethodDispatcher = GetServiceMethodInformation(serviceInterfaceType);
-				ServiceMethodDispatcherMap[serviceInterfaceType] = serviceMethodDispatcher;
-				return serviceMethodDispatcher;
-			}
-		}
+        static ServiceProxyFactoryBase()
+        {
+            SetInnerFactory(null);
+            GetOrCreateServiceMethodDispatcher =
+                MethodCallProxyFactory.CreateMethodProxyFactory.CreateMethodProxy<Type, MethodDispatcherBase>(GetGetOrCreateServiceMethodDispatcher(), "type");
+        }
 
-		private static MethodDispatcherBase GetServiceMethodInformation(Type serviceInterfaceType)
-		{
-			var codeBuilderType = typeof(Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory)?.Assembly.GetType(
-				"Microsoft.ServiceFabric.Services.Remoting.V1.Builder.ServiceCodeBuilder");
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServiceProxyFactoryBase"/> class. 
+        /// </summary>
+        /// <param name="logger">A <see cref="IServiceClientLogger"/>
+        /// </param>
+        protected ServiceProxyFactoryBase(IServiceClientLogger logger)
+        {
+            this.Logger = logger;
+        }
 
-			var getOrCreateMethodDispatcher =
-				codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
-			var methodDispatcherBase =
-				getOrCreateMethodDispatcher?.Invoke(null, new object[] {serviceInterfaceType}) as MethodDispatcherBase;
+        private IServiceClientLogger Logger { get; }
 
-			return methodDispatcherBase;
-		}
+        internal static void SetInnerFactory(Func<ServiceProxyFactoryBase, Type, IServiceProxyFactory> innerFactory)
+        {
+            if (innerFactory == null)
+            {
+                innerFactory = (serviceProxyFactory, serviceInterfaceType) =>
+                    new Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory(
+                        client => serviceProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType));
+            }
 
-		protected static void UpdateRequestContext(Uri serviceUri)
-		{
-			if (ServiceRequestContext.Current == null) return;
+            _serviceProxyFactoryInnerFactory = innerFactory;
+        }
 
-			var contextWrapper = ServiceRequestContextWrapper.Current;
+        /// <summary>
+        /// Updates the request context with a <see cref="Uri"/>
+        /// </summary>
+        /// <param name="serviceUri">The current service uri</param>
+        protected static void UpdateRequestContext(Uri serviceUri)
+        {
+            var contextWrapper = ServiceRequestContextWrapper.Current;
 
-			contextWrapper.RequestUri = serviceUri?.ToString();
-			if (contextWrapper.CorrelationId == null)
-			{
-				contextWrapper.CorrelationId = Guid.NewGuid().ToString();
-			}
-		}
+            contextWrapper.RequestUri = serviceUri?.ToString();
+            if (contextWrapper.CorrelationId == null)
+            {
+                contextWrapper.CorrelationId = Guid.NewGuid().ToString();
+            }
+        }
 
+        protected IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
+        {
+            if (this._innerProxyFactory != null)
+            {
+                return this._innerProxyFactory;
+            }
 
-		protected IServiceProxyFactory GetInnerServiceProxyFactory(Type serviceInterfaceType)
-		{
-			if (_innerProxyFactory != null)
-			{
-				return _innerProxyFactory;
-			}
+            lock (this._lock)
+            {
+                return this._innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
+            }
+        }
 
-			lock (_lock)
-			{
-				_innerProxyFactory = _serviceProxyFactoryInnerFactory(this, serviceInterfaceType);
+        protected MethodDispatcherBase GetOrDiscoverServiceMethodDispatcher(Type serviceInterfaceType)
+        {
+            if (serviceInterfaceType == null)
+            {
+                return null;
+            }
 
-				return _innerProxyFactory;
-			}
-		}
+            return ServiceMethodDispatcherMap.GetOrAdd(serviceInterfaceType, GetOrCreateServiceMethodDispatcher);
+        }
 
-		private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
-			IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
-		{
-			var serviceMethodDispatcher = GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
+        private static MethodInfo GetGetOrCreateServiceMethodDispatcher()
+        {
+            var codeBuilderType =
+                typeof(Microsoft.ServiceFabric.Services.Remoting.Client.ServiceProxyFactory)?.Assembly.GetType(
+                    "Microsoft.ServiceFabric.Services.Remoting.V1.Builder.ServiceCodeBuilder");
 
-			var contextWrapper = ServiceRequestContextWrapper.Current;
-			return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
-				serviceInterfaceType,
-				serviceRemotingCallbackClient,
-				Logger,
-				contextWrapper.CorrelationId,
-				serviceMethodDispatcher);
-		}
-	}
+            var getOrCreateMethodDispatcher = codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
+            return getOrCreateMethodDispatcher;
+        }
+
+        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(IServiceRemotingCallbackClient serviceRemotingCallbackClient, Type serviceInterfaceType)
+        {
+            var serviceMethodDispatcher = this.GetOrDiscoverServiceMethodDispatcher(serviceInterfaceType);
+
+            var contextWrapper = ServiceRequestContextWrapper.Current;
+            return FabricTransportServiceRemotingHelpers.CreateServiceRemotingClientFactory(
+                serviceInterfaceType,
+                serviceRemotingCallbackClient,
+                this.Logger,
+                contextWrapper.CorrelationId,
+                serviceMethodDispatcher);
+        }
+    }
 }

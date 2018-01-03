@@ -152,13 +152,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 
 	public class ReliableStateSessionManager : IStateSessionManager, IStateSessionWritableManager
 	{
-		private readonly IDictionary<string, IReliableState> _reliableDictionaries =
+		private readonly ConcurrentDictionary<string, IReliableState> _reliableDictionaries =
 			new ConcurrentDictionary<string, IReliableState>();
 
-		private readonly IDictionary<string, IReliableState> _reliableQueues =
+		private readonly ConcurrentDictionary<string, IReliableState> _reliableQueues =
 			new ConcurrentDictionary<string, IReliableState>();
 
-		private readonly IDictionary<string, Type> _reliableStateTypes = new ConcurrentDictionary<string, Type>();
+		private readonly ConcurrentDictionary<string, Type> _reliableStateTypes = new ConcurrentDictionary<string, Type>();
 		private readonly IReliableStateManager _stateManager;
 
 		public ReliableStateSessionManager(IReliableStateManager stateManager)
@@ -326,19 +326,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
 
 		private void UpdateReliableStateType(string schema, Type type)
 		{
-			if (!_reliableStateTypes.ContainsKey(schema))
-			{
-				_reliableStateTypes.Add(schema, type);
-			}
+			_reliableStateTypes.TryAdd(schema, type);
 		}
 
 		private async Task<Type> GetReliableStateType(string schema,
 			CancellationToken cancellationToken = default(CancellationToken))
 		{
-			if (_reliableStateTypes.ContainsKey(schema))
-			{
-				return _reliableStateTypes[schema];
-			}
+
+            if (_reliableStateTypes.TryGetValue(schema, out var reliableStateType))
+            {
+                return reliableStateType;
+            }
 
 			var stateEnumerator = _stateManager.GetAsyncEnumerator();
 			var type = default(Type);

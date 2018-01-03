@@ -1,9 +1,14 @@
 ﻿namespace FG.ServiceFabric.Services.Remoting.FabricTransport
 {
-	public abstract class ServiceRequestHeader
-	{
-		public string HeaderName { get; set; }
+    public abstract class ServiceRequestHeader
+    {
+        public ServiceRequestHeader(string headerName)
+        {
+            this.HeaderName = headerName;
+        }
 
-		public abstract byte[] GetValue();
-	}
+        public string HeaderName { get; set; }
+
+        public abstract byte[] GetValue();
+    }
 }
