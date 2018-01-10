@@ -116,16 +116,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
 
             private string CommonPath => _manager._commonPath;
 
-            private string GetFilePath(string id)
+            private string GetFilePath(SchemaStateKey key)
             {
+                var id = key.GetId();
                 var fileName = $"{_manager.EscapeFileName(id)}.json";
                 var filePath = Path.Combine(CommonPath, fileName);
                 return filePath;
             }
 
-            protected override Task<string> ReadAsync(string id, bool checkExistsOnly = false)
+            protected override Task<string> ReadAsync(SchemaStateKey key, bool checkExistsOnly = false)
             {
-                var filePath = GetFilePath(id);
+                var filePath = GetFilePath(key);
                 if (File.Exists(filePath))
                 {
                     if (checkExistsOnly)
@@ -137,17 +138,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
                 return Task.FromResult((string) null);
             }
 
-            protected override Task DeleteAsync(string id)
+            protected override Task DeleteAsync(SchemaStateKey key)
             {
-                var filePath = GetFilePath(id);
+                var filePath = GetFilePath(key);
                 File.Delete(filePath);
 
                 return Task.FromResult(true);
             }
 
-            protected override Task WriteAsync(string id, string content)
+            protected override Task WriteAsync(SchemaStateKey key, string content)
             {
-                var filePath = GetFilePath(id);
+                var filePath = GetFilePath(key);
                 File.WriteAllText(filePath, content);
 
                 return Task.FromResult(true);
@@ -159,7 +160,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
             {
                 var results = new List<string>();
                 var nextMarker = continuationToken?.Marker ?? "";
-                var files = Directory.GetFiles(CommonPath, $"{idPrefix}*{key}*").OrderBy(f => f);
+                var idPrefixEscaped = _manager.GetEscapedKeyInternal(idPrefix);
+                var keyEscaped = _manager.GetEscapedKeyInternal(key);
+                var files = Directory.GetFiles(CommonPath, $"{idPrefixEscaped}*{keyEscaped}*").OrderBy(f => f);
                 var resultCount = 0;
                 foreach (var file in files)
                 {

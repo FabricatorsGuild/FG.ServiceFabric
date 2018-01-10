@@ -58,30 +58,35 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
                 return base.GetEscapedKey(id);
             }
 
-            public override long Count(string idPrefix)
+            public override long Count(SchemaStateKey keyPrefix)
             {
+                var idPrefix = keyPrefix.GetId();
                 var items = Storage.Keys.Where(item => item.StartsWith(idPrefix));
                 var resultCount = items.LongCount();
                 return resultCount;
             }
 
-            protected override bool Contains(string id)
+            protected override bool Contains(SchemaStateKey key)
             {
+                var id = key.GetId();
                 return Storage.ContainsKey(id);
             }
 
-            protected override string Read(string id)
+            protected override string Read(SchemaStateKey key)
             {
+                var id = key.GetId();
                 return Storage[id];
             }
 
-            protected override void Delete(string id)
+            protected override void Delete(SchemaStateKey key)
             {
+                var id = key.GetId();
                 Storage.Remove(id);
             }
 
-            protected override void Write(string id, string content)
+            protected override void Write(SchemaStateKey key, string content)
             {
+                var id = key.GetId();
                 Storage[id] = content;
             }
 

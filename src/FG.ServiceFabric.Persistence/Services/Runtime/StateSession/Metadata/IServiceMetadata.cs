@@ -13,4 +13,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Metadata
         public string ServicePartitionKey { get; set; }
         public string StoragePartitionKey { get; set; }
     }
+
+    public interface ISchemaStateKeyBuilder
+    {
+        string BuildId(string serviceName, string servicePartitionKey, string schema, string key);
+
+    }
 }

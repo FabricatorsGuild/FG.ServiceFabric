@@ -144,16 +144,19 @@
     <Compile Include="Actors\Runtime\MockActorStateProvider_reminders_tests.cs" />
     <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession.cs" />
     <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession2.cs" />
+    <Compile Include="Services\Runtime\StateSession_transacted_scope.cs" />
+    <Compile Include="Services\Runtime\With_StateSession_All_Tests.cs" />
+    <Compile Include="Services\Runtime\With_StateSession_FileSystemStateSession.cs" />
+    <Compile Include="Services\Runtime\With_StateSession_DocumentDbStateSession.cs" />
+    <Compile Include="Services\Runtime\With_StateSession_InMemoryStateSessionWithTransactions.cs" />
+    <Compile Include="Services\Runtime\With_StateSession_InMemoryStateSession.cs" />
     <None Include="app.config" />
     <Compile Include="Mocks\Fabric\MockServivceInstance_should_activate_RunAsync_for_Stateless_service.cs" />
     <Compile Include="Mocks\Fabric\ServicePartitionInformation_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Runtime\CosmosDbForTestingSettingsProvider.cs" />
-    <Compile Include="Services\Runtime\TestBase.cs" />
-    <Compile Include="Services\Runtime\With_DocumentDbStateSession.cs" />
-    <Compile Include="Services\Runtime\With_FileSystemStateSession.cs" />
-    <Compile Include="Services\Runtime\With_InMemoryStateSession.cs" />
-    <Compile Include="Services\Runtime\With_InMemoryStateSessionWithTransactions.cs" />
+    <Compile Include="Services\Runtime\JsonUtility.cs" />
+    <Compile Include="Services\Runtime\TestRunner.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

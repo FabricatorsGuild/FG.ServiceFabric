@@ -208,20 +208,34 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
     public class SchemaStateKey
     {
+        private const string Delimiter = "|";
+
         private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
-            @"(?'service'[\/\:a-zA-Z0-9\-\.]+)_(?'partition'[a-zA-Z0-9\-]+)_(?'schema'[a-zA-Z0-9\-]+)_(?'key'.+)",
+            @"(?'service'[\/\:a-zA-Z0-9\-\._]+)\|(?'partition'[a-zA-Z0-9\-_]+)\|(?'schema'[a-zA-Z0-9\-_]+)\|(?'key'.+)",
             RegexOptions.Compiled);
 
-        public SchemaStateKey(string serviceName, string partitionKey, string schema = null, string key = null)
+        public SchemaStateKey(IdWrapper stateWrapper)
         {
+            ServiceName = stateWrapper.ServiceName;
+            ServicePartitionKey = stateWrapper.ServicePartitionKey;
+            Schema = stateWrapper.Schema;
+            Key = stateWrapper.Key;
+        }
+
+        public SchemaStateKey(string serviceName, string servicePartitionKey, string schema = null, string key = null)
+        {
+            if (serviceName != null && (serviceName.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in serviceName for state", nameof(serviceName));
+            if (servicePartitionKey != null && (servicePartitionKey.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in servicePartitionKey for state", nameof(servicePartitionKey));
+            if (schema != null && (schema.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in schema for state", nameof(schema));            
+
             ServiceName = serviceName;
-            PartitionKey = partitionKey;
+            ServicePartitionKey = servicePartitionKey;
             Schema = schema;
             Key = key;
         }
 
         public string ServiceName { get; }
-        public string PartitionKey { get; }
+        public string ServicePartitionKey { get; }
         public string Schema { get; }
         public string Key { get; }
 
@@ -239,18 +253,18 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             return new SchemaStateKey(serviceName, partititonKey, schema, key);
         }
 
-        public override string ToString()
+        public string GetId()
         {
             var value = new StringBuilder();
             if (ServiceName != null)
             {
-                value = value.Append(ServiceName).Append("_");
-                if (PartitionKey != null)
+                value = value.Append(ServiceName).Append(Delimiter);
+                if (ServicePartitionKey != null)
                 {
-                    value = value.Append(PartitionKey).Append("_");
+                    value = value.Append(ServicePartitionKey).Append(Delimiter);
                     if (Schema != null)
                     {
-                        value = value.Append(Schema).Append("_");
+                        value = value.Append(Schema).Append(Delimiter);
                         if (Key != null)
                             value = value.Append(Key);
                     }
@@ -259,14 +273,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             return value.ToString();
         }
 
-        public static implicit operator SchemaStateKey(string key)
+        public override string ToString()
         {
-            return Parse(key);
+            return GetId();
         }
-
-        public static implicit operator string(SchemaStateKey key)
-        {
-            return key.ToString();
-        }
+        
+        //public static implicit operator string(SchemaStateKey key)
+        //{
+        //    return key.GetId();
+        //}
     }
 }

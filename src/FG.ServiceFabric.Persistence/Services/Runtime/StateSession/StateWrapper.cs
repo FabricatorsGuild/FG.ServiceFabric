@@ -13,14 +13,35 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         {
         }
 
-        public IdWrapper(string id)
+        public IdWrapper(string id, string serviceName, string servicePartitionKey, string schema, string key)
         {
             Id = id;
+            ServiceName = serviceName;
+            ServicePartitionKey = servicePartitionKey;
+            Schema = schema;
+            Key = key;
         }
 
         [JsonProperty(PropertyName = "id")]
         [DataMember]
         public string Id { get; private set; }
+
+        [JsonProperty(PropertyName = "serviceName")]
+        [DataMember]
+        public string ServiceName { get; private set; }
+
+        [JsonProperty(PropertyName = "servicePartitionKey")]
+        [DataMember]
+        public string ServicePartitionKey { get; private set; }
+
+        [JsonProperty(PropertyName = "schema")]
+        [DataMember]
+        public string Schema { get; private set; }
+
+        [JsonProperty(PropertyName = "key")]
+        [DataMember]
+        public string Key { get; private set; }
+
     }
 
     [Serializable]
@@ -51,35 +72,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         }
 
         public StateWrapper(string id, IServiceMetadata serviceMetadata, IValueMetadata valueMetadata)
-            : base(id)
+            : base(id, serviceMetadata.ServiceName, serviceMetadata.ServicePartitionKey, valueMetadata.Schema, valueMetadata.Key)
         {
-            Key = valueMetadata.Key;
-            Schema = valueMetadata.Schema;
             Type = valueMetadata.Type;
-            ServiceName = serviceMetadata.ServiceName;
-            ServicePartitionKey = serviceMetadata.ServicePartitionKey;
             PartitionKey = serviceMetadata.StoragePartitionKey;
         }
-
-        [JsonProperty(PropertyName = "serviceName")]
-        [DataMember]
-        public string ServiceName { get; private set; }
-
-        [JsonProperty(PropertyName = "servicePartitionKey")]
-        [DataMember]
-        public string ServicePartitionKey { get; private set; }
 
         [JsonProperty(PropertyName = "partitionKey")]
         [DataMember]
         public string PartitionKey { get; private set; }
-
-        [JsonProperty(PropertyName = "schema")]
-        [DataMember]
-        public string Schema { get; private set; }
-
-        [JsonProperty(PropertyName = "key")]
-        [DataMember]
-        public string Key { get; private set; }
 
         [JsonProperty(PropertyName = "type")]
         [DataMember]

@@ -60,15 +60,15 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
             public async Task RunWork()
             {
                 var cancellationToken = CancellationToken.None;
-                await _stateSessionManager.OpenDictionary<long>("myDictionary", cancellationToken);
+                await _stateSessionManager.OpenDictionary<long>("myDictionary/with-wierd_characters", cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
                 using (var session = _stateSessionManager.Writable.CreateSession())
                 {
-                    var result = await session.TryGetValueAsync<long>("myDictionary", "Counter", cancellationToken);
+                    var result = await session.TryGetValueAsync<long>("myDictionary/with-wierd_characters", "Counter", cancellationToken);
                     var value = result.HasValue ? result.Value : 0;
-                    await session.SetValueAsync("myDictionary", "Counter", value++, null, cancellationToken);
+                    await session.SetValueAsync("myDictionary/with-wierd_characters", "Counter", value++, null, cancellationToken);
                     await session.CommitAsync();
                 }
             }
@@ -130,7 +130,6 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
             }
         }
     }
-
 
     namespace With_polymorphic_array_state
     {

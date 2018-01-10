@@ -194,7 +194,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var id = internalKey.GetId();
                 try
                 {
                     var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
@@ -228,7 +229,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             public async Task<T> GetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key)).GetId();
                 try
                 {
                     var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
@@ -314,7 +315,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             public async Task RemoveAsync(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key)).GetId();
                 try
                 {
                     await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
@@ -377,7 +378,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                     if (tail == head)
                         return new ConditionalValue<T>(false, default(T));
 
-                    var id = _managerInternals.GetKey(new QueueItemStateKey(schema, tail));
+                    var id = _managerInternals.GetKey(new QueueItemStateKey(schema, tail)).GetId();
 
                     var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
                         CreateDocumentUri(DatabaseName),
@@ -416,7 +417,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                     if (tail == head)
                         return new ConditionalValue<T>(false, default(T));
 
-                    var id = _managerInternals.GetKey(new QueueItemStateKey(schema, tail));
+                    var id = _managerInternals.GetKey(new QueueItemStateKey(schema, tail)).GetId();
 
                     var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(CreateDocumentUri(id),
                         new RequestOptions {PartitionKey = new PartitionKey(ServicePartitionKey)});
@@ -497,7 +498,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             public Task<bool> Contains(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key)).GetId();
                 try
                 {
                     var docExists = _documentClient.CreateDocumentQuery(
@@ -541,7 +542,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             {
                 var results = new List<string>();
                 var resultCount = 0;
-                var idPrefix = _managerInternals.GetKey(new DictionaryStateKey(schema, keyPrefix));
+                var idPrefix = _managerInternals.GetKey(new DictionaryStateKey(schema, keyPrefix)).GetId();
                 try
                 {
                     IDocumentQuery<IdWrapper> documentCollectionQuery;
@@ -576,7 +577,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                         {
                             resultCount++;
 
-                            var schemaStateKey = SchemaStateKey.Parse(documentId.Id);
+                            var schemaStateKey = new SchemaStateKey(documentId);
                             results.Add(schemaStateKey.Key);
 
                             if (resultCount > maxNumResults)
@@ -679,7 +680,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
             private async Task<QueueInfo> GetOrAddQueueInfo(string schema)
             {
-                var stateKeyQueueInfo = _managerInternals.GetKey(new QueueInfoStateKey(schema));
+                var stateKeyQueueInfo = _managerInternals.GetKey(new QueueInfoStateKey(schema)).GetId();
                 try
                 {
                     var queueInfoResponse = await _documentClient.ReadDocumentAsync<StateWrapper<QueueInfo>>(

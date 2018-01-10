@@ -12,21 +12,21 @@ using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager
+namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
 {
-    public abstract class TestBase<T>
+    public abstract class TestRunner<T>
         where T : StatefulServiceDemoBase
     {
         private readonly IDictionary<string, int> _runAsyncLoopUpdates = new ConcurrentDictionary<string, int>();
 
         private readonly IList<T> _services = new List<T>();
-        protected MockFabricApplication _fabricApplication;
+        public MockFabricApplication FabricApplication { get; private set; }
 
-        protected MockFabricRuntime FabricRuntime;
+        public MockFabricRuntime FabricRuntime { get; private set; }
 
         public abstract IDictionary<string, string> State { get; }
 
-        protected IEnumerable<T> Services => _services;
+        public IEnumerable<T> Services => _services;
 
         private string ApplicationName => @"Overlord";
 
@@ -42,9 +42,9 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
             {
                 DisableMethodCallOutput = true
             };
-            _fabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
+            FabricApplication = FabricRuntime.RegisterApplication(ApplicationName);
 
-            _fabricApplication.SetupService(
+            FabricApplication.SetupService(
                 (context, stateManager) => CreateAndMonitorService(context, CreateStateManager(FabricRuntime, context)),
                 serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue, long.MaxValue));
 

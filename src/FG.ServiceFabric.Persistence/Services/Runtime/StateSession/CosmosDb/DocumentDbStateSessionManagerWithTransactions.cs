@@ -163,9 +163,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
             }
 
-            protected override Task<bool> ContainsInternal(SchemaStateKey id,
+            protected override Task<bool> ContainsInternal(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
+                var id = key.GetId();
                 try
                 {
                     var documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
@@ -226,7 +227,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                         {
                             resultCount++;
 
-                            var schemaStateKey = SchemaStateKey.Parse(documentId.Id);
+                            var schemaStateKey = new SchemaStateKey(documentId);
                             results.Add(schemaStateKey.Key);
 
                             if (resultCount >= maxNumResults)
@@ -294,9 +295,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
             }
 
-            protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
+            protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
+                var id = key.GetId();
                 try
                 {
                     var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
@@ -324,13 +326,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
             }
 
-            protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+            protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 try
                 {
                     var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
-                        CreateDocumentUri(id),
+                        CreateDocumentUri(key.GetId()),
                         new RequestOptions
                         {
                             PartitionKey = GetPartitionKey()
@@ -341,16 +343,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 catch (DocumentClientException dcex)
                 {
                     if (dcex.StatusCode == HttpStatusCode.NotFound)
-                        throw new KeyNotFoundException($"State with {id} does not exist");
-                    throw new StateSessionException($"GetValueAsync for {id} failed, {dcex.Message}", dcex);
+                        throw new KeyNotFoundException($"State with {key} does not exist");
+                    throw new StateSessionException($"GetValueAsync for {key} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {key} failed, {ex.Message}", ex);
                 }
             }
 
-            protected override async Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value, Type valueType,
+            protected override async Task SetValueInternalAsync(SchemaStateKey key, StateWrapper value, Type valueType,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 try
@@ -365,17 +367,18 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
                 catch (DocumentClientException dcex)
                 {
-                    throw new StateSessionException($"SetValueAsync for {id} failed, {dcex.Message}", dcex);
+                    throw new StateSessionException($"SetValueAsync for {key} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"SetValueAsync for {id} failed, {ex.Message}", ex);
+                    throw new StateSessionException($"SetValueAsync for {key} failed, {ex.Message}", ex);
                 }
             }
 
-            protected override async Task RemoveInternalAsync(SchemaStateKey id,
+            protected override async Task RemoveInternalAsync(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
+                var id = key.GetId();
                 try
                 {
                     await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),

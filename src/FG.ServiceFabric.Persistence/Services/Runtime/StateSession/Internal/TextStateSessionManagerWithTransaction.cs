@@ -45,17 +45,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
             private IStateSessionManagerInternals _managerInternals => _manager;
 
-            private async Task<bool> ContainsByReadAsync(string id)
+            private async Task<bool> ContainsByReadAsync(SchemaStateKey key)
             {
-                var value = await ReadAsync(id, true);
+                var value = await ReadAsync(key, true);
                 return value != null;
             }
 
-            protected abstract Task<string> ReadAsync(string id, bool checkExistsOnly = false);
+            protected abstract Task<string> ReadAsync(SchemaStateKey key, bool checkExistsOnly = false);
 
-            protected abstract Task DeleteAsync(string id);
+            protected abstract Task DeleteAsync(SchemaStateKey key);
 
-            protected abstract Task WriteAsync(string id, string content);
+            protected abstract Task WriteAsync(SchemaStateKey key, string content);
 
             protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
                 ContinuationToken continuationToken = null,
@@ -74,15 +74,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
             }
 
-            protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+            protected override async Task<StateWrapper<T>> GetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
                 try
                 {
                     StateWrapper<T> value = null;
-                    var stringValue = await ReadAsync(id);
+                    var stringValue = await ReadAsync(key);
                     if (stringValue == null)
-                        throw new KeyNotFoundException($"State with {id} does not exist");
+                        throw new KeyNotFoundException($"State with {key} does not exist");
 
                     value = JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
                         new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
@@ -90,17 +90,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed, {ex.Message}", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {key} failed, {ex.Message}", ex);
                 }
             }
 
             protected override async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(
-                SchemaStateKey id,
+                SchemaStateKey key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
                 try
                 {
-                    var stringValue = await ReadAsync(id);
+                    var stringValue = await ReadAsync(key);
                     if (stringValue == null)
                         return new ConditionalValue<StateWrapper<T>>(false, null);
 
@@ -110,7 +110,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {key} failed", ex);
                 }
             }
 

@@ -60,8 +60,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
             private IDictionary<string, string> Storage => _manager._storage;
 
-            protected override async Task<string> ReadAsync(string id, bool checkExistsOnly = false)
+            protected override async Task<string> ReadAsync(SchemaStateKey key, bool checkExistsOnly = false)
             {
+                var id = key.GetId();
                 if (Storage.TryGetValue(id, out var value))
                 {
                     // Quick return not-null value if check for existance only
@@ -73,14 +74,16 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
                 return null;
             }
 
-            protected override async Task DeleteAsync(string id)
+            protected override async Task DeleteAsync(SchemaStateKey key)
             {
+                var id = key.GetId();
                 Storage.Remove(id);
                 await Task.Delay(1);
             }
 
-            protected override async Task WriteAsync(string id, string content)
+            protected override async Task WriteAsync(SchemaStateKey key, string content)
             {
+                var id = key.GetId();
                 Storage[id] = content;
                 await Task.Delay(1);
             }

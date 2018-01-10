@@ -40,7 +40,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManag
             return new CosmosDbForTestingSettingsProvider("https://ffcg-labs-docdb.documents.azure.com:443/",
                 "sfp-local1",
                 collection,
-                "Rvh80izCLQJJWOitTes652Qkh6UyLjEhZauCWXHFkY0H3nzdh3iQee7OI3qtO42jgIOLwH7q3j25Hk0onbAIWQ==");
+                "Gqc9vu8Zm9vOFIcGfOyrjEZThdpMHtv8Ys4Rji22IQtMVS9d7iwzGvvU6DxNggk10TiHQ72Fo2TxRinbJSaFCw==");
         }
 
         public void AppendCollectionName(string appended)

@@ -67,17 +67,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public Task<bool> Contains(string schema, string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     lock (_lock)
                     {
-                        return Task.FromResult(Contains(id));
+                        return Task.FromResult(Contains(internalKey));
                     }
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {internalKey} failed", ex);
                 }
             }
 
@@ -93,7 +93,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 ContinuationToken continuationToken = null,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var idPrefix = _managerInternals.GetKey(new DictionaryStateKey(schema, keyPrefix));
+                var idPrefix = _managerInternals.GetKey(new DictionaryStateKey(schema, keyPrefix)).GetId();
 
                 var result = Find(idPrefix, null, maxNumResults, continuationToken, cancellationToken);
 
@@ -108,7 +108,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var schemaKeyPrefix = _managerInternals.GetKey(null);
+                var schemaKeyPrefix = _managerInternals.GetKey(null).GetId();
                 return Task.FromResult(
                     Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
                         .Items
@@ -119,15 +119,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     T value;
                     lock (_lock)
                     {
-                        if (!Contains(id))
+                        if (!Contains(internalKey))
                             return Task.FromResult(new ConditionalValue<T>(false, default(T)));
-                        var stringValue = Read(id);
+                        var stringValue = Read(internalKey);
 
                         var response = JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
                             new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
@@ -137,22 +137,22 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {internalKey} failed", ex);
                 }
             }
 
             public Task<T> GetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     T value;
                     lock (_lock)
                     {
-                        if (!Contains(id))
+                        if (!Contains(internalKey))
                             throw new KeyNotFoundException($"State with {schema}:{key} does not exist");
-                        var stringValue = Read(id);
+                        var stringValue = Read(internalKey);
 
                         var response = JsonConvert.DeserializeObject<StateWrapper<T>>(stringValue,
                             new JsonSerializerSettings {TypeNameHandling = TypeNameHandling.Auto});
@@ -162,19 +162,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"TryGetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"TryGetValueAsync for {internalKey} failed", ex);
                 }
             }
 
             public Task SetValueAsync<T>(string schema, string key, T value, IValueMetadata metadata,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     lock (_lock)
                     {
-                        var wrapper = _managerInternals.BuildWrapperGeneric(metadata, id, value);
+                        var wrapper = _managerInternals.BuildWrapperGeneric(metadata, internalKey, value);
                         var stringValue = JsonConvert.SerializeObject(wrapper,
                             new JsonSerializerSettings
                             {
@@ -184,12 +184,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
                         if (value == null)
                         {
-                            if (Contains(id))
-                                Delete(id);
+                            if (Contains(internalKey))
+                                Delete(internalKey);
                         }
                         else
                         {
-                            Write(id, stringValue);
+                            Write(internalKey, stringValue);
                         }
                     }
 
@@ -197,19 +197,19 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"SetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"SetValueAsync for {internalKey} failed", ex);
                 }
             }
 
             public Task SetValueAsync(string schema, string key, Type valueType, object value, IValueMetadata metaData,
                 CancellationToken cancellationToken = new CancellationToken())
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     lock (_lock)
                     {
-                        var wrapper = _managerInternals.BuildWrapper(metaData, id, valueType, value);
+                        var wrapper = _managerInternals.BuildWrapper(metaData, internalKey, valueType, value);
                         var stringValue = JsonConvert.SerializeObject(wrapper,
                             new JsonSerializerSettings
                             {
@@ -219,12 +219,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
                         if (value == null)
                         {
-                            if (Contains(id))
-                                Delete(id);
+                            if (Contains(internalKey))
+                                Delete(internalKey);
                         }
                         else
                         {
-                            Write(id, stringValue);
+                            Write(internalKey, stringValue);
                         }
                     }
 
@@ -232,7 +232,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"SetValueAsync for {id} failed", ex);
+                    throw new StateSessionException($"SetValueAsync for {internalKey} failed", ex);
                 }
             }
 
@@ -245,24 +245,24 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public Task RemoveAsync(string schema, string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
                 try
                 {
                     lock (_lock)
                     {
-                        if (Contains(id))
-                            Delete(id);
+                        if (Contains(internalKey))
+                            Delete(internalKey);
                     }
 
                     return Task.FromResult(true);
                 }
                 catch (DocumentClientException dcex)
                 {
-                    throw new StateSessionException($"RemoveAsync for {id} failed", dcex);
+                    throw new StateSessionException($"RemoveAsync for {internalKey} failed", dcex);
                 }
                 catch (Exception ex)
                 {
-                    throw new StateSessionException($"RemoveAsync for {id} failed", ex);
+                    throw new StateSessionException($"RemoveAsync for {internalKey} failed", ex);
                 }
             }
 
@@ -457,15 +457,15 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 _attachedObjects = new IStateSessionObject[0];
             }
 
-            public abstract long Count(string idPrefix);
+            public abstract long Count(SchemaStateKey keyPrefix);
 
-            protected abstract bool Contains(string id);
+            protected abstract bool Contains(SchemaStateKey key);
 
-            protected abstract string Read(string id);
+            protected abstract string Read(SchemaStateKey key);
 
-            protected abstract void Delete(string id);
+            protected abstract void Delete(SchemaStateKey key);
 
-            protected abstract void Write(string id, string content);
+            protected abstract void Write(SchemaStateKey key, string content);
 
             protected abstract FindByKeyPrefixResult Find(string idPrefix, string key, int maxNumResults = 100000,
                 ContinuationToken continuationToken = null,

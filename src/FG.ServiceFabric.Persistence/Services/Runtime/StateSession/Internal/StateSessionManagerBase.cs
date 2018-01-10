@@ -173,7 +173,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public Task<bool> Contains(string schema, string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, key));
+                var id = internalKey.GetId();
 
                 if (_transactedChanges.TryGetValue(id, out var transactedChange))
                     switch (transactedChange.ChangeType)
@@ -191,7 +192,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
-                return ContainsInternal(id, cancellationToken);
+                return ContainsInternal(internalKey, cancellationToken);
             }
 
             public Task<FindByKeyPrefixResult<T>> FindByKeyPrefixAsync<T>(string schema, string keyPrefix,
@@ -208,7 +209,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var schemaKeyPrefix =
-                    _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(keyPrefix)));
+                    _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(keyPrefix)))
+                    .GetId();
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
@@ -222,7 +224,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public async Task<IEnumerable<string>> EnumerateSchemaNamesAsync(string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var schemaKeyPrefix = _manager.GetKey(null);
+                var schemaKeyPrefix = _manager.GetKey(null).GetId();
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
@@ -233,7 +235,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public async Task<ConditionalValue<T>> TryGetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var id = internalKey.GetId();
 
                 // Check if session contains it, or if it has been removed from session
                 if (_transactedChanges.TryGetValue(id, out var transactedChange))
@@ -252,7 +255,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
-                var value = await TryGetValueInternalAsync<T>(id, cancellationToken);
+                var value = await TryGetValueInternalAsync<T>(internalKey, cancellationToken);
                 if (value.HasValue)
                     return new ConditionalValue<T>(true, value.Value.State);
 
@@ -262,7 +265,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             public async Task<T> GetValueAsync<T>(string schema, string key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var id = internalKey.GetId();
 
                 // Check if session contains it, or if it has been removed from session
                 if (_transactedChanges.TryGetValue(id, out var transactedChange))
@@ -271,7 +275,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                         case StateChangeType.AddOrUpdate:
                             return ((StateWrapper<T>) transactedChange.Value).State;
                         case StateChangeType.Remove:
-                            throw new KeyNotFoundException($"State with {id} does not exist");
+                            throw new KeyNotFoundException($"State with {internalKey} does not exist");
                         case StateChangeType.None:
                             break;
                         default:
@@ -281,7 +285,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
-                var value = await GetValueInternalAsync<T>(id, cancellationToken);
+                var value = await GetValueInternalAsync<T>(internalKey, cancellationToken);
                 if (value != null)
                     return value.State;
 
@@ -293,11 +297,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             {
                 CheckIsNotReadOnly();
 
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var id = internalKey.GetId();
 
                 var valueType = typeof(T);
                 var document = _managerInternals.BuildWrapperGeneric(
-                    _managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id,
+                    _managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), internalKey,
                     value);
 
                 _transactedChanges[id] = new StateChange(StateChangeType.AddOrUpdate, document, valueType);
@@ -309,9 +314,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             {
                 CheckIsNotReadOnly();
 
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var id = internalKey.GetId();
                 var document = _managerInternals.BuildWrapper(
-                    _managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), id,
+                    _managerInternals.GetOrCreateMetadata(metadata, StateWrapperType.ReliableDictionaryItem), internalKey,
                     valueType, value);
 
                 _transactedChanges[id] = new StateChange(StateChangeType.AddOrUpdate, document, valueType);
@@ -329,13 +335,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             {
                 CheckIsNotReadOnly();
 
-                var id = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var internalKey = _managerInternals.GetKey(new DictionaryStateKey(schema, _manager.GetEscapedKey(key)));
+                var id = internalKey.GetId();
                 cancellationToken = cancellationToken == default(CancellationToken)
                     ? CancellationToken.None
                     : cancellationToken;
 
                 var stateWrapper = _managerInternals.BuildWrapper(
-                    _managerInternals.GetOrCreateMetadata(null, StateWrapperType.ReliableDictionaryItem), id);
+                    _managerInternals.GetOrCreateMetadata(null, StateWrapperType.ReliableDictionaryItem), internalKey);
 
                 _transactedChanges[id] = new StateChange(StateChangeType.Remove, stateWrapper, null);
                 return Task.FromResult(true);
@@ -504,14 +511,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
             protected abstract Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey id,
                 CancellationToken cancellationToken = default(CancellationToken));
 
-            protected abstract Task<StateWrapper<T>> GetValueInternalAsync<T>(string id,
+            protected abstract Task<StateWrapper<T>> GetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken));
 
-            protected abstract Task SetValueInternalAsync(SchemaStateKey id, StateWrapper value,
+            protected abstract Task SetValueInternalAsync(SchemaStateKey key, StateWrapper value,
                 Type valueType,
                 CancellationToken cancellationToken = default(CancellationToken));
 
-            protected abstract Task RemoveInternalAsync(SchemaStateKey id,
+            protected abstract Task RemoveInternalAsync(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken));
 
             private async Task<QueueInfo> GetOrAddQueueInfo(string schema,
@@ -597,11 +604,11 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                         case StateChangeType.None:
                             break;
                         case StateChangeType.AddOrUpdate:
-                            await SetValueInternalAsync(SchemaStateKey.Parse(stateChange.Value.Id),
+                            await SetValueInternalAsync(new SchemaStateKey(stateChange.Value),
                                 stateChange.Value, stateChange.ValueType, CancellationToken.None);
                             break;
                         case StateChangeType.Remove:
-                            await RemoveInternalAsync(SchemaStateKey.Parse(stateChange.Value.Id),
+                            await RemoveInternalAsync(new SchemaStateKey(stateChange.Value),
                                 CancellationToken.None);
                             break;
                         default:
@@ -652,11 +659,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
         StateWrapper IStateSessionManagerInternals.BuildWrapper(IValueMetadata valueMetadata, SchemaStateKey key)
         {
+            var id = key.GetId();
+
             var serviceMetadata = Internals.GetMetadata();
             if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
             valueMetadata.Key = key.Key;
             valueMetadata.Schema = key.Schema;
-            var wrapper = valueMetadata.BuildStateWrapper(key, serviceMetadata);
+            var wrapper = valueMetadata.BuildStateWrapper(id, serviceMetadata);
             return wrapper;
         }
 
@@ -672,11 +681,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
         StateWrapper<T> IStateSessionManagerInternals.BuildWrapperGeneric<T>(IValueMetadata valueMetadata,
             SchemaStateKey key, T value)
         {
+            var id = key.GetId();
+
             var serviceMetadata = Internals.GetMetadata();
             if (valueMetadata == null) valueMetadata = new ValueMetadata(StateWrapperType.Unknown);
             valueMetadata.Key = key.Key;
             valueMetadata.Schema = key.Schema;
-            var wrapper = valueMetadata.BuildStateWrapper(key, value, serviceMetadata);
+            var wrapper = valueMetadata.BuildStateWrapper(id, value, serviceMetadata);
             return wrapper;
         }
 

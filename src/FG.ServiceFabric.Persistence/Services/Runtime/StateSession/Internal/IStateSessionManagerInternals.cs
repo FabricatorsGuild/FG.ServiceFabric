@@ -24,6 +24,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
         string GetEscapedKey(string key);
         string GetUnescapedKey(string key);
 
-        SchemaStateKey GetKey(ISchemaKey id);
+        SchemaStateKey GetKey(ISchemaKey id);        
     }
 }
