@@ -15,7 +15,7 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Services.Client;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
+namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
 {
     // ReSharper disable InconsistentNaming
     public class MockActorStateProvider_partitions_tests

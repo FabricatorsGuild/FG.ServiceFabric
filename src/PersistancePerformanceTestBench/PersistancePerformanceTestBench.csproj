@@ -63,6 +63,18 @@
       <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
       <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Testing.Tests\FG.ServiceFabric.Testing.Tests.csproj">
+      <Project>{cbe3e6f9-0270-4adc-a478-b2a65cb4f650}</Project>
+      <Name>FG.ServiceFabric.Testing.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj">
+      <Project>{c3b564e2-fbb9-47b2-b820-4cc63bf66ae2}</Project>
+      <Name>FG.ServiceFabric.Tests.Persistence</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj">
+      <Project>{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}</Project>
+      <Name>FG.ServiceFabric.Tests.StatefulService</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

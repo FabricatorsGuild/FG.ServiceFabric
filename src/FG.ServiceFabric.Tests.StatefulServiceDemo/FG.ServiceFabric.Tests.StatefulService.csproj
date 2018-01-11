@@ -99,12 +99,13 @@
       <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
       <Name>FG.ServiceFabric.Persistence</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj">
-      <Project>{C3B564E2-FBB9-47B2-B820-4CC63BF66AE2}</Project>
-      <Name>FG.ServiceFabric.Tests.Persistence</Name>
+    <ProjectReference Include="..\FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj">
+      <Project>{2F2B5701-77B5-4467-9504-8BE73A3725A7}</Project>
+      <Name>FG.ServiceFabric.Testing</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StateSessionInitilaizer.cs" />
     <None Include="App.config" />
     <None Include="PackageRoot\Config\Settings.xml" />
     <None Include="PackageRoot\ServiceManifest.xml" />

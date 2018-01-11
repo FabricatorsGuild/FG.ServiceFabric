@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using FG.ServiceFabric.Tests.Persistence;
 using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Tests.StatefulServiceDemo

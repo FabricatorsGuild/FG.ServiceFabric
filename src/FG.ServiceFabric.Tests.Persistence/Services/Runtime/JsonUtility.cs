@@ -3,7 +3,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
     public class JsonUtility
     {

@@ -13,7 +13,7 @@ using NUnit.Framework;
 
 // ReSharper disable InconsistentNaming
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Client
+namespace FG.ServiceFabric.Tests.Persistence.Actors.Client
 {
     public class MockActorStateProvider_tests
     {

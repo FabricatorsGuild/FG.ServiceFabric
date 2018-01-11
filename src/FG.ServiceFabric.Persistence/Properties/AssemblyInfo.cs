@@ -20,6 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 [assembly: InternalsVisibleTo("FG.ServiceFabric.Testing.Tests")]
+[assembly: InternalsVisibleTo("FG.ServiceFabric.Tests.Persistence")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("61ce425b-f4b5-4981-8cf9-9a5c901add2b")]

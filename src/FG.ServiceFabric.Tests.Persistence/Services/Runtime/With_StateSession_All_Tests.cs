@@ -6,13 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Services.Client;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
     public class With_StateSession_All_Tests
     {

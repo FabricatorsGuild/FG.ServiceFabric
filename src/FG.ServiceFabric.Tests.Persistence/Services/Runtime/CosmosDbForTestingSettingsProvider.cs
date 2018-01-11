@@ -3,8 +3,8 @@ using System.Linq;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Utils;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.
-    and_DocumentDbStateSessionManagerWithTransaction
+namespace FG.ServiceFabric.Tests.Persistence.Services.
+    Runtime
 {
     public class CosmosDbForTestingSettingsProvider : ISettingsProvider
     {

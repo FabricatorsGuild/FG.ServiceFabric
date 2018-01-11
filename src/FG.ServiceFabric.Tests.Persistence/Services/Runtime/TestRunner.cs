@@ -12,7 +12,7 @@ using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
     public abstract class TestRunner<T>
         where T : StatefulServiceDemoBase

@@ -1,52 +1,109 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Fabric;
+using System.IO;
+using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession;
-using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
+using FG.ServiceFabric.Services.Runtime.StateSession.FileSystem;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
+using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_InMemoryStateSessionWithTransactions
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
-    public class With_StateSession_InMemoryStateSessionWithTransactions : With_StateSession_All_Tests
+    public class With_StateSession_FileSystemStateSession : With_StateSession_All_Tests
     {
-        private class TestRunnerBase<T> : TestRunnerWithFunc<T> where T : StatefulServiceDemoBase
+        private class TestRunnerBase<T> : With_StateSession_All_Tests.TestRunnerWithFunc<T> where T : StatefulServiceDemoBase
         {
-            private readonly IDictionary<string, string> _state = new ConcurrentDictionary<string, string>();
+            private string _path;
 
-            public TestRunnerBase(Func<StatefulServiceContext, IStateSessionManager, T> createServiceFunc) : base(createServiceFunc)
-            {
-            }
-
-            public override IDictionary<string, string> State => _state;
+            public override IDictionary<string, string> State => GetState();
+            private FileSystemStateSessionManager _emptyManager = new FileSystemStateSessionManager(null, Guid.Empty, null, null);
 
             protected override void OnSetup()
             {
-                State.Clear();
+                _path = Path.Combine(Path.GetTempPath(),
+                    $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
+                Directory.CreateDirectory(_path);
                 base.OnSetup();
+            }
+
+            protected override void OnTearDown()
+            {
+                try
+                {
+                    Directory.Delete(_path, true);
+                }
+                catch (IOException)
+                {
+                    // Just ignore it, it's a temp file anyway
+                }
+                base.OnTearDown();
             }
 
             public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
                 StatefulServiceContext context)
             {
-                return new InMemoryStateSessionManagerWithTransaction(
+                return new FileSystemStateSessionManager(
                     StateSessionHelper.GetServiceName(context.ServiceName),
                     context.PartitionId,
                     StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager)
                         .GetAwaiter()
                         .GetResult(),
-                    _state);
+                    _path);
+            }
+
+
+            private IDictionary<string, string> GetState()
+            {
+
+                var state = new Dictionary<string, string>();
+                var files = Directory.GetFiles(_path);
+
+                foreach (var file in files)
+                {
+                    var name = Path.GetFileNameWithoutExtension(file);
+                    var unescapedName = (string)_emptyManager.CallPrivateMethod("UnescapeFileName", name);
+                    var content = File.ReadAllText(file);
+
+                    state.Add(unescapedName, content);
+                }
+                return state;
+            }
+
+            public TestRunnerBase(Func<StatefulServiceContext, IStateSessionManager, T> createService) : base(createService)
+            {
             }
         }
 
-        public abstract class StateSession_transacted_scope : With_StateSessionManager.StateSession_transacted_scope
+        public class StateSession_transacted_scope : Runtime.StateSession_transacted_scope
         {
-            Dictionary<string, string> _state = new Dictionary<string, string>();
+            private string _path;
+
+            [SetUp]
+            public override void Setup()
+            {
+                _path = Path.Combine(Path.GetTempPath(),
+                    $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
+                Directory.CreateDirectory(_path);
+            }
+
+            [TearDown]
+            public override void Teardown()
+            {
+                try
+                {
+                    Directory.Delete(_path, true);
+                }
+                catch (IOException)
+                {
+                    // Just ignore it, it's a temp file anyway
+                }
+            }            
 
             protected override IStateSessionManager GetStateSessionManager()
             {
-                return new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", _state);
+                return new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
             }
         }
 

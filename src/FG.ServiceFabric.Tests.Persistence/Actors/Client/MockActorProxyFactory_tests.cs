@@ -15,7 +15,7 @@ using Microsoft.ServiceFabric.Actors;
 using Microsoft.ServiceFabric.Actors.Runtime;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Client
+namespace FG.ServiceFabric.Tests.Persistence.Actors.Client
 {
     // ReSharper disable once InconsistentNaming
     public class MockActorProxyFactory_tests
@@ -173,7 +173,7 @@ namespace FG.ServiceFabric.Testing.Tests.Actors.Client
         }
 
         // ReSharper disable once MemberCanBePrivate.Global
-        public class TestActor : Actor, ITestActor
+        public class TestActor : Microsoft.ServiceFabric.Actors.Runtime.Actor, ITestActor
         {
             public TestActor(ActorService actorService, ActorId actorId, string secretKey) : base(actorService, actorId)
             {

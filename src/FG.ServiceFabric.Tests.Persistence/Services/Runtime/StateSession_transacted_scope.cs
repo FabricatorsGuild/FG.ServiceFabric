@@ -4,12 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession;
-using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FluentAssertions;
 using Microsoft.ServiceFabric.Actors.Query;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
     public abstract class StateSession_transacted_scope
     {

@@ -14,7 +14,7 @@ using Microsoft.ServiceFabric.Actors;
 using NUnit.Framework;
 using ActorService = Microsoft.ServiceFabric.Actors.Runtime.ActorService;
 
-namespace FG.ServiceFabric.Testing.Tests.Actors.Runtime
+namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
 {
     public class When_starting_actor
     {

@@ -7,9 +7,9 @@ using FG.ServiceFabric.Services.Runtime.StateSession.InMemory;
 using FG.ServiceFabric.Testing.Mocks;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_InMemoryStateSession
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
-    public class With_StateSession_InMemoryStateSession : With_StateSession_All_Tests
+    public class With_StateSession_InMemoryStateSessionWithTransactions : With_StateSession_All_Tests
     {
         private class TestRunnerBase<T> : TestRunnerWithFunc<T> where T : StatefulServiceDemoBase
         {
@@ -30,13 +30,23 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_InMemoryStateSess
             public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
                 StatefulServiceContext context)
             {
-                return new InMemoryStateSessionManager(
+                return new InMemoryStateSessionManagerWithTransaction(
                     StateSessionHelper.GetServiceName(context.ServiceName),
                     context.PartitionId,
                     StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager)
                         .GetAwaiter()
                         .GetResult(),
                     _state);
+            }
+        }
+
+        public abstract class StateSession_transacted_scope : Runtime.StateSession_transacted_scope
+        {
+            Dictionary<string, string> _state = new Dictionary<string, string>();
+
+            protected override IStateSessionManager GetStateSessionManager()
+            {
+                return new InMemoryStateSessionManagerWithTransaction("testservice", Guid.NewGuid(), "range-0", _state);
             }
         }
 

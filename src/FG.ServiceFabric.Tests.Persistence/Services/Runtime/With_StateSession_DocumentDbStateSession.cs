@@ -4,11 +4,10 @@ using System.Fabric;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
 using FG.ServiceFabric.Testing.Mocks;
-using FG.ServiceFabric.Testing.Tests.Services.Runtime.With_StateSessionManager.and_DocumentDbStateSessionManagerWithTransaction;
 using FG.ServiceFabric.Tests.StatefulServiceDemo;
 using NUnit.Framework;
 
-namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_DocumentDbStateSession
+namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
     public class With_StateSession_DocumentDbStateSession : With_StateSession_All_Tests
     {
@@ -65,7 +64,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime.With_DocumentDbStateSe
             }
         }
 
-        public class StateSession_transacted_scope : With_StateSessionManager.StateSession_transacted_scope
+        public class StateSession_transacted_scope : Runtime.StateSession_transacted_scope
         {
             private string _sessionId;
             private CosmosDbForTestingSettingsProvider _settingsProvider;
