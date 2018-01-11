@@ -20,12 +20,13 @@ namespace FG.ServiceFabric.Tests.Persistence
             var schemaStateKey =
                 new SchemaStateKey(service, range, dictionaryStateKey?.Schema, dictionaryStateKey?.Key);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}error_dictionary{d}48a46df3-843e-4645-b8de-075259c826f2";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(key);
-            schemaStateKey.GetId().Should()
-                .Be("Core-PCSyncCompanyChannelAdapter|singleton|error_dictionary|48a46df3-843e-4645-b8de-075259c826f2");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
         [Test]
@@ -39,11 +40,13 @@ namespace FG.ServiceFabric.Tests.Persistence
             var schemaStateKey =
                 new SchemaStateKey(service, range, dictionaryStateKey?.Schema, dictionaryStateKey?.Key);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}error_dictionary{d}";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(null);
-            schemaStateKey.GetId().Should().Be("Core-PCSyncCompanyChannelAdapter|singleton|error_dictionary|");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
         [Test]
@@ -56,11 +59,13 @@ namespace FG.ServiceFabric.Tests.Persistence
             var schemaStateKey =
                 new SchemaStateKey(service, range, dictionaryStateKey?.Schema, dictionaryStateKey?.Key);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(null);
             schemaStateKey.Key.Should().Be(null);
-            schemaStateKey.GetId().Should().Be("Core-PCSyncCompanyChannelAdapter|singleton|");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
         [Test]
@@ -73,11 +78,13 @@ namespace FG.ServiceFabric.Tests.Persistence
             var queueStateKey = new QueueInfoStateKey(schema);
             var schemaStateKey = new SchemaStateKey(service, range, queueStateKey?.Schema, queueStateKey?.Key);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}error_queue{d}QUEUEINFO";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be("QUEUEINFO");
-            schemaStateKey.GetId().Should().Be("Core-PCSyncCompanyChannelAdapter|singleton|error_queue|QUEUEINFO");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
         [Test]
@@ -91,12 +98,14 @@ namespace FG.ServiceFabric.Tests.Persistence
             var queueStateKey = new QueueItemStateKey(schema, index);
             var schemaStateKey = new SchemaStateKey(service, range, queueStateKey?.Schema, queueStateKey?.Key);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}error_queue{d}QUEUE-100";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be("QUEUE-100");
             queueStateKey.Index.Should().Be(100L);
-            schemaStateKey.GetId().Should().Be("Core-PCSyncCompanyChannelAdapter|singleton|error_queue|QUEUE-100");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
         [Test]
@@ -109,11 +118,13 @@ namespace FG.ServiceFabric.Tests.Persistence
             var queueStateKey = new QueueItemStateKeyPrefix(schema);
             var schemaStateKey = new SchemaStateKey(service, range, queueStateKey?.Schema, queueStateKey?.KeyPrefix);
 
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Core-PCSyncCompanyChannelAdapter{d}singleton{d}error_queue{d}QUEUE-";
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be("QUEUE-");
-            schemaStateKey.GetId().Should().Be("Core-PCSyncCompanyChannelAdapter|singleton|error_queue|QUEUE-");
+            schemaStateKey.GetId().Should().Be(expectedId);
         }
 
 
@@ -121,50 +132,46 @@ namespace FG.ServiceFabric.Tests.Persistence
         public void Should_build_ServiceName_with_fabric_schema()
         {
             // fabric:/Overlord/StatefulServiceDemo_range-0_myDictionary2_theValue
-            var id = "fabric:/Overlord/StatefulServiceDemo|range-0|myDictionary2|theValue";
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"fabric:/Overlord/StatefulServiceDemo{d}range-0{d}myDictionary2{d}theValue";
 
             var service = "fabric:/Overlord/StatefulServiceDemo";
             var range = "range-0";
             var schema = "myDictionary2";
             var key = "theValue";
 
-            var schemaStateKey = SchemaStateKey.Parse(id);
+            var schemaStateKey = SchemaStateKey.Parse(expectedId);
 
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(key);
-
-            var idOutput = schemaStateKey.GetId();
-            idOutput.Should().Be(id);
-
-            Console.Write(
-                $"{id} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            schemaStateKey.GetId().Should().Be(expectedId);
+            
+            Console.Write($"{expectedId} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
 
         [Test]
         public void Should_build_ServiceName_with_fabric_schema_with_underscore_in_names()
         {
             // fabric:/Overlord/StatefulServiceDemo_range-0_myDictionary2_theValue
-            var id = "fabric:/Overlord_dev/StatefulService_Demo|range-0|myDictionary_2|the_Value";
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"fabric:/Overlord_dev/StatefulService_Demo{d}range-0{d}myDictionary_2{d}the_Value";
 
             var service = "fabric:/Overlord_dev/StatefulService_Demo";
             var range = "range-0";
             var schema = "myDictionary_2";
             var key = "the_Value";
 
-            var schemaStateKey = SchemaStateKey.Parse(id);
+            var schemaStateKey = SchemaStateKey.Parse(expectedId);
 
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(key);
+            schemaStateKey.GetId().Should().Be(expectedId);
 
-            var idOutput = schemaStateKey.GetId();
-            idOutput.Should().Be(id);
-
-            Console.Write(
-                $"{id} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            Console.Write($"{expectedId} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
 
 
@@ -172,7 +179,8 @@ namespace FG.ServiceFabric.Tests.Persistence
         public void Should_parse_ServiceName_with_fabric_schema()
         {
             // fabric:/Overlord/StatefulServiceDemo_range-0_myDictionary2_theValue
-            var id = "fabric:/Overlord/StatefulServiceDemo|range-0|myDictionary2|theValue";
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"fabric:/Overlord/StatefulServiceDemo{d}range-0{d}myDictionary2{d}theValue";
 
             var service = "fabric:/Overlord/StatefulServiceDemo";
             var range = "range-0";
@@ -186,21 +194,19 @@ namespace FG.ServiceFabric.Tests.Persistence
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(key);
 
-            var idOutput = schemaStateKey.GetId();
-            idOutput.Should().Be(id);
+            schemaStateKey.GetId().Should().Be(expectedId);
 
-            Console.Write(
-                $"{id} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            Console.Write($"{expectedId} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
 
 
         [Test]
         public void Should_parase_ACTORSTATE_id_as_stateschemkey()
         {
-            var key =
-                @"Broker-TaskActorService|range-0|ACTORSTATE-state|S{helloworld}";
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Broker-TaskActorService{d}range-0{d}ACTORSTATE-state{d}S{{helloworld}}";
 
-            var schemaStateKey = SchemaStateKey.Parse(key);
+            var schemaStateKey = SchemaStateKey.Parse(expectedId);
 
             schemaStateKey.ServicePartitionKey.Should().Be("range-0");
             schemaStateKey.ServiceName.Should().Be("Broker-TaskActorService");
@@ -211,16 +217,15 @@ namespace FG.ServiceFabric.Tests.Persistence
         [Test]
         public void Should_parase_ACTORSTATE_id_with_guids_in_id_as_stateschemkey()
         {
-            var key =
-                @"Broker-TaskActorService|range-0|ACTORSTATE-state|S{fb1629af-bb0f-40bd-b112-cd5080d38adb-f8d57d54-52fa-4d49-977d-c55e4c94ca30-AgreementDeny}";
+            var d = SchemaStateKey.Delimiter;
+            var expectedId = $@"Broker-TaskActorService{d}range-0{d}ACTORSTATE-state{d}S{{fb1629af-bb0f-40bd-b112-cd5080d38adb-f8d57d54-52fa-4d49-977d-c55e4c94ca30-AgreementDeny}}";
 
-            var schemaStateKey = SchemaStateKey.Parse(key);
+            var schemaStateKey = SchemaStateKey.Parse(expectedId);
 
             schemaStateKey.ServicePartitionKey.Should().Be("range-0");
             schemaStateKey.ServiceName.Should().Be("Broker-TaskActorService");
             schemaStateKey.Schema.Should().Be("ACTORSTATE-state");
-            schemaStateKey.Key.Should()
-                .Be("S{fb1629af-bb0f-40bd-b112-cd5080d38adb-f8d57d54-52fa-4d49-977d-c55e4c94ca30-AgreementDeny}");
+            schemaStateKey.Key.Should().Be("S{fb1629af-bb0f-40bd-b112-cd5080d38adb-f8d57d54-52fa-4d49-977d-c55e4c94ca30-AgreementDeny}");
         }
 
         [Test]
@@ -240,8 +245,7 @@ namespace FG.ServiceFabric.Tests.Persistence
             schemaStateKey.Schema.Should().Be(schema);
             schemaStateKey.Key.Should().Be(key);
 
-            Console.Write(
-                $"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            Console.Write($"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
 
         [Test]
@@ -259,8 +263,7 @@ namespace FG.ServiceFabric.Tests.Persistence
             schemaStateKey.ServicePartitionKey.Should().Be(range);
             schemaStateKey.Schema.Should().Be(schema);
 
-            Console.Write(
-                $"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            Console.Write($"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
 
         [Test]
@@ -276,8 +279,7 @@ namespace FG.ServiceFabric.Tests.Persistence
             schemaStateKey.ServiceName.Should().Be(service);
             schemaStateKey.ServicePartitionKey.Should().Be(range);
 
-            Console.Write(
-                $"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
+            Console.Write($"{schemaStateKey} => '{schemaStateKey.ServiceName}', '{schemaStateKey.ServicePartitionKey}', '{schemaStateKey.Schema}', '{schemaStateKey.Key}'");
         }
     }
 

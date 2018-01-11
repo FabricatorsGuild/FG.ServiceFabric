@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.ServiceFabric.Actors;
@@ -208,25 +211,26 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
     public class SchemaStateKey
     {
-        private const string Delimiter = "|";
+        public const string Delimiter = "|";
+        private const string DelimiterEscaped = @"\|";
 
+        private static readonly Regex IllegalCharsReplacer = new Regex(@"['|\\/]", RegexOptions.Compiled);
+        private static readonly Regex ReplacedCharsReplacer = new Regex(@"'(\d{3,5})'", RegexOptions.Compiled);
         private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
-            @"(?'service'[\/\:a-zA-Z0-9\-\._]+)\|(?'partition'[a-zA-Z0-9\-_]+)\|(?'schema'[a-zA-Z0-9\-_]+)\|(?'key'.+)",
+            $@"(?'service'[\/\:a-zA-Z0-9\-\._]+){DelimiterEscaped}(?'partition'[a-zA-Z0-9\-_]+){DelimiterEscaped}(?'schema'[a-zA-Z0-9\-_]+){DelimiterEscaped}(?'key'.+)",
             RegexOptions.Compiled);
 
         public SchemaStateKey(IdWrapper stateWrapper)
+            :this(stateWrapper.ServiceName, stateWrapper.ServicePartitionKey, stateWrapper.Schema, stateWrapper.Key)
         {
-            ServiceName = stateWrapper.ServiceName;
-            ServicePartitionKey = stateWrapper.ServicePartitionKey;
-            Schema = stateWrapper.Schema;
-            Key = stateWrapper.Key;
         }
 
         public SchemaStateKey(string serviceName, string servicePartitionKey, string schema = null, string key = null)
         {
-            if (serviceName != null && (serviceName.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in serviceName for state", nameof(serviceName));
-            if (servicePartitionKey != null && (servicePartitionKey.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in servicePartitionKey for state", nameof(servicePartitionKey));
-            if (schema != null && (schema.IndexOf(Delimiter, StringComparison.Ordinal) != -1)) throw new ArgumentException($"Character {Delimiter} is not permitted in schema for state", nameof(schema));            
+            _serviceNameExcaped = EscapeComponent(serviceName);
+            _servicePartitionKeyExcaped = EscapeComponent(servicePartitionKey);
+            _schemaExcaped = EscapeComponent(schema);
+            _keyExcaped = EscapeComponent(key);
 
             ServiceName = serviceName;
             ServicePartitionKey = servicePartitionKey;
@@ -234,6 +238,30 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             Key = key;
         }
 
+        private static string EscapeComponent(string component)
+        {
+            return component != null ? IllegalCharsReplacer.Replace(component, ReplaceIllegalChar) : null;
+        }
+
+        private static string UnescapeComponent(string component)
+        {
+            return component  != null ? ReplacedCharsReplacer.Replace(component, RestoreIllegalChar) : null;
+        }
+
+        private static string ReplaceIllegalChar(Match m)
+        {
+            return $"'{(int)m.Value[0]}'";
+        }
+
+        private static string RestoreIllegalChar(Match m)
+        {
+            return int.TryParse(m.Groups[1].Value, out var matchedCharCode) ? $"{(char) matchedCharCode}" : m.Value;
+        }
+
+        private readonly string _serviceNameExcaped;
+        private readonly string _servicePartitionKeyExcaped;
+        private readonly string _schemaExcaped;
+        private readonly string _keyExcaped;
         public string ServiceName { get; }
         public string ServicePartitionKey { get; }
         public string Schema { get; }
@@ -245,10 +273,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             if (!match.Success)
                 throw new NotSupportedException($"The key {schemaStateKey} cannot be parsed as a SchemaStateKey");
 
-            var serviceName = match.Groups["service"]?.Value;
-            var partititonKey = match.Groups["partition"]?.Value;
-            var schema = match.Groups["schema"]?.Value;
-            var key = match.Groups["key"]?.Value;
+            var serviceName = UnescapeComponent(match.Groups["service"]?.Value);
+            var partititonKey = UnescapeComponent(match.Groups["partition"]?.Value);
+            var schema = UnescapeComponent(match.Groups["schema"]?.Value);
+            var key = UnescapeComponent(match.Groups["key"]?.Value);
 
             return new SchemaStateKey(serviceName, partititonKey, schema, key);
         }
@@ -256,17 +284,17 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         public string GetId()
         {
             var value = new StringBuilder();
-            if (ServiceName != null)
+            if (_serviceNameExcaped != null)
             {
-                value = value.Append(ServiceName).Append(Delimiter);
-                if (ServicePartitionKey != null)
+                value = value.Append(_serviceNameExcaped).Append(Delimiter);
+                if (_servicePartitionKeyExcaped != null)
                 {
-                    value = value.Append(ServicePartitionKey).Append(Delimiter);
-                    if (Schema != null)
+                    value = value.Append(_servicePartitionKeyExcaped).Append(Delimiter);
+                    if (_schemaExcaped != null)
                     {
-                        value = value.Append(Schema).Append(Delimiter);
-                        if (Key != null)
-                            value = value.Append(Key);
+                        value = value.Append(_schemaExcaped).Append(Delimiter);
+                        if (_keyExcaped != null)
+                            value = value.Append(_keyExcaped);
                     }
                 }
             }
@@ -277,10 +305,5 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         {
             return GetId();
         }
-        
-        //public static implicit operator string(SchemaStateKey key)
-        //{
-        //    return key.GetId();
-        //}
     }
 }

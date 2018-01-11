@@ -205,7 +205,8 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
                 await statefulServiceDemo.Enqueue(1);
                 await statefulServiceDemo.Dequeue(1);
 
-                State.Single().Key.Should().Be(@"Overlord-StatefulServiceDemo|range-0|myQueue|QUEUEINFO");
+                var expectedId = $@"Overlord-StatefulServiceDemo{SchemaStateKey.Delimiter}range-0{SchemaStateKey.Delimiter}myQueue{SchemaStateKey.Delimiter}QUEUEINFO";
+                State.Single().Key.Should().Be(expectedId);
 
                 var stateValue = JsonUtility.NormalizeJsonString(JsonUtility.CullProperties(State.Single().Value, p => !p.StartsWith("_")));
                 var expectedObject = JsonUtility.GetNormalizedJson(
@@ -218,7 +219,7 @@ namespace FG.ServiceFabric.Testing.Tests.Services.Runtime
                         schema = "myQueue",
                         key = "QUEUEINFO",
                         type = "ReliableQueueItem",
-                        id = "Overlord-StatefulServiceDemo|range-0|myQueue|QUEUEINFO"
+                        id = expectedId
                     });
 
                 stateValue.Should().Be(expectedObject);
