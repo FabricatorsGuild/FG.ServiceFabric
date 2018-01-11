@@ -59,6 +59,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         }
 
         // ReSharper disable once UnusedMember.Global - For debugging purposes
+        // ReSharper disable once MemberCanBePrivate.Global - For debugging purposes
         public string InstanceName { get; }
 
         public IStateQuerySession CreateSession()
