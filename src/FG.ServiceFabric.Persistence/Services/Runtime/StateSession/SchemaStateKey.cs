@@ -211,8 +211,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
 
     public class SchemaStateKey
     {
-        public const string Delimiter = "|";
-        private const string DelimiterEscaped = @"\|";
+        public const string Delimiter = "_";
+        private const string DelimiterEscaped = @"_";
 
         private static readonly Regex IllegalCharsReplacer = new Regex(@"['|\\/]", RegexOptions.Compiled);
         private static readonly Regex ReplacedCharsReplacer = new Regex(@"'(\d{3,5})'", RegexOptions.Compiled);
