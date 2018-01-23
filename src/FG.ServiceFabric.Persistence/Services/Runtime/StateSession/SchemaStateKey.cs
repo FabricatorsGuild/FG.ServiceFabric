@@ -214,10 +214,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         public const string Delimiter = "_";
         private const string DelimiterEscaped = @"_";
 
-        private static readonly Regex IllegalCharsReplacer = new Regex(@"['|\\/]", RegexOptions.Compiled);
-        private static readonly Regex ReplacedCharsReplacer = new Regex(@"'(\d{3,5})'", RegexOptions.Compiled);
+        private static readonly Regex IllegalCharsReplacer = new Regex($@"['|\\/{DelimiterEscaped}]", RegexOptions.Compiled);
+        private static readonly Regex ReplacedCharsReplacer = new Regex(@"'(\d{1,4})'", RegexOptions.Compiled);
         private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
-            $@"(?'service'[\/\:a-zA-Z0-9\-\._]+){DelimiterEscaped}(?'partition'[a-zA-Z0-9\-_]+){DelimiterEscaped}(?'schema'[a-zA-Z0-9\-_]+){DelimiterEscaped}(?'key'.+)",
+            $@"(?'service'[\/\:a-zA-Z0-9\-\.\']+){DelimiterEscaped}(?'partition'[a-zA-Z0-9\-\']+){DelimiterEscaped}(?'schema'[a-zA-Z0-9\-\']+){DelimiterEscaped}(?'key'.+)",
             RegexOptions.Compiled);
 
         public SchemaStateKey(IdWrapper stateWrapper)
