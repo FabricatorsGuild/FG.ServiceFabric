@@ -7,4 +7,9 @@ namespace FG.CQRS
     {
         Task Handle(TDomainEvent domainEvent);
     }
+
+    public interface IAllowImplicitDomainEventHandling
+    {
+        
+    }
 }

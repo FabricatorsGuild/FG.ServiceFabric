@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
+using FG.Common.CallContext;
 using FG.Common.Utils;
 using FG.CQRS;
 using FG.CQRS.Exceptions;
@@ -54,12 +55,20 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             // ReSharper disable once SuspiciousTypeConversion.Global
             var handleDomainEvent = this as IHandleDomainEvent<TDomainEvent>;
+            var allowImplicitDomainEventHandling = (this as IAllowImplicitDomainEventHandling) != null;
 
-            if (handleDomainEvent == null)
+            if (handleDomainEvent == null && !allowImplicitDomainEventHandling)
                 throw new HandlerNotFoundException(
                     $"No handler found for event {nameof(TDomainEvent)}. Did you forget to implement {nameof(IHandleDomainEvent<TDomainEvent>)}?");
 
-            await handleDomainEvent.Handle(domainEvent);
+            if (handleDomainEvent != null)
+            {
+                await handleDomainEvent.Handle(domainEvent);
+            }
+            else
+            {
+                await StoreDomainEventAsync(domainEvent);
+            }
         }
 
         protected override Task OnActivateAsync()
@@ -152,5 +161,11 @@ namespace FG.ServiceFabric.Actors.Runtime
         }
 
         #endregion
-    }
+
+        #region CommandExecutionContext
+
+        
+
+        #endregion
+    }    
 }
