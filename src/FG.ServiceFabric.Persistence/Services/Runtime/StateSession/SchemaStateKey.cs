@@ -215,6 +215,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         private const string DelimiterEscaped = @"_";
 
         private static readonly Regex IllegalCharsReplacer = new Regex($@"['|\\/{DelimiterEscaped}]", RegexOptions.Compiled);
+        private static readonly Regex IllegalCharsWithoutDelimiterReplacer = new Regex($@"['|\\/]", RegexOptions.Compiled);
         private static readonly Regex ReplacedCharsReplacer = new Regex(@"'(\d{1,4})'", RegexOptions.Compiled);
         private static readonly Regex RegexActorSchemaStateKeySplitter = new Regex(
             $@"(?'service'[\/\:a-zA-Z0-9\-\.\']+){DelimiterEscaped}(?'partition'[a-zA-Z0-9\-\']+){DelimiterEscaped}(?'schema'[a-zA-Z0-9\-\']+){DelimiterEscaped}(?'key'.+)",
@@ -238,9 +239,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             Key = key;
         }
 
-        private static string EscapeComponent(string component)
+        private static string EscapeComponent(string component, bool includeDelimiter = true)
         {
-            return component != null ? IllegalCharsReplacer.Replace(component, ReplaceIllegalChar) : null;
+            return component != null ? (includeDelimiter ? IllegalCharsReplacer : IllegalCharsWithoutDelimiterReplacer).Replace(component, ReplaceIllegalChar) : null;
         }
 
         private static string UnescapeComponent(string component)

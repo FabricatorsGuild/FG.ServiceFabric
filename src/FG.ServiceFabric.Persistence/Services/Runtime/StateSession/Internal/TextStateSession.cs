@@ -101,7 +101,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                     Task.FromResult(new FindByKeyPrefixResult
                     {
                         ContinuationToken = result.ContinuationToken,
-                        Items = result.Items.Select(id => GetUnescapedKey(SchemaStateKey.Parse(id).Key)).ToArray()
+                        Items = result.Items.Select(id => SchemaStateKey.Parse(id).Key).ToArray()
                     });
             }
 
@@ -112,7 +112,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                 return Task.FromResult(
                     Find(schemaKeyPrefix, key, int.MaxValue, null, cancellationToken)
                         .Items
-                        .Select(id => GetUnescapedKey(SchemaStateKey.Parse(id).Key))
+                        .Select(id => SchemaStateKey.Parse(id).Key)
                         .Distinct());
             }
 

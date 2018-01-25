@@ -35,34 +35,34 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
                 .ToDictionary(c => c.Replacement, c => c.InvalidChar);
         }
 
-        private string EscapeFileName(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName)) return fileName;
+        //private string EscapeFileName(string fileName)
+        //{
+        //    if (string.IsNullOrWhiteSpace(fileName)) return fileName;
 
-            var stringBuilder = new StringBuilder(fileName);
-            foreach (var replacer in _invalidCharsReplacement)
-                stringBuilder.Replace(replacer.Key, replacer.Value);
-            return stringBuilder.ToString();
-        }
+        //    var stringBuilder = new StringBuilder(fileName);
+        //    foreach (var replacer in _invalidCharsReplacement)
+        //        stringBuilder.Replace(replacer.Key, replacer.Value);
+        //    return stringBuilder.ToString();
+        //}
 
-        private string UnescapeFileName(string fileName)
-        {
-            if (string.IsNullOrWhiteSpace(fileName)) return fileName;
+        //private string UnescapeFileName(string fileName)
+        //{
+        //    if (string.IsNullOrWhiteSpace(fileName)) return fileName;
 
-            var stringBuilder = new StringBuilder(fileName);
-            foreach (var replacer in _replacementsToInvalidChars)
-                stringBuilder.Replace(replacer.Key, replacer.Value);
-            return stringBuilder.ToString();
-        }
+        //    var stringBuilder = new StringBuilder(fileName);
+        //    foreach (var replacer in _replacementsToInvalidChars)
+        //        stringBuilder.Replace(replacer.Key, replacer.Value);
+        //    return stringBuilder.ToString();
+        //}
 
         protected override string GetEscapedKeyInternal(string key)
         {
-            return EscapeFileName(key);
+            return key;//EscapeFileName(key);
         }
 
         protected override string GetUnescapedKeyInternal(string key)
         {
-            return UnescapeFileName(key);
+            return key;//return UnescapeFileName(key);
         }
 
         protected override TextStateSession CreateSessionInternal(
@@ -119,7 +119,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
             private string GetFilePath(SchemaStateKey key)
             {
                 var id = key.GetId();
-                var fileName = $"{_manager.EscapeFileName(id)}.json";
+                var fileName = $"{id}.json";
                 var filePath = Path.Combine(CommonPath, fileName);
                 return filePath;
             }
@@ -166,7 +166,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.FileSystem
                 var resultCount = 0;
                 foreach (var file in files)
                 {
-                    var fileName = _manager.UnescapeFileName(Path.GetFileNameWithoutExtension(file));
+                    var fileName = Path.GetFileNameWithoutExtension(file);
                     if (fileName.CompareTo(nextMarker) > 0)
                     {
                         results.Add(fileName);

@@ -70,11 +70,11 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 
                     foreach (var file in files)
                     {
-                        var name = Path.GetFileNameWithoutExtension(file);
-                        var unescapedName = (string) _emptyManager.CallPrivateMethod("UnescapeFileName", name);
+                        var fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                        var id = SchemaStateKey.Parse(fileName).GetId();
                         var content = File.ReadAllText(file);
 
-                        state.Add(unescapedName, content);
+                        state.Add(id, content);
                     }
                     return state;
                 }

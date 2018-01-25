@@ -165,8 +165,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                     Task.FromResult(new FindByKeyPrefixResult
                     {
                         ContinuationToken = result.ContinuationToken,
-                        Items = result.Items.Select(i =>
-                            _managerInternals.GetUnescapedKey(i.Substring(schemaKeyPrefix.Length))).ToArray()
+                        Items = result.Items.Select(id => SchemaStateKey.Parse(id).Key).ToArray()
                     });
             }
 

@@ -534,7 +534,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
             protected static ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo
                 CreateService(StatefulServiceContext context, IStateSessionManager stateSessionManager)
             {
-                return new ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context, stateSessionManager);
+                return new ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo(context, stateSessionManager, "my_dict_values");
             }
 
             protected Service_with_simple_dictionary(TestRunner<ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.StatefulServiceDemo> testBase) :
@@ -553,7 +553,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                         FabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"),
                         new ServicePartitionKey(int.MinValue));
 
-                // Enqueue 5 items
+                // Enqueue 1 item
                 await statefulServiceDemo.Add("a", "A");
 
                 // items and queue info state
@@ -572,11 +572,11 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                         new ServicePartitionKey(int.MinValue));
 
                 // Enqueue 5 items
-                await statefulServiceDemo.Add("a", "A");
-                await statefulServiceDemo.Add("b", "B");
-                await statefulServiceDemo.Add("c", "C");
-                await statefulServiceDemo.Add("d", "D");
-                await statefulServiceDemo.Add("e", "E");
+                await statefulServiceDemo.Add("a_1", "A");
+                await statefulServiceDemo.Add("b_2", "B");
+                await statefulServiceDemo.Add("c_3", "C");
+                await statefulServiceDemo.Add("d_4", "D");
+                await statefulServiceDemo.Add("e_5", "E");
 
                 // items and queue info state
                 State.Should().HaveCount(5);
@@ -594,13 +594,54 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                         new ServicePartitionKey(int.MinValue));
 
                 // Enqueue 5 items
-                await statefulServiceDemo.Add("a", "A");
+                await statefulServiceDemo.Add("a_1", "A");
+                await statefulServiceDemo.Add("b_2", "B");
+                await statefulServiceDemo.Add("c_3", "C");
+                await statefulServiceDemo.Add("d_4", "D");
+                await statefulServiceDemo.Add("e_5", "E");
 
                 // items and queue info state
                 var keyValuePairs = await statefulServiceDemo.EnumerateAll();
                 keyValuePairs.Should().BeEquivalentTo(new[]
-                    {new KeyValuePair<string, string>("a", "A")});
+                {
+                    new KeyValuePair<string, string>("a_1", "A"),
+                    new KeyValuePair<string, string>("b_2", "B"),
+                    new KeyValuePair<string, string>("c_3", "C"),
+                    new KeyValuePair<string, string>("d_4", "D"),
+                    new KeyValuePair<string, string>("e_5", "E")
+                });
             }
+
+
+            [Test]
+            public async Task _should_persist_added_item_with_illegal_chars_in_key_and_enumerate_all()
+            {
+                State.Should().HaveCount(0);
+
+                var statefulServiceDemo = FabricRuntime.ServiceProxyFactory
+                    .CreateServiceProxy<ServiceFabric.Tests.StatefulServiceDemo.With_simple_dictionary.
+                        IStatefulServiceDemo>(
+                        FabricApplication.ApplicationUriBuilder.Build("StatefulServiceDemo"),
+                        new ServicePartitionKey(int.MinValue));
+
+                // Enqueue 5 items
+                var illegalChars = @"'|\/_";
+                var keys = new List<string>();
+
+                foreach (var illegalChar in illegalChars)
+                {
+                    var key = $"key{illegalChar}";
+                    await statefulServiceDemo.Add(key, key);
+                    keys.Add(key);
+                }
+
+                // items and queue info state
+                var keyValuePairs = await statefulServiceDemo.EnumerateAll();
+                keyValuePairs.Should()
+                    .BeEquivalentTo(keys.Select(key => new KeyValuePair<string, string>(key, key)).ToArray());
+            }
+
+
 
             [Test]
             public async Task _should_persist_added_items_and_enumerate_all()
