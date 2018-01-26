@@ -27,7 +27,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
 {
     namespace With_StateSessionActorStateProvider
     {
-        namespace _and_InMemoryStateSession2
+        namespace _and_InMemoryStateSessionWithTransactions
         {
             public abstract class TestBase<T>
                 where T : ActorBase, IActorDemo

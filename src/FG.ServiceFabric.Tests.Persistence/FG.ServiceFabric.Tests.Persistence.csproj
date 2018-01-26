@@ -161,7 +161,8 @@
     <Compile Include="Actors\Runtime\MockActorStateProvider_partitions_tests.cs" />
     <Compile Include="Actors\Runtime\MockActorStateProvider_reminders_tests.cs" />
     <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession.cs" />
-    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSession2.cs" />
+    <Compile Include="Actors\Runtime\With_StateSessionActorStateProvider_and_InMemoryStateSessionWithTransactions.cs" />
+    <Compile Include="Actors\Runtime\With_OverloadedStateSessionActorStateProvider_and_InMemoryStateSessionWithTransactions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SchemaStateKey_tests.cs" />
     <Compile Include="Services\Runtime\CosmosDbForTestingSettingsProvider.cs" />

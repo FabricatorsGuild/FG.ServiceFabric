@@ -231,7 +231,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
             _serviceNameExcaped = EscapeComponent(serviceName);
             _servicePartitionKeyExcaped = EscapeComponent(servicePartitionKey);
             _schemaExcaped = EscapeComponent(schema);
-            _keyExcaped = EscapeComponent(key);
+            _keyExcaped = EscapeComponent(key, includeDelimiter:false);
 
             ServiceName = serviceName;
             ServicePartitionKey = servicePartitionKey;
