@@ -28,11 +28,12 @@ namespace FG.ServiceFabric.Actors.Client
 
         private static volatile Func<ActorProxyFactory, Type, Type, IActorProxyFactory> _actorProxyFactoryInnerFactory;
 
-        private IActorProxyFactory _innerActorProxyFactory;
+        private volatile IActorProxyFactory _innerActorProxyFactory;
 
         static ActorProxyFactory()
         {
-            SetInnerFactory(null);
+            CreateInnerFactoryIfNeeded();
+
             GetOrCreateActorMethodDispatcher =
                 MethodCallProxyFactory.CreateMethodProxyFactory.CreateMethodProxy<Type, MethodDispatcherBase>(
                     GetGetOrCreateActorMethodDispatcherMethodInfo(), "type");
@@ -97,13 +98,21 @@ namespace FG.ServiceFabric.Actors.Client
             return ActorMethodDispatcherMap.GetOrAdd(actorInterfaceType, GetActorMethodInformation);
         }
 
+        internal static void CreateInnerFactoryIfNeeded()
+        {
+            if (_actorProxyFactoryInnerFactory == null)
+            {
+                SetInnerFactory(null);
+            }
+        }
+
+        private static readonly ActorProxyFactoryCache ActorProxyFactoryCache = new ActorProxyFactoryCache();
+
         internal static void SetInnerFactory(Func<ActorProxyFactory, Type, Type, IActorProxyFactory> innerFactory)
         {
             if (innerFactory == null)
                 innerFactory = (actorProxyFactory, serviceInterfaceType, actorInterfaceType) =>
-                    new Microsoft.ServiceFabric.Actors.Client.ActorProxyFactory(
-                        client => actorProxyFactory.CreateServiceRemotingClientFactory(client, serviceInterfaceType,
-                            actorInterfaceType));
+                    ActorProxyFactoryCache.GetFactory(actorProxyFactory, serviceInterfaceType, actorInterfaceType);
 
             _actorProxyFactoryInnerFactory = innerFactory;
         }
@@ -121,7 +130,7 @@ namespace FG.ServiceFabric.Actors.Client
             return codeBuilderType?.GetMethod("GetOrCreateMethodDispatcher", BindingFlags.Public | BindingFlags.Static);
         }
 
-        private IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
+        internal IServiceRemotingClientFactory CreateServiceRemotingClientFactory(
             IServiceRemotingCallbackClient serviceRemotingCallbackClient,
             Type serviceInterfaceType,
             Type actorInterfaceType)
@@ -147,6 +156,9 @@ namespace FG.ServiceFabric.Actors.Client
 
             lock (_lock)
             {
+                if (_innerActorProxyFactory != null)
+                    return _innerActorProxyFactory;
+
                 return _innerActorProxyFactory =
                     _actorProxyFactoryInnerFactory(this, serviceInterfaceType, actorInterfaceType);
             }
