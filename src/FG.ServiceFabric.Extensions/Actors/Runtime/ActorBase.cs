@@ -12,11 +12,11 @@ namespace FG.ServiceFabric.Actors.Runtime
 {
     public abstract class ActorBase : Actor
     {
-        private readonly Func<IActorClientLogger> _actorClientLoggerFactory;
+        private readonly Func<Microsoft.ServiceFabric.Actors.Runtime.ActorService, ActorBase, IActorClientLogger> _actorClientLoggerFactory;
 
         private readonly Func<IActorProxyFactory> _actorProxyFactoryFactory;
 
-        private readonly Func<IServiceClientLogger> _serviceClientLoggerFactory;
+        private readonly Func<Microsoft.ServiceFabric.Actors.Runtime.ActorService, ActorBase, IServiceClientLogger> _serviceClientLoggerFactory;
 
         private readonly Func<IServiceProxyFactory> _serviceProxyFactoryFactory;
 
@@ -26,15 +26,15 @@ namespace FG.ServiceFabric.Actors.Runtime
             : base(actorService, actorId)
         {
             _applicationUriBuilder = new ApplicationUriBuilder(actorService.Context.CodePackageActivationContext);
-            _actorProxyFactoryFactory = () => new ActorProxyFactory(_actorClientLoggerFactory?.Invoke());
-            _serviceProxyFactoryFactory = () => new ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke());
+            _actorProxyFactoryFactory = () => new ActorProxyFactory(_actorClientLoggerFactory?.Invoke(actorService, this));
+            _serviceProxyFactoryFactory = () => new ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke(actorService, this));
         }
 
         protected ActorBase(
             Microsoft.ServiceFabric.Actors.Runtime.ActorService actorService,
             ActorId actorId,
-            Func<IActorClientLogger> actorClientLoggerFactory,
-            Func<IServiceClientLogger> serviceClientLoggerFactory)
+            Func<Microsoft.ServiceFabric.Actors.Runtime.ActorService, ActorBase, IActorClientLogger> actorClientLoggerFactory,
+            Func<Microsoft.ServiceFabric.Actors.Runtime.ActorService, ActorBase, IServiceClientLogger> serviceClientLoggerFactory)
             : this(actorService, actorId)
         {
             _actorClientLoggerFactory = actorClientLoggerFactory;

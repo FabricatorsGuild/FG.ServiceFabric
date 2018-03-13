@@ -1,4 +1,5 @@
 using System;
+using Microsoft.Azure.Documents;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
@@ -12,5 +13,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         void CreatingClient();
 
         void CreatingSession();
+        void ContainsInternalDocumentDbFailed(string id, DocumentClientException dcex);
+        void ContainsInternalFailed(string id, Exception ex);
+        void FindByKeyPrefixDocumenbtDbFailure(string schemaKeyPrefix, DocumentClientException dcex);
+        void FindByKeyPrefixFailure(string schemaKeyPrefix, Exception ex);
+        void EnumerateSchemaNamesDocumentDbFailure(string schemaKeyPrefix, DocumentClientException dcex);
+        void EnumerateSchemaNamesFailure(string schemaKeyPrefix, Exception exception);
+        void DisposingSession();
     }
 }

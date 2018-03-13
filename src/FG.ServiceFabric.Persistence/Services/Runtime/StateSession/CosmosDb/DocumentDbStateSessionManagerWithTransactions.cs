@@ -32,6 +32,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         private readonly IDocumentDbStateSessionManagerLogger _logger;
 
         private DocumentClient _client;
+        //private static DocumentClient _client;
         private bool _collectionExists;
         private readonly object _lock = new object();
 
@@ -105,14 +106,14 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             StateSessionManagerBase<DocumentDbStateSession> manager,
             IStateSessionObject[] stateSessionObjects)
         {
-            return new DocumentDbStateSession(this, stateSessionObjects);
+            return new DocumentDbStateSession(this, stateSessionObjects, _logger);
         }
 
         protected override DocumentDbStateSession CreateSessionInternal(
             StateSessionManagerBase<DocumentDbStateSession> manager,
             IStateSessionReadOnlyObject[] stateSessionObjects)
         {
-            return new DocumentDbStateSession(this, stateSessionObjects);
+            return new DocumentDbStateSession(this, stateSessionObjects, _logger);
         }
 
         public class DocumentDbStateSession : StateSessionBase<
@@ -120,21 +121,28 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         {
             private readonly DocumentClient _documentClient;
             private readonly DocumentDbStateSessionManagerWithTransactions _manager;
+            private readonly IDocumentDbStateSessionManagerLogger _logger;
 
             public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
-                IStateSessionReadOnlyObject[] stateSessionObjects)
+                IStateSessionReadOnlyObject[] stateSessionObjects, IDocumentDbStateSessionManagerLogger logger)
                 : base(manager, stateSessionObjects)
             {
                 _manager = manager;
+                _logger = logger;
                 _documentClient = _manager.GetClient();
+                
+                _logger.CreatingSession();
             }
 
             public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
-                IStateSessionObject[] stateSessionObjects)
+                IStateSessionObject[] stateSessionObjects, IDocumentDbStateSessionManagerLogger logger)
                 : base(manager, stateSessionObjects)
             {
                 _manager = manager;
+                _logger = logger;
                 _documentClient = _manager.GetClient();
+
+                _logger.CreatingSession();
             }
 
             DocumentClient IDocumentDbSession.Client => _documentClient;
@@ -162,7 +170,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             private Uri CreateDocumentCollectionUri()
             {
                 return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
-            }
+            }            
 
             protected override Task<bool> ContainsInternal(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
@@ -188,10 +196,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 {
                     if (dcex.StatusCode == HttpStatusCode.NotFound)
                         return Task.FromResult(false);
+                    _logger.ContainsInternalDocumentDbFailed(id, dcex);
                     throw new StateSessionException($"ContainsInternal for {id} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
                 {
+                    _logger.ContainsInternalFailed(id, ex);
                     throw new StateSessionException($"ContainsInternal for {id} failed, {ex.Message}", ex);
                 }
             }
@@ -248,11 +258,13 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
                 catch (DocumentClientException dcex)
                 {
+                    _logger.FindByKeyPrefixDocumenbtDbFailure(schemaKeyPrefix, dcex);
                     throw new StateSessionException(
                         $"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
                 {
+                    _logger.FindByKeyPrefixFailure(schemaKeyPrefix, ex);
                     throw new StateSessionException($"FindByKeyPrefixAsync for {schemaKeyPrefix} failed, {ex.Message}",
                         ex);
                 }
@@ -287,38 +299,43 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
                 catch (DocumentClientException dcex)
                 {
+                    _logger.EnumerateSchemaNamesDocumentDbFailure(schemaKeyPrefix, dcex);
+
                     throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {dcex.Message}",
                         dcex);
                 }
                 catch (Exception ex)
                 {
+                    _logger.EnumerateSchemaNamesFailure(schemaKeyPrefix, ex);
                     throw new StateSessionException($"EnumerateSchemaNamesAsync for {key} failed, {ex.Message}", ex);
                 }
             }
 
-            protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
+            protected override async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var id = key.GetId();
                 try
                 {
-                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
-                            CreateDocumentCollectionUri(),
-                            new FeedOptions
+                    //UriFactory.CreateDocumentUri(databaseId, collectionId, "POCO1")
+                    var documentAsync = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(CreateDocumentUri(id),
+                            new RequestOptions()
                             {
-                                PartitionKey = GetPartitionKey(),
-                                MaxItemCount = 1
-                            })
-                        .Where(d => d.Id == id);
-
-                    foreach (var document in documentCollectionQuery)
-                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, document));
-                    return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                                PartitionKey = GetPartitionKey()
+                            });
+                    if (documentAsync.Document != null)
+                    {
+                        return new ConditionalValue<StateWrapper<T>>(true, documentAsync.Document);
+                    }
+                    else
+                    {
+                        return new ConditionalValue<StateWrapper<T>>(false, null);
+                    }
                 }
                 catch (DocumentClientException dcex)
                 {
                     if (dcex.StatusCode == HttpStatusCode.NotFound)
-                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                        return new ConditionalValue<StateWrapper<T>>(false, null);
                     throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
@@ -428,6 +445,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
             protected override void Dispose(bool disposing)
             {
+                _logger.DisposingSession();
             }
         }
 
