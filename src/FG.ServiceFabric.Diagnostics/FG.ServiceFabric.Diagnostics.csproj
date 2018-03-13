@@ -127,6 +127,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ServiceContextTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRequestContextTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\StatefulServiceContextTypeTemplateExtension.cs" />

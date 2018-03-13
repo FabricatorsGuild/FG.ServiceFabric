@@ -2,62 +2,21 @@
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension
+    public class StatefulServiceContextTypeTemplateExtension : BaseTemplateExtension<System.Fabric.StatefulServiceContext>
     {
-        private readonly string Definition = @"{
-                  ""Name"": ""StatefulServiceContext"",
-                  ""CLRType"": ""System.Fabric.StatefulServiceContext"",
-                  ""Arguments"": [
-                    {
-                      ""Assignment"": ""$this.ServiceName.ToString()"",
-                      ""Name"": ""serviceName"",
-                      ""Type"": ""string"",
-                      ""CLRType"": ""string""
-                    },
-                    {
-                      ""Assignment"": ""$this.ServiceTypeName"",
-                      ""Name"": ""serviceTypeName"",
-                      ""Type"": ""string"",
-                      ""CLRType"": ""string""
-                    },
-                    {
-                      ""Assignment"": ""$this.ReplicaOrInstanceId"",
-                      ""Name"": ""replicaOrInstanceId"",
-                      ""Type"": ""long"",
-                      ""CLRType"": ""long""
-                    },
-                    {
-                      ""Assignment"": ""$this.PartitionId"",
-                      ""Name"": ""partitionId"",
-                      ""Type"": ""Guid"",
-                      ""CLRType"": ""System.Guid""
-                    },
-                    {
-                      ""Assignment"": ""$this.CodePackageActivationContext.ApplicationName"",
-                      ""Name"": ""applicationName"",
-                      ""Type"": ""string"",
-                      ""CLRType"": ""string""
-                    },
-                    {
-                      ""Assignment"": ""$this.CodePackageActivationContext.ApplicationTypeName"",
-                      ""Name"": ""applicationTypeName"",
-                      ""Type"": ""string"",
-                      ""CLRType"": ""string""
-                    },
-                    {
-                      ""Assignment"": ""$this.NodeContext.NodeName"",
-                      ""Name"": ""nodeName"",
-                      ""Type"": ""string"",
-                      ""CLRType"": ""string""
-                    }
-                  ]
-                }";
+        protected override void BuildArguments(TypeTemplate<System.Fabric.StatefulServiceContext> config)
+        {
+            config
+                .AddArgument(x => x.ServiceName.ToString())
+                .AddArgument(x => x.ServiceTypeName)
+                .AddArgument("replicaOrInstanceId", x => x.ReplicaId)
+                .AddArgument(x => x.PartitionId)
+                .AddArgument(x => x.CodePackageActivationContext.ApplicationName)
+                .AddArgument(x => x.CodePackageActivationContext.ApplicationTypeName)
+                .AddArgument(x => x.NodeContext.NodeName)
+                ;
+        }
 
         public override string Module => @"ServiceFabric";
-
-        protected override string GetDefinition()
-        {
-            return Definition;
-        }
     }
 }
