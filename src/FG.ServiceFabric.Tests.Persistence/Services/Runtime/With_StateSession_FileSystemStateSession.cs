@@ -11,150 +11,165 @@ using NUnit.Framework;
 
 namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 {
-    public class With_StateSession_FileSystemStateSession : With_StateSession_All_Tests
+    namespace With_StateSession_FileSystemStateSession
     {
-        private class TestRunnerBase<T> : With_StateSession_All_Tests.TestRunnerWithFunc<T> where T : StatefulServiceDemoBase
+
+
+        public class With_StateSession_All_Tests : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            With_StateSession_All_Tests
         {
-            private string _path;
-
-            public override IDictionary<string, string> State => GetState();
-            private FileSystemStateSessionManager _emptyManager = new FileSystemStateSessionManager(null, Guid.Empty, null, null);
-
-            protected override void OnSetup()
+            private class TestRunnerBase<T> : With_StateSession_All_Tests.TestRunnerWithFunc<T>
+                where T : StatefulServiceDemoBase
             {
-                _path = Path.Combine(Path.GetTempPath(),
-                    $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
-                Directory.CreateDirectory(_path);
-                base.OnSetup();
-            }
+                private string _path;
 
-            protected override void OnTearDown()
-            {
-                try
+                public override IDictionary<string, string> State => GetState();
+
+                private FileSystemStateSessionManager _emptyManager =
+                    new FileSystemStateSessionManager(null, Guid.Empty, null, null);
+
+                protected override void OnSetup()
                 {
-                    Directory.Delete(_path, true);
+                    _path = Path.Combine(Path.GetTempPath(),
+                        $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
+                    Directory.CreateDirectory(_path);
+                    base.OnSetup();
                 }
-                catch (IOException)
+
+                protected override void OnTearDown()
                 {
-                    // Just ignore it, it's a temp file anyway
+                    try
+                    {
+                        Directory.Delete(_path, true);
+                    }
+                    catch (IOException)
+                    {
+                        // Just ignore it, it's a temp file anyway
+                    }
+                    base.OnTearDown();
                 }
-                base.OnTearDown();
-            }
 
-            public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
-                StatefulServiceContext context)
-            {
-                return new FileSystemStateSessionManager(
-                    StateSessionHelper.GetServiceName(context.ServiceName),
-                    context.PartitionId,
-                    StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager)
-                        .GetAwaiter()
-                        .GetResult(),
-                    _path);
-            }
-
-
-            private IDictionary<string, string> GetState()
-            {
-
-                var state = new Dictionary<string, string>();
-                var files = Directory.GetFiles(_path);
-
-                foreach (var file in files)
+                public override IStateSessionManager CreateStateManager(MockFabricRuntime fabricRuntime,
+                    StatefulServiceContext context)
                 {
-                    var name = Path.GetFileNameWithoutExtension(file);
-                    var unescapedName = (string)_emptyManager.CallPrivateMethod("UnescapeFileName", name);
-                    var content = File.ReadAllText(file);
-
-                    state.Add(unescapedName, content);
+                    return new FileSystemStateSessionManager(
+                        StateSessionHelper.GetServiceName(context.ServiceName),
+                        context.PartitionId,
+                        StateSessionHelper.GetPartitionInfo(context, () => fabricRuntime.PartitionEnumerationManager)
+                            .GetAwaiter()
+                            .GetResult(),
+                        _path);
                 }
-                return state;
-            }
 
-            public TestRunnerBase(Func<StatefulServiceContext, IStateSessionManager, T> createService) : base(createService)
-            {
-            }
-        }
 
-        public class StateSession_transacted_scope : Runtime.StateSession_transacted_scope
-        {
-            private string _path;
-
-            [SetUp]
-            public override void Setup()
-            {
-                _path = Path.Combine(Path.GetTempPath(),
-                    $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
-                Directory.CreateDirectory(_path);
-            }
-
-            [TearDown]
-            public override void Teardown()
-            {
-                try
+                private IDictionary<string, string> GetState()
                 {
-                    Directory.Delete(_path, true);
+
+                    var state = new Dictionary<string, string>();
+                    var files = Directory.GetFiles(_path);
+
+                    foreach (var file in files)
+                    {
+                        var fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                        var id = SchemaStateKey.Parse(fileName).GetId();
+                        var content = File.ReadAllText(file);
+
+                        state.Add(id, content);
+                    }
+                    return state;
                 }
-                catch (IOException)
+
+                public TestRunnerBase(Func<StatefulServiceContext, IStateSessionManager, T> createService) : base(
+                    createService)
                 {
-                    // Just ignore it, it's a temp file anyway
                 }
-            }            
-
-            protected override IStateSessionManager GetStateSessionManager()
-            {
-                return new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
             }
-        }
 
-        public class Service_with_simple_queue_enqueued : With_StateSession_All_Tests.
-            Service_with_simple_queue_enqueued
-        {
-            public Service_with_simple_queue_enqueued()
-                : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
-                    With_simple_queue_enqueued.StatefulServiceDemo>(CreateService))
+            public class StateSession_transacted_scope : Runtime.StateSession_transacted_scope
             {
+                private string _path;
+
+                [SetUp]
+                public override void Setup()
+                {
+                    _path = Path.Combine(Path.GetTempPath(),
+                        $"{GetType().Assembly.GetName().Name}-{Guid.NewGuid().ToString()}");
+                    Directory.CreateDirectory(_path);
+                }
+
+                [TearDown]
+                public override void Teardown()
+                {
+                    try
+                    {
+                        Directory.Delete(_path, true);
+                    }
+                    catch (IOException)
+                    {
+                        // Just ignore it, it's a temp file anyway
+                    }
+                }
+
+                protected override IStateSessionManager GetStateSessionManager()
+                {
+                    return new FileSystemStateSessionManager("testservice", Guid.NewGuid(), "range-0", _path);
+                }
             }
-        }
 
-
-        public class Service_with_simple_dictionary : With_StateSession_All_Tests.
-            Service_with_simple_dictionary
-        {
-            public Service_with_simple_dictionary()
-                : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
-                    With_simple_dictionary.StatefulServiceDemo>(CreateService))
+            public class Service_with_simple_queue_enqueued : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+                With_StateSession_All_Tests.
+                Service_with_simple_queue_enqueued
             {
+                public Service_with_simple_queue_enqueued()
+                    : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
+                        With_simple_queue_enqueued.StatefulServiceDemo>(CreateService))
+                {
+                }
             }
-        }
 
-        public class Service_with_multiple_states : With_StateSession_All_Tests.
-            Service_with_multiple_states
-        {
-            public Service_with_multiple_states()
-                : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
-                    With_multiple_states.StatefulServiceDemo>(CreateService))
+
+            public class Service_with_simple_dictionary : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+                With_StateSession_All_Tests.
+                Service_with_simple_dictionary
             {
+                public Service_with_simple_dictionary()
+                    : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
+                        With_simple_dictionary.StatefulServiceDemo>(CreateService))
+                {
+                }
             }
-        }
 
-        public class Service_with_simple_counter_state : With_StateSession_All_Tests.
-            Service_with_simple_counter_state
-        {
-            public Service_with_simple_counter_state()
-                : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
-                    With_simple_counter_state.StatefulServiceDemo>(CreateService))
+            public class Service_with_multiple_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+                With_StateSession_All_Tests.
+                Service_with_multiple_states
             {
+                public Service_with_multiple_states()
+                    : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
+                        With_multiple_states.StatefulServiceDemo>(CreateService))
+                {
+                }
             }
-        }
 
-        public class Service_with_polymorphic_states : With_StateSession_All_Tests.
-            Service_with_polymorphic_states
-        {
-            public Service_with_polymorphic_states()
-                : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
-                    With_polymorphic_array_state.StatefulServiceDemo>(CreateService))
+            public class Service_with_simple_counter_state : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+                With_StateSession_All_Tests.
+                Service_with_simple_counter_state
             {
+                public Service_with_simple_counter_state()
+                    : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
+                        With_simple_counter_state.StatefulServiceDemo>(CreateService))
+                {
+                }
+            }
+
+            public class Service_with_polymorphic_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+                With_StateSession_All_Tests.
+                Service_with_polymorphic_states
+            {
+                public Service_with_polymorphic_states()
+                    : base(new TestRunnerBase<ServiceFabric.Tests.StatefulServiceDemo.
+                        With_polymorphic_array_state.StatefulServiceDemo>(CreateService))
+                {
+                }
             }
         }
     }

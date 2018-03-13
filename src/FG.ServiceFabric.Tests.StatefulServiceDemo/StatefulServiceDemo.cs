@@ -342,18 +342,20 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
         public sealed class StatefulServiceDemo : StatefulServiceDemoBase, IStatefulServiceDemo
         {
             private readonly IStateSessionManager _stateSessionManager;
+            private readonly string _dictionaryName;
 
-            public StatefulServiceDemo(StatefulServiceContext context, IStateSessionManager stateSessionManager)
+            public StatefulServiceDemo(StatefulServiceContext context, IStateSessionManager stateSessionManager, string dictionaryName)
                 : base(context, stateSessionManager)
             {
                 _stateSessionManager = stateSessionManager;
+                _dictionaryName = dictionaryName;
             }
 
             public async Task Add(string key, string value)
             {
                 var cancellationToken = CancellationToken.None;
 
-                var myDict = await _stateSessionManager.Writable.OpenDictionary<string>("myDict", cancellationToken);
+                var myDict = await _stateSessionManager.Writable.OpenDictionary<string>(_dictionaryName, cancellationToken);
 
                 using (var session = _stateSessionManager.Writable.CreateSession(myDict))
                 {
@@ -366,7 +368,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
             {
                 var cancellationToken = CancellationToken.None;
 
-                var myDict = await _stateSessionManager.Writable.OpenDictionary<string>("myDict", cancellationToken);
+                var myDict = await _stateSessionManager.Writable.OpenDictionary<string>(_dictionaryName, cancellationToken);
 
                 using (var session = _stateSessionManager.Writable.CreateSession(myDict))
                 {
@@ -380,7 +382,7 @@ namespace FG.ServiceFabric.Tests.StatefulServiceDemo
                 var cancellationToken = CancellationToken.None;
 
                 var results = new List<KeyValuePair<string, string>>();
-                var myDict = await _stateSessionManager.OpenDictionary<string>("myDict", cancellationToken);
+                var myDict = await _stateSessionManager.OpenDictionary<string>(_dictionaryName, cancellationToken);
 
                 using (var session = _stateSessionManager.CreateSession(myDict))
                 {

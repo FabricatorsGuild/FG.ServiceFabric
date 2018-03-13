@@ -22,7 +22,7 @@ namespace PersistancePerformanceTestBench
         private static void Main(string[] args)
         {
             var serviceWithSimpleQueueEnqueued = new FG.ServiceFabric.Tests.Persistence.Services.Runtime.
-                With_StateSession_InMemoryStateSessionWithTransactions.Service_with_simple_queue_enqueued();
+                With_StateSession_InMemoryStateSessionWithTransactions.With_StateSession_All_Tests.Service_with_simple_queue_enqueued();
             serviceWithSimpleQueueEnqueued.Setup();
 
             serviceWithSimpleQueueEnqueued._should_persist_state_stored_after_enqueued().GetAwaiter().GetResult();

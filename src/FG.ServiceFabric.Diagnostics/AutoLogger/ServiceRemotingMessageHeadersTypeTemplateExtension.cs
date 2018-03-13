@@ -1,31 +1,19 @@
 ﻿using FG.Diagnostics.AutoLogger.Model;
+using Microsoft.ServiceFabric.Services.Remoting.V1;
 
 namespace FG.ServiceFabric.Diagnostics.AutoLogger
 {
-    public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension
+    public class ServiceRemotingMessageHeadersTypeTemplateExtension : BaseTemplateExtension<Microsoft.ServiceFabric.Services.Remoting.V1.ServiceRemotingMessageHeaders>
     {
-        private readonly string Definition = @"{
-                  ""Name"": ""ServiceRemotingMessageHeaders"",
-                  ""CLRType"": ""Microsoft.ServiceFabric.Services.Remoting.V1.ServiceRemotingMessageHeaders"",
-                  ""Arguments"": [
-                    {
-                      ""Name"": ""InterfaceId"",
-                      ""Type"": ""int"",
-                      ""Assignment"": ""($this?.InterfaceId ?? 0)""
-                    },
-                    {
-                      ""Name"": ""MethodId"",
-                      ""Type"": ""int"",
-                      ""Assignment"": ""($this?.MethodId ?? 0)""
-                    }
-                  ]
-                }";
+        protected override void BuildArguments(TypeTemplate<ServiceRemotingMessageHeaders> config)
+        {
+            config                    
+                .AddArgument("interfaceId", x => x.InterfaceId)
+                .AddArgument("methodId", x => x.MethodId)
+                ;
+        }
 
         public override string Module => @"ServiceFabric";
-
-        protected override string GetDefinition()
-        {
-            return Definition;
-        }
+        
     }
 }

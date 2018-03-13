@@ -1,0 +1,47 @@
+{
+  "EventSources": [
+    {
+      "Name": "FGServiceFabricServicesRemotingEventSource.eventsource.json",
+      "Hash": "4aefbfbd270c1aefbfbdefbfbd312e61efbfbd70dca6efbfbd5e"
+    }
+  ],
+  "References": [
+    "bin\\Debug\\FG.Common.dll",
+    "bin\\Debug\\FG.ServiceFabric.Services.Remoting.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Data.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Data.Interfaces.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Diagnostics.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.FabricTransport.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.FabricTransport.V2.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Internal.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Internal.Strings.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Preview.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Services.dll",
+    "bin\\Debug\\Microsoft.ServiceFabric.Services.Remoting.dll",
+    "bin\\Debug\\System.Collections.Immutable.dll",
+    "bin\\Debug\\System.Fabric.dll",
+    "bin\\Debug\\System.Fabric.Management.ServiceModel.dll",
+    "bin\\Debug\\System.Fabric.Management.ServiceModel.XmlSerializers.dll",
+    "bin\\Debug\\System.Fabric.Strings.dll"
+  ],
+  "ProjectReferences": [],
+  "CompileTargets": [
+    {
+      "Name": "Diagnostics\\IServiceClientLogger.cs",
+      "Hash": "c797efbfbdefbfbd2409efbfbd483a620472efbfbdefbfbd7f"
+    },
+    {
+      "Name": "Diagnostics\\IServiceCommunicationAndClientLogger.cs",
+      "Hash": "efbfbdefbfbdefbfbd7505efbfbdefbfbd55efbfbd46376e00efbfbdefbfbd48"
+    },
+    {
+      "Name": "Diagnostics\\IServiceCommunicationLogger.cs",
+      "Hash": "efbfbdefbfbd0cefbfbdefbfbdefbfbdefbfbd73306fefbfbdefbfbdefbfbdefbfbd0c"
+    },
+    {
+      "Name": "Diagnostics\\IServiceRemotingLogger.cs",
+      "Hash": "38076aefbfbdefbfbd4a0aefbfbd5f6fefbfbdefbfbdefbfbdefbfbdefbfbd3c"
+    }
+  ],
+  "Hash": "efbfbdefbfbd555737efbfbd56efbfbd2b2cefbfbd3a7b69efbfbd"
+}

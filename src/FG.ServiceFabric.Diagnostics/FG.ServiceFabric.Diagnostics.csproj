@@ -39,8 +39,8 @@
 $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64 -Symbols</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FG.Diagnostics.AutoLogger.Model, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\FG.Diagnostics.AutoLogger.Model.1.4.2\lib\net452\FG.Diagnostics.AutoLogger.Model.dll</HintPath>
+    <Reference Include="FG.Diagnostics.AutoLogger.Model, Version=1.5.1.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\FG.Diagnostics.AutoLogger.Model.1.5.1.8\lib\net452\FG.Diagnostics.AutoLogger.Model.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
@@ -78,7 +78,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\FG.Diagnostics.AutoLogger.Model.1.4.2\lib\net452\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\FG.Diagnostics.AutoLogger.Model.1.5.1.8\lib\net452\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -127,6 +127,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="AutoLogger\ActorServiceTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ActorTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\CustomServiceRequestHeaderTypeTemplateExtension.cs" />
+    <Compile Include="AutoLogger\ServiceContextTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRemotingMessageHeadersTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\ServiceRequestContextTypeTemplateExtension.cs" />
     <Compile Include="AutoLogger\StatefulServiceContextTypeTemplateExtension.cs" />

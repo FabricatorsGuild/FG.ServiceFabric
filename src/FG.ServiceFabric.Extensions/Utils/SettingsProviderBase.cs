@@ -7,12 +7,16 @@ namespace FG.ServiceFabric.Utils
 {
     public abstract class SettingsProviderBase : ISettingsProvider
     {
-        private readonly ServiceContext _context;
+        private readonly ICodePackageActivationContext _activationContext;
         private readonly Dictionary<string, string> _values = new Dictionary<string, string>();
 
-        protected SettingsProviderBase(ServiceContext context)
+        protected SettingsProviderBase(ICodePackageActivationContext activationContext)
         {
-            _context = context;
+            _activationContext = activationContext;
+        }
+
+        protected SettingsProviderBase(ServiceContext context) : this(context.CodePackageActivationContext)
+        {
         }
 
         public string this[string key]
@@ -41,7 +45,7 @@ namespace FG.ServiceFabric.Utils
 
         private IEnumerable<KeyValuePair<string, string>> GetValuesFromSettingsFile(string section)
         {
-            var settingsFile = _context.CodePackageActivationContext.GetConfigurationPackageObject("Config").Settings;
+            var settingsFile = _activationContext.GetConfigurationPackageObject("Config").Settings;
             if (settingsFile.Sections.Contains(section))
             {
                 var configSection = settingsFile.Sections[section];
@@ -52,7 +56,7 @@ namespace FG.ServiceFabric.Utils
 
         private string GetValueFromSettingsFile(string section, string key)
         {
-            var settingsFile = _context.CodePackageActivationContext.GetConfigurationPackageObject("Config").Settings;
+            var settingsFile = _activationContext.GetConfigurationPackageObject("Config").Settings;
             if (settingsFile.Sections.Contains(section))
             {
                 var configSection = settingsFile.Sections[section];
@@ -128,4 +132,5 @@ namespace FG.ServiceFabric.Utils
             }
         }
     }
+
 }
