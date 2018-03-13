@@ -23,5 +23,5 @@ namespace FG.ServiceFabric.Diagnostics
             ServiceRemotingMessageHeaders serviceMessageHeaders,
             CustomServiceRequestHeader customServiceRequestHeader,
             Exception ex);
-    }
+    }    
 }
