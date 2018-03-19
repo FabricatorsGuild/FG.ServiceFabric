@@ -13,6 +13,7 @@
     <Product>FG.Common</Product>
     <Description>Common functionality for Fabricators Guild solutions (will be moved to separate repo soon)</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
     <Version>1.4.0.0</Version>
     <PackageTags>common async reflection hash serialization</PackageTags>
     <Copyright>Copyright 2017 - Fabricators Guild</Copyright>
