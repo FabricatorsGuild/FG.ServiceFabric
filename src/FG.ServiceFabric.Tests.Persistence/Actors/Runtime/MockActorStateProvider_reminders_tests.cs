@@ -64,7 +64,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
     public class When_actor_has_not_been_activated_before : When_starting_actor
     {
         [Test]
-        public void reminders_should_be_loaded_on_startup()
+        public void Reminders_should_be_loaded_on_startup()
         {
             var actorWithReminderDemo =
                 _fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));
@@ -110,7 +110,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
         }
 
         [Test]
-        public void reminders_should_be_loaded_on_startup()
+        public void Reminders_should_be_loaded_on_startup()
         {
             var actorWithReminderDemo =
                 _fabricRuntime.ActorProxyFactory.CreateActorProxy<IActorWithReminderDemo>(new ActorId("testivus"));

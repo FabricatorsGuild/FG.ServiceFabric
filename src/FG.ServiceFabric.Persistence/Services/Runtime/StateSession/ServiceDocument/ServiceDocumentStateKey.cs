@@ -1,7 +1,4 @@
-using FG.ServiceFabric.Services.Runtime.StateSession;
-using Microsoft.ServiceFabric.Actors;
-
-namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
+namespace FG.ServiceFabric.Services.Runtime.StateSession.ServiceDocument
 {
     public class ServiceDocumentStateKey : ISchemaKey
     {

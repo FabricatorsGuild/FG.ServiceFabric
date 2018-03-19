@@ -43,8 +43,8 @@
     <IsServiceFabricServiceProject>true</IsServiceFabricServiceProject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.18.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.18.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.21.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.21.1\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.8.232\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
@@ -80,8 +80,8 @@
     <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
       <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -103,13 +103,49 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
+      <Project>{2b74fe3f-c1d2-4ecc-9347-8ffbcf687ab5}</Project>
+      <Name>FG.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.CQRS\FG.CQRS.csproj">
+      <Project>{c3fbbbeb-b31d-43d8-8b3f-d9dec433c4ad}</Project>
+      <Name>FG.CQRS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.CQRS\FG.ServiceFabric.Actors.CQRS.csproj">
+      <Project>{9d4b839d-27f5-4ad7-a89e-e2b328634171}</Project>
+      <Name>FG.ServiceFabric.Actors.CQRS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.Extensions\FG.ServiceFabric.Actors.Extensions.csproj">
+      <Project>{44c8eb1f-0304-447b-80e5-51b84c151419}</Project>
+      <Name>FG.ServiceFabric.Actors.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.Persistence\FG.ServiceFabric.Actors.Persistence.csproj">
+      <Project>{404273f9-7430-4780-8118-3987d8b3db2f}</Project>
+      <Name>FG.ServiceFabric.Actors.Persistence</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj">
+      <Project>{045616fb-2560-4168-b073-8d5b86fa7b52}</Project>
+      <Name>FG.ServiceFabric.Actors.Remoting</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj">
       <Project>{BCEE1998-B962-48A3-B31E-E345DBED1348}</Project>
       <Name>FG.ServiceFabric.Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence.DocumentDb\FG.ServiceFabric.Persistence.DocumentDb.csproj">
+      <Project>{8D1D7995-C494-419A-93A4-D33C1778A5ED}</Project>
+      <Name>FG.ServiceFabric.Persistence.DocumentDb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
       <Project>{61ce425b-f4b5-4981-8cf9-9a5c901add2b}</Project>
       <Name>FG.ServiceFabric.Persistence</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Extensions\FG.ServiceFabric.Services.Extensions.csproj">
+      <Project>{bfce8f48-cfc4-43d7-814b-2fe65bd27085}</Project>
+      <Name>FG.ServiceFabric.Services.Extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
+      <Project>{1a4f9c49-629b-4331-be3c-698fffaa294c}</Project>
+      <Name>FG.ServiceFabric.Services.Remoting</Name>
     </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj">
       <Project>{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}</Project>
@@ -134,7 +170,7 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.21.1\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.21.1\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
-  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.21.1\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.21.1\build\Microsoft.Azure.DocumentDB.targets')" />
 </Project>

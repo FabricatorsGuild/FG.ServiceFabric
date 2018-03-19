@@ -114,7 +114,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                 }
             }
 
-            public class Service_with_simple_queue_enqueued : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            public new class Service_with_simple_queue_enqueued : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
                 With_StateSession_All_Tests.
                 Service_with_simple_queue_enqueued
             {
@@ -126,7 +126,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
             }
 
 
-            public class Service_with_simple_dictionary : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            public new class Service_with_simple_dictionary : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
                 With_StateSession_All_Tests.
                 Service_with_simple_dictionary
             {
@@ -137,7 +137,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                 }
             }
 
-            public class Service_with_multiple_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            public new class Service_with_multiple_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
                 With_StateSession_All_Tests.
                 Service_with_multiple_states
             {
@@ -148,7 +148,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                 }
             }
 
-            public class Service_with_simple_counter_state : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            public new class Service_with_simple_counter_state : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
                 With_StateSession_All_Tests.
                 Service_with_simple_counter_state
             {
@@ -159,7 +159,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
                 }
             }
 
-            public class Service_with_polymorphic_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
+            public new class Service_with_polymorphic_states : FG.ServiceFabric.Tests.Persistence.Services.Runtime.
                 With_StateSession_All_Tests.
                 Service_with_polymorphic_states
             {

@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using FG.CQRS;
+using FG.ServiceFabric.Actors.Runtime;
 using Microsoft.ServiceFabric.Actors;
 
 namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
@@ -15,7 +16,7 @@ namespace FG.ServiceFabric.Tests.EventStoredActor.Interfaces
         Task AddChildAsync(AddChildCommand command);
     }
 
-    public interface IEventStoredActorService : Actors.Runtime.IEventStoredActorService
+    public interface IEventStoredActorService : FG.ServiceFabric.Actors.Runtime.IEventStoredActorService
     {
         Task<ReadModel> GetAsync(Guid aggregateRootId);
     }

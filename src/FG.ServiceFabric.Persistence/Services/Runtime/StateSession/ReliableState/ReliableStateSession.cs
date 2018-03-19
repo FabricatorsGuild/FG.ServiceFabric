@@ -69,23 +69,23 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.ReliableState
             throw new NotImplementedException();
         }
 
-        public Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public new Task<ConditionalValue<T>> PeekAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public Task<IAsyncEnumerable<T>> CreateEnumerableAsync()
+        public new Task<IAsyncEnumerable<T>> CreateEnumerableAsync()
         {
             throw new NotImplementedException();
         }
 
-        public Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public new Task<long> GetCountAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             throw new NotImplementedException();
         }
 
-        public string Schema => _reliableConcurrentQueue.Name.ToString();
-        public bool IsReadOnly { get; }
+        public new string Schema => _reliableConcurrentQueue.Name.ToString();
+        public new bool IsReadOnly { get; }
     }
 
     public class ReliableStateSessionDictionary<T> : IStateSessionDictionary<T>

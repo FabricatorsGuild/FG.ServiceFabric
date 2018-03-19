@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Application xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="fabric:/FG.ServiceFabric.Tests.Application" xmlns="http://schemas.microsoft.com/2011/01/fabric">
+  <Parameters>
+    <Parameter Name="FG.ServiceFabric.Tests.StatefulServiceDemo_PartitionCount" Value="1" />
+    <Parameter Name="FG.ServiceFabric.Tests.StatefulServiceDemo_MinReplicaSetSize" Value="3" />
+    <Parameter Name="FG.ServiceFabric.Tests.StatefulServiceDemo_TargetReplicaSetSize" Value="3" />
+    <Parameter Name="DbStoredActorService_PartitionCount" Value="1" />
+    <Parameter Name="IndexActorService_PartitionCount" Value="1" />
+    <Parameter Name="EventStoredActorService_PartitionCount" Value="1" />
+  </Parameters>
+</Application>

@@ -156,7 +156,7 @@ namespace FG.ServiceFabric.Tests.Persistence
         {
             // fabric:/Overlord/StatefulServiceDemo_range-0_myDictionary2_theValue
             var d = SchemaStateKey.Delimiter;
-            var expectedId = $@"fabric:'47'Overlord'95'dev'47'StatefulService'95'Demo{d}range-0{d}myDictionary'95'2{d}the'95'Value";
+            var expectedId = $@"fabric:'47'Overlord'95'dev'47'StatefulService'95'Demo{d}range-0{d}myDictionary'95'2{d}the_Value";
 
             var service = "fabric:/Overlord_dev/StatefulService_Demo";
             var range = "range-0";

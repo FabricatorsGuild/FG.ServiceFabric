@@ -92,7 +92,7 @@ namespace FG.Common.Tests
                 new TestClass().CallGenericMethod(methodWithOneGenericArgName, new[] {typeof(string)}, "hello");
             });
 
-            callGenericMethodResult.ShouldThrow<ArgumentException>();
+            callGenericMethodResult.Should().Throw<ArgumentException>();
         }
     }
 

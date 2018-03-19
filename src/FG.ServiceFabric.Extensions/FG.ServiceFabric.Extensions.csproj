@@ -1,187 +1,38 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{BCEE1998-B962-48A3-B31E-E345DBED1348}</ProjectGuid>
+    <TargetFramework>net461</TargetFramework>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FG.ServiceFabric</RootNamespace>
-    <AssemblyName>FG.ServiceFabric.Extensions</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+
+    <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Company>Fabricators Guild</Company>
+    <Authors>Fabricators Guild</Authors>
+    <Product>FG.ServiceFabric.Actors.Remoting</Product>
+    <Description>Service Fabric extensions for Fabricators Guild solutions</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Version>1.4.0.0</Version>
+    <PackageTags>service fabric fabric transport remoting actors</PackageTags>
+    <Copyright>Copyright 2018 - Fabricators Guild</Copyright>
+    <PackageProjectUrl>https://github.com/FabricatorsGuild</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric/raw/master/fg.logo.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric</RepositoryUrl>
+    <RepositoryType></RepositoryType>
+
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>if not exist "$(SolutionDir)..\nugetfeed" md "$(SolutionDir)..\nugetfeed"
-$(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64 -Symbols</PostBuildEvent>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Actors.2.8.232\lib\net45\Microsoft.ServiceFabric.Actors.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.232\lib\net45\Microsoft.ServiceFabric.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Data.Interfaces, Version=5.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Data.2.8.232\lib\net45\Microsoft.ServiceFabric.Data.Interfaces.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Diagnostics, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Diagnostics.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.Diagnostics.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.FabricTransport, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.FabricTransport.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.FabricTransport.V2, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.FabricTransport.Internal.2.8.232\lib\net45\Microsoft.ServiceFabric.FabricTransport.V2.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Internal, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Internal.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Internal.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Internal.Strings.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Preview, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\Microsoft.ServiceFabric.Preview.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Services, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.ServiceFabric.Services.Remoting, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Fabric, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Fabric.Management.ServiceModel, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Management.ServiceModel.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Fabric.Management.ServiceModel.XmlSerializers, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Management.ServiceModel.XmlSerializers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Fabric.Strings, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
-      <HintPath>..\packages\Microsoft.ServiceFabric.6.0.232\lib\net45\System.Fabric.Strings.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\FG.Common\FG.Common.csproj">
-      <Project>{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}</Project>
-      <Name>FG.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj">
-      <Project>{045616FB-2560-4168-B073-8D5B86FA7B52}</Project>
-      <Name>FG.ServiceFabric.Actors.Remoting</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj">
-      <Project>{1A4F9C49-629B-4331-BE3C-698FFFAA294C}</Project>
-      <Name>FG.ServiceFabric.Services.Remoting</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="..\FG.Common\Properties\AssemblyVersion.cs">
-      <Link>Properties\AssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="Actors\ActorReference.cs" />
-    <Compile Include="Actors\Runtime\ActorBase.cs" />
-    <Compile Include="Actors\Runtime\ActorService.cs" />
-    <Compile Include="Actors\Runtime\ActorServiceExtensions.cs" />
-    <Compile Include="Actors\Runtime\ActorStateProviderHelper.cs" />
-    <Compile Include="Actors\Runtime\Reminders\ReminderDataBase.cs" />
-    <Compile Include="Actors\Runtime\WrappedActorStateProvider.cs" />
-    <Compile Include="Actors\Runtime\WrappedStateManager.cs" />
-    <Compile Include="Actors\State\ActorStateVersionExtension.cs" />
-    <Compile Include="Actors\State\IMigrationContainer.cs" />
-    <Compile Include="Actors\State\IVersionedState.cs" />
-    <Compile Include="Actors\State\MigrationBase.cs" />
-    <Compile Include="Actors\State\MigrationWithFunctions.cs" />
-    <Compile Include="Actors\State\VersionedStateProvider.cs" />
-    <None Include="packages.config" />
-    <WCFMetadata Include="Connected Services\" />
-    <Compile Include="Data\ReliableStateExtensions.cs" />
-    <Compile Include="Data\ReliableStateInfo.cs" />
-    <Compile Include="Fabric\FabricClientQueryManagerExtensions.cs" />
-    <Compile Include="Fabric\FabricClientQueryManagerPartitionEnumerationManager.cs" />
-    <Compile Include="Fabric\IPartitionEnumerationManager.cs" />
-    <Compile Include="Fabric\IPartitionHelperLogger.cs" />
-    <Compile Include="Fabric\PartitionEnumerationException.cs" />
-    <Compile Include="Fabric\PartitionHelper.cs" />
-    <Compile Include="Fabric\Runtime\DefaultServiceRuntimeRegistration.cs" />
-    <Compile Include="Fabric\Runtime\FabricRuntimeContext.cs" />
-    <Compile Include="Fabric\Runtime\FabricRuntimeContextWrapper.cs" />
-    <Compile Include="Fabric\Runtime\FabricRuntimeRegistrationException.cs" />
-    <Compile Include="Fabric\Runtime\IServiceRuntimeRegistration.cs" />
-    <Compile Include="Fabric\Runtime\ServiceRuntimeRegistration.cs" />
-    <None Include="FG.ServiceFabric.Extensions.nuspec">
-      <SubType>Designer</SubType>
-    </None>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Runtime\ApplicationUriBuilder.cs" />
-    <Compile Include="Services\Runtime\ServiceContextExtensions.cs" />
-    <Compile Include="Services\Runtime\ServiceExtensions.cs" />
-    <Compile Include="Services\Runtime\ServiceReference.cs" />
-    <Compile Include="Services\Runtime\ServiceUriBuilder.cs" />
-    <Compile Include="Services\Runtime\State\IStatefulServiceStateManager.cs" />
-    <Compile Include="Services\Runtime\State\IStatefulServiceStateManagerSession.cs" />
-    <Compile Include="Services\Runtime\State\ReliableStateChange.cs" />
-    <Compile Include="Services\Runtime\State\ReliableStateChangeKind.cs" />
-    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManager.cs" />
-    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManagerSession.cs" />
-    <Compile Include="Services\Runtime\State\ReliableStateStatefulServiceStateManagerSessionException.cs" />
-    <Compile Include="Services\Runtime\StatefulService.cs" />
-    <Compile Include="Services\Runtime\StatelessService.cs" />
-    <Compile Include="Utils\ISettingsProvider.cs" />
-    <Compile Include="Utils\ServiceConfigSettingsProvider.cs" />
-    <Compile Include="Utils\SettingsProviderBase.cs" />
-  </ItemGroup>
-  <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot; md &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot;&#xD;&#xA;xcopy /Y &quot;$(TargetDir)..\..\**.nupkg&quot; &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot;" />
   </Target>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric.Actors" Version="2.8.232" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj" />
+  </ItemGroup>
+
 </Project>

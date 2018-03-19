@@ -43,7 +43,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
         [Test]
         public void Then_message_is_dispatched_to_handler()
         {
-            _handledMessage.ShouldBeEquivalentTo(_command);
+            _handledMessage.Should().BeEquivalentTo(_command);
         }
     }
 }

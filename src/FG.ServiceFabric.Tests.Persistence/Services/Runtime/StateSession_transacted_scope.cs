@@ -14,8 +14,6 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
     {
         protected abstract IStateSessionManager GetStateSessionManager();
 
-        private string _path;
-
         [SetUp]
         public abstract void Setup();
 
@@ -59,7 +57,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
         }
 
         [Test]
-        public async Task should_not_be_available_from_another_session()
+        public async Task Should_not_be_available_from_another_session()
         {
             var manager = GetStateSessionManager();
 
@@ -132,7 +130,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
         }
 
         [Test]
-        public async Task should_not_be_included_in_FindBykey()
+        public async Task Should_not_be_included_in_FindBykey()
         {
             var manager = GetStateSessionManager();
 
@@ -152,7 +150,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
             var committedResults =
                 await session1.FindByKeyPrefixAsync("values", null, 10000, null, CancellationToken.None);
 
-            committedResults.Items.ShouldBeEquivalentTo(new[] { "a", "b", "c", "d" });
+            committedResults.Items.Should().BeEquivalentTo(new[] { "a", "b", "c", "d" });
 
             await session1.SetValueAsync("values", "e", "Value from session1 schema values key e", null,
                 CancellationToken.None);
@@ -167,13 +165,13 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 
             var uncommittedResults =
                 await session1.FindByKeyPrefixAsync("values", null, 10000, null, CancellationToken.None);
-            uncommittedResults.Items.ShouldBeEquivalentTo(new[] { "a", "b", "c", "d" });
+            uncommittedResults.Items.Should().BeEquivalentTo(new[] { "a", "b", "c", "d" });
 
-            committedResults.ShouldBeEquivalentTo(uncommittedResults);
+            committedResults.Should().BeEquivalentTo(uncommittedResults);
         }
 
         [Test]
-        public async Task should_not_be_included_in_enumerateSchemaNames()
+        public async Task Should_not_be_included_in_enumerateSchemaNames()
         {
             var manager = GetStateSessionManager();
 
@@ -200,7 +198,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
 
             var schemaKeysPostCommit = await session1.EnumerateSchemaNamesAsync("a", CancellationToken.None);
 
-            schemaKeysPostCommit.ShouldBeEquivalentTo(schemas);
+            schemaKeysPostCommit.Should().BeEquivalentTo(schemas);
         }
     }
 }

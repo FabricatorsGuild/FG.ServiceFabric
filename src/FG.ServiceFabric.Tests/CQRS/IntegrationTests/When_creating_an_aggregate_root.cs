@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using FG.ServiceFabric.Actors.Runtime;
 using FG.ServiceFabric.Tests.EventStoredActor;
 using FG.ServiceFabric.Tests.EventStoredActor.Interfaces;
 using FluentAssertions;
@@ -31,7 +32,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         [Test]
         public async Task Then_event_is_applied()
         {
-            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
+            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<FG.ServiceFabric.Tests.EventStoredActor.Interfaces.IEventStoredActorService>(
                 _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
                 new ActorId(_aggregateRootId));
 
@@ -44,7 +45,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         [Test]
         public async Task Then_event_is_stored()
         {
-            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<IEventStoredActorService>(
+            var serviceProxy = ActorProxyFactory.CreateActorServiceProxy<FG.ServiceFabric.Tests.EventStoredActor.Interfaces.IEventStoredActorService>(
                 _fabricApplication.ApplicationUriBuilder.Build("EventStoredActorService").ToUri(),
                 new ActorId(_aggregateRootId));
 

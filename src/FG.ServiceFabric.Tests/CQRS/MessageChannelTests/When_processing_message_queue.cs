@@ -55,7 +55,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
                 _fabricApplication.ApplicationInstanceName);
 
             var list = await proxy.ListCommandsAsync();
-            list.ShouldBeEquivalentTo(new[] {_message1.CommandId, _message2.CommandId, _message3.CommandId});
+            list.Should().BeEquivalentTo(new[] {_message1.CommandId, _message2.CommandId, _message3.CommandId});
         }
     }
 }

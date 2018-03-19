@@ -24,7 +24,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         {
             var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
             proxy.Awaiting(p => p.CreateInvalidAsync(new CreateInvalidCommand {SomeProperty = "Olof"}))
-                .ShouldThrow<Exception>();
+                .Should().Throw<Exception>();
         }
     }
 }

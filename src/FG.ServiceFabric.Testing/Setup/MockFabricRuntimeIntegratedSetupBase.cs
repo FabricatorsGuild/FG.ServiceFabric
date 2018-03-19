@@ -4,6 +4,7 @@ using System.Fabric;
 using System.IO;
 using System.Linq;
 using FG.Common.Extensions;
+using FG.Common.Settings;
 using FG.Common.Utils;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Testing.Mocks;

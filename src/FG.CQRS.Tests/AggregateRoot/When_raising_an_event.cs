@@ -51,20 +51,20 @@ namespace FG.CQRS.Tests.AggregateRoot
             _aggregateRoot.ForTestForceRaiseAnyEvent(new TestEntityL1AddedEvent(3));
 
             _eventStream.DomainEvents.OfType<IAggregateRootEvent>().Select(e => e.Version)
-                .ShouldAllBeEquivalentTo(new[] {1, 2, 3, 4});
+                .Should().BeEquivalentTo(new[] {1, 2, 3, 4});
         }
 
         [Test]
         public void Then_exception_is_thrown_if_first_event_and_not_inheriting_from_IAggregateRootCreatedEvent()
         {
-            _aggregateRoot.Invoking(d => d.AddEntity("foobar")).ShouldThrow<AggregateRootException>();
+            _aggregateRoot.Invoking(d => d.AddEntity("foobar")).Should().Throw<AggregateRootException>();
         }
 
         [Test]
         public void Then_exception_is_thrown_if_IAggregateRootCreatedEvent_is_missing_an_AggregateRootId()
         {
             _aggregateRoot.Invoking(d => d.ForTestForceRaiseAnyEvent(new TestCreatedEvent()))
-                .ShouldThrow<AggregateRootException>();
+                .Should().Throw<AggregateRootException>();
         }
 
         [Test]
@@ -75,7 +75,7 @@ namespace FG.CQRS.Tests.AggregateRoot
             _aggregateRoot.Create(aggregateRootId);
             _aggregateRoot.Invoking(d =>
                     d.ForTestForceRaiseAnyEvent(new MaliciousEvent {AggregateRootId = Guid.NewGuid()}))
-                .ShouldThrow<AggregateRootException>();
+                .Should().Throw<AggregateRootException>();
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace FG.CQRS.Tests.AggregateRoot
 
             _aggregateRoot.Create(aggregateRootId);
             _aggregateRoot.Invoking(d => d.ForTestForceRaiseAnyEvent(new UnhandledEvent()))
-                .ShouldThrow<HandlerNotFoundException>();
+                .Should().Throw<HandlerNotFoundException>();
         }
     }
 }
