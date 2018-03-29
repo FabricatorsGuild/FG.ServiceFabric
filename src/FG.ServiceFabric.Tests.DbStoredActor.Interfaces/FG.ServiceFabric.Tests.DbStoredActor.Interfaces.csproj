@@ -88,6 +88,10 @@
     <Reference Include="System.ServiceModel" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\FG.ServiceFabric.Persistence.DocumentDb\FG.ServiceFabric.Persistence.DocumentDb.csproj">
+      <Project>{8D1D7995-C494-419A-93A4-D33C1778A5ED}</Project>
+      <Name>FG.ServiceFabric.Persistence.DocumentDb</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj">
       <Project>{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}</Project>
       <Name>FG.ServiceFabric.Persistence</Name>

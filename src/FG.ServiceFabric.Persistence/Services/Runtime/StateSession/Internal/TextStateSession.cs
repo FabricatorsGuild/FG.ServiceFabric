@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
-using Microsoft.Azure.Documents;
 using Microsoft.ServiceFabric.Actors.Query;
 using Microsoft.ServiceFabric.Data;
 using Newtonsoft.Json;
@@ -255,10 +254,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
                     }
 
                     return Task.FromResult(true);
-                }
-                catch (DocumentClientException dcex)
-                {
-                    throw new StateSessionException($"RemoveAsync for {internalKey} failed", dcex);
                 }
                 catch (Exception ex)
                 {

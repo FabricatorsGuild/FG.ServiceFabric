@@ -36,7 +36,6 @@ namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
             {
                 protected readonly IDictionary<string, string> State = new ConcurrentDictionary<string, string>();
                 private Guid _appId = Guid.NewGuid();
-                private string _collectionName;
                 protected MockFabricApplication _fabricApplication;
                 protected MockFabricRuntime FabricRuntime;
 

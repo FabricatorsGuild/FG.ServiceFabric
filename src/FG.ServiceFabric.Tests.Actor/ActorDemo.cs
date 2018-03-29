@@ -55,7 +55,7 @@ namespace FG.ServiceFabric.Tests.Actor
     {
         [ActorService(Name = "ActorDemoActorService_WithoutInternalErrors")]
         [StatePersistence(StatePersistence.Persisted)]
-        public class ActorDemo : ActorBase, IActorDemo
+        public class ActorDemo : FG.ServiceFabric.Actors.Runtime.ActorBase, IActorDemo
         {
             public ActorDemo(ActorService actorService, ActorId actorId)
                 : base(actorService, actorId)

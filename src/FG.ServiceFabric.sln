@@ -3,66 +3,75 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2003
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests", "FG.ServiceFabric.Tests\FG.ServiceFabric.Tests.csproj", "{343070B9-EA99-472D-92BE-A17119C57BCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests", "FG.ServiceFabric.Tests\FG.ServiceFabric.Tests.csproj", "{343070B9-EA99-472D-92BE-A17119C57BCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Services.Remoting", "FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj", "{1A4F9C49-629B-4331-BE3C-698FFFAA294C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Services.Remoting", "FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj", "{1A4F9C49-629B-4331-BE3C-698FFFAA294C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Actors.Remoting", "FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj", "{045616FB-2560-4168-B073-8D5B86FA7B52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Remoting", "FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj", "{045616FB-2560-4168-B073-8D5B86FA7B52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.Common", "FG.Common\FG.Common.csproj", "{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.Common", "FG.Common\FG.Common.csproj", "{2B74FE3F-C1D2-4ECC-9347-8FFBCF687AB5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Extensions", "FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj", "{BCEE1998-B962-48A3-B31E-E345DBED1348}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Extensions", "FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj", "{BCEE1998-B962-48A3-B31E-E345DBED1348}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Extensions.Tests", "FG.ServiceFabric.Extensions.Tests\FG.ServiceFabric.Extensions.Tests.csproj", "{BCF83AD7-A626-4E54-8574-19EBDA9363A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Extensions.Tests", "FG.ServiceFabric.Extensions.Tests\FG.ServiceFabric.Extensions.Tests.csproj", "{BCF83AD7-A626-4E54-8574-19EBDA9363A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Testing", "FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj", "{2F2B5701-77B5-4467-9504-8BE73A3725A7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Testing", "FG.ServiceFabric.Testing\FG.ServiceFabric.Testing.csproj", "{2F2B5701-77B5-4467-9504-8BE73A3725A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Testing.Tests", "FG.ServiceFabric.Testing.Tests\FG.ServiceFabric.Testing.Tests.csproj", "{CBE3E6F9-0270-4ADC-A478-B2A65CB4F650}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Testing.Tests", "FG.ServiceFabric.Testing.Tests\FG.ServiceFabric.Testing.Tests.csproj", "{CBE3E6F9-0270-4ADC-A478-B2A65CB4F650}"
 EndProject
 Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "FG.ServiceFabric.Tests.Application", "FG.ServiceFabric.Tests.Application\FG.ServiceFabric.Tests.Application.sfproj", "{DE2BEF5C-42A3-4D4B-98C9-47A4EF30694A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.Actor", "FG.ServiceFabric.Tests.Actor\FG.ServiceFabric.Tests.Actor.csproj", "{9AB85068-EF28-4659-9C8F-D6AFC45D097A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests.Actor", "FG.ServiceFabric.Tests.Actor\FG.ServiceFabric.Tests.Actor.csproj", "{9AB85068-EF28-4659-9C8F-D6AFC45D097A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.Actor.Interfaces", "FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj", "{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests.Actor.Interfaces", "FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj", "{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{62824CA9-CA2C-428B-8605-5E5D47B005A4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Diagnostics", "FG.ServiceFabric.Diagnostics\FG.ServiceFabric.Diagnostics.csproj", "{48E2C92E-4C29-431B-A048-EBFF8BF98828}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Diagnostics", "FG.ServiceFabric.Diagnostics\FG.ServiceFabric.Diagnostics.csproj", "{48E2C92E-4C29-431B-A048-EBFF8BF98828}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests.WebApi", "FG.ServiceFabric.Tests.WebApi\FG.ServiceFabric.Tests.WebApi.csproj", "{E1058BBA-905C-438B-A196-B0CEEC68D49B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.CQRS", "FG.CQRS\FG.CQRS.csproj", "{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.CQRS", "FG.CQRS\FG.CQRS.csproj", "{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.EventStoredActor", "FG.ServiceFabric.Tests.EventStoredActor\FG.ServiceFabric.Tests.EventStoredActor.csproj", "{DE7E952C-9DDD-492F-A29B-E3BAE42A8FBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.EventStoredActor.Interfaces", "FG.ServiceFabric.Tests.EventStoredActor.Interfaces\FG.ServiceFabric.Tests.EventStoredActor.Interfaces.csproj", "{7BBAA4B3-B05B-4132-B363-20B279CA4F14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.CQRS.Tests", "FG.CQRS.Tests\FG.CQRS.Tests.csproj", "{7FEA01A2-14FF-4728-A1AC-4C10AF2D3C35}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.CQRS.Tests", "FG.CQRS.Tests\FG.CQRS.Tests.csproj", "{7FEA01A2-14FF-4728-A1AC-4C10AF2D3C35}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.DbStoredActor", "FG.ServiceFabric.Tests.DbStoredActor\FG.ServiceFabric.Tests.DbStoredActor.csproj", "{B78FEB5D-A6D3-47CD-9614-4B8815AC78DF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.DbStoredActor.Interfaces", "FG.ServiceFabric.Tests.DbStoredActor.Interfaces\FG.ServiceFabric.Tests.DbStoredActor.Interfaces.csproj", "{6E846EB1-8AB5-49D0-AB13-2D83C53587F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Persistence", "FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj", "{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Persistence", "FG.ServiceFabric.Persistence\FG.ServiceFabric.Persistence.csproj", "{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.CQRS", "FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj", "{A2A3CDDF-B37E-4F35-8200-49D7259038F5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.Common.Tests", "FG.Common.Tests\FG.Common.Tests.csproj", "{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.Common.Tests", "FG.Common.Tests\FG.Common.Tests.csproj", "{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.Persistence", "FG.ServiceFabric.Tests.Persistence\FG.ServiceFabric.Tests.Persistence.csproj", "{C3B564E2-FBB9-47B2-B820-4CC63BF66AE2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Actors.Remoting.Tests", "FG.ServiceFabric.Actors.Remoting.Tests\FG.ServiceFabric.Actors.Remoting.Tests.csproj", "{AAA9ED00-4071-4148-9297-824130CE6A19}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Remoting.Tests", "FG.ServiceFabric.Actors.Remoting.Tests\FG.ServiceFabric.Actors.Remoting.Tests.csproj", "{AAA9ED00-4071-4148-9297-824130CE6A19}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.StatefulService", "FG.ServiceFabric.Tests.StatefulServiceDemo\FG.ServiceFabric.Tests.StatefulService.csproj", "{8EC70A8E-17FF-4785-9232-E3D97BA1DFDC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PersistancePerformanceTestBench", "PersistancePerformanceTestBench\PersistancePerformanceTestBench.csproj", "{0FA85908-BEC9-472E-BD4C-A2A2163C3D99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Services.Remoting.Tests", "FG.ServiceFabric.Services.Remoting.Tests\FG.ServiceFabric.Services.Remoting.Tests.csproj", "{64A556C5-37A3-4A67-A4E5-E3445D901B3C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Services.Remoting.Tests", "FG.ServiceFabric.Services.Remoting.Tests\FG.ServiceFabric.Services.Remoting.Tests.csproj", "{64A556C5-37A3-4A67-A4E5-E3445D901B3C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Extensions", "FG.ServiceFabric.Actors.Extensions\FG.ServiceFabric.Actors.Extensions.csproj", "{44C8EB1F-0304-447B-80E5-51B84C151419}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.CQRS", "FG.ServiceFabric.Actors.CQRS\FG.ServiceFabric.Actors.CQRS.csproj", "{9D4B839D-27F5-4AD7-A89E-E2B328634171}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Services.Extensions", "FG.ServiceFabric.Services.Extensions\FG.ServiceFabric.Services.Extensions.csproj", "{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Persistence", "FG.ServiceFabric.Actors.Persistence\FG.ServiceFabric.Actors.Persistence.csproj", "{404273F9-7430-4780-8118-3987D8B3DB2F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Persistence.DocumentDb", "FG.ServiceFabric.Actors.Persistence.DocumentDb\FG.ServiceFabric.Actors.Persistence.DocumentDb.csproj", "{411F1F84-8188-4415-980A-43B2EF881BA9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Persistence.DocumentDb", "FG.ServiceFabric.Persistence.DocumentDb\FG.ServiceFabric.Persistence.DocumentDb.csproj", "{8D1D7995-C494-419A-93A4-D33C1778A5ED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{150CA65F-8C74-447F-8469-C37851F37872}"
 EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -194,12 +203,6 @@ Global
 		{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}.Release|Any CPU.ActiveCfg = Release|x64
 		{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}.Release|x64.ActiveCfg = Release|x64
 		{61CE425B-F4B5-4981-8CF9-9A5C901ADD2B}.Release|x64.Build.0 = Release|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Debug|Any CPU.ActiveCfg = Debug|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Debug|x64.ActiveCfg = Debug|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Debug|x64.Build.0 = Debug|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|Any CPU.ActiveCfg = Release|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|x64.ActiveCfg = Release|x64
-		{A2A3CDDF-B37E-4F35-8200-49D7259038F5}.Release|x64.Build.0 = Release|x64
 		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|x64.ActiveCfg = Debug|x64
 		{F9F0B693-CB13-49FB-8331-B38CCE8D52D8}.Debug|x64.Build.0 = Debug|x64
@@ -242,6 +245,52 @@ Global
 		{64A556C5-37A3-4A67-A4E5-E3445D901B3C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{64A556C5-37A3-4A67-A4E5-E3445D901B3C}.Release|x64.ActiveCfg = Release|Any CPU
 		{64A556C5-37A3-4A67-A4E5-E3445D901B3C}.Release|x64.Build.0 = Release|Any CPU
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Debug|x64.ActiveCfg = Debug|x64
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Debug|x64.Build.0 = Debug|x64
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Release|x64.ActiveCfg = Release|x64
+		{44C8EB1F-0304-447B-80E5-51B84C151419}.Release|x64.Build.0 = Release|x64
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Debug|x64.ActiveCfg = Debug|x64
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Debug|x64.Build.0 = Debug|x64
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Release|x64.ActiveCfg = Release|x64
+		{9D4B839D-27F5-4AD7-A89E-E2B328634171}.Release|x64.Build.0 = Release|x64
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Debug|x64.ActiveCfg = Debug|x64
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Debug|x64.Build.0 = Debug|x64
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Release|x64.ActiveCfg = Release|x64
+		{BFCE8F48-CFC4-43D7-814B-2FE65BD27085}.Release|x64.Build.0 = Release|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Debug|x64.ActiveCfg = Debug|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Debug|x64.Build.0 = Debug|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Release|Any CPU.ActiveCfg = Release|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Release|x64.ActiveCfg = Release|x64
+		{404273F9-7430-4780-8118-3987D8B3DB2F}.Release|x64.Build.0 = Release|x64
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Debug|x64.ActiveCfg = Debug|x64
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Debug|x64.Build.0 = Debug|x64
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Release|x64.ActiveCfg = Release|x64
+		{411F1F84-8188-4415-980A-43B2EF881BA9}.Release|x64.Build.0 = Release|x64
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Debug|x64.ActiveCfg = Debug|x64
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Debug|x64.Build.0 = Debug|x64
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Release|x64.ActiveCfg = Release|x64
+		{8D1D7995-C494-419A-93A4-D33C1778A5ED}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -249,6 +298,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{343070B9-EA99-472D-92BE-A17119C57BCA} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{BCF83AD7-A626-4E54-8574-19EBDA9363A4} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
+		{CBE3E6F9-0270-4ADC-A478-B2A65CB4F650} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{DE2BEF5C-42A3-4D4B-98C9-47A4EF30694A} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{9AB85068-EF28-4659-9C8F-D6AFC45D097A} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
 		{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89} = {62824CA9-CA2C-428B-8605-5E5D47B005A4}
@@ -267,6 +317,24 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A87FB6F-8593-4692-94BF-D245981DD263}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

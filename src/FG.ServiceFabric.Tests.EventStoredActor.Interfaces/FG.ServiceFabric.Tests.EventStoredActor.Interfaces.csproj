@@ -92,9 +92,9 @@
       <Project>{C3FBBBEB-B31D-43D8-8B3F-D9DEC433C4AD}</Project>
       <Name>FG.CQRS</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FG.ServiceFabric.CQRS\FG.ServiceFabric.CQRS.csproj">
-      <Project>{a2a3cddf-b37e-4f35-8200-49d7259038f5}</Project>
-      <Name>FG.ServiceFabric.CQRS</Name>
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.CQRS\FG.ServiceFabric.Actors.CQRS.csproj">
+      <Project>{9D4B839D-27F5-4AD7-A89E-E2B328634171}</Project>
+      <Name>FG.ServiceFabric.Actors.CQRS</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

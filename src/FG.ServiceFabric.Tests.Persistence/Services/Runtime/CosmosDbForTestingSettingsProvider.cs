@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using FG.Common.Settings;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Utils;
 

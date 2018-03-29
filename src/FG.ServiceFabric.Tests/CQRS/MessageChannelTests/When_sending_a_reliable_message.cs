@@ -29,7 +29,7 @@ namespace FG.ServiceFabric.Tests.CQRS.MessageChannelTests
         public async Task Then_message_gets_put_on_queue()
         {
             var message = await OutboundChannel.PeekQueue(CancellationToken.None);
-            message.ShouldBeEquivalentTo(_message);
+            message.Should().BeEquivalentTo(_message);
         }
     }
 }

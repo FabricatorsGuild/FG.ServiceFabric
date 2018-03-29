@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+
+    <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Company>Fabricators Guild</Company>
+    <Authors>Fabricators Guild</Authors>
+    <Product>FG.ServiceFabric.Services.Remoting</Product>
+    <Description>Service Fabric Service remoting extensions for Fabricators Guild solutions</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <Version>1.4.0.0</Version>
+    <PackageTags>service fabric fabric transport remoting</PackageTags>
+    <Copyright>Copyright 2018 - Fabricators Guild</Copyright>
+    <PackageProjectUrl>https://github.com/FabricatorsGuild</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric/raw/master/fg.logo.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/FabricatorsGuild/FG.ServiceFabric</RepositoryUrl>
+    <RepositoryType></RepositoryType>
+    <RootNamespace>FG.ServiceFabric.Services</RootNamespace>
+
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if not exist &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot; md &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot;&#xD;&#xA;xcopy /Y &quot;$(TargetDir)..\..\**.nupkg&quot; &quot;$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ServiceFabric.Services.Remoting" Version="2.8.232" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FG.Common\FG.Common.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Actors.Remoting\FG.ServiceFabric.Actors.Remoting.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Extensions\FG.ServiceFabric.Extensions.csproj" />
+    <ProjectReference Include="..\FG.ServiceFabric.Services.Remoting\FG.ServiceFabric.Services.Remoting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.ServiceFabric.Services.Remoting">
+      <HintPath>..\packages\Microsoft.ServiceFabric.Services.Remoting.2.8.232\lib\net45\Microsoft.ServiceFabric.Services.Remoting.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

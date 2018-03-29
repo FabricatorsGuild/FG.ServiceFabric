@@ -44,14 +44,14 @@ namespace FG.ServiceFabric.Tests.Persistence.Services.Runtime
             protected MockFabricRuntime FabricRuntime => _testBase.FabricRuntime;
             protected MockFabricApplication FabricApplication => _testBase.FabricApplication;
 
-            protected virtual T GetState<T>(string key)
+            protected virtual TState GetState<TState>(string key)
             {
                 if (State.ContainsKey(key))
                 {
                     var json = State[key];
-                    return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(json);
+                    return Newtonsoft.Json.JsonConvert.DeserializeObject<TState>(json);
                 }
-                return default(T);
+                return default(TState);
             }
 
             [SetUp]

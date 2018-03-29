@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Fabric;
 using System.Linq;
+using FG.Common.Settings;
 
 namespace FG.ServiceFabric.Utils
 {

@@ -23,7 +23,7 @@ namespace FG.ServiceFabric.Tests.CQRS.IntegrationTests
         public void Then_exception_is_thrown_back_to_client()
         {
             var proxy = ActorProxyFactory.CreateActorProxy<IEventStoredActor>(new ActorId(_aggregateRootId));
-            proxy.Awaiting(p => p.CreateAsync(new CreateCommand {SomeProperty = ""})).ShouldThrow<Exception>();
+            proxy.Awaiting(p => p.CreateAsync(new CreateCommand {SomeProperty = ""})).Should().Throw<Exception>();
         }
     }
 }

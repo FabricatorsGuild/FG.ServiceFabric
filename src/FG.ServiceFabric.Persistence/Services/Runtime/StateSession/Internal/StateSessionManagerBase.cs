@@ -77,7 +77,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
         Task<IStateSessionDictionary<T>> IStateSessionWritableManager.OpenDictionary<T>(
             string schema,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken)
         {
             var dictionary =
                 (IStateSessionDictionary<T>)
@@ -88,7 +88,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.Internal
 
         Task<IStateSessionQueue<T>> IStateSessionWritableManager.OpenQueue<T>(
             string schema,
-            CancellationToken cancellationToken = new CancellationToken())
+            CancellationToken cancellationToken)
         {
             _openQueues.TryAdd(schema, null);
 

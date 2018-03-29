@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Extensions;
+using FG.Common.Settings;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
 using FG.ServiceFabric.Services.Runtime.StateSession;
 using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb;
