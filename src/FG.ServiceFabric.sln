@@ -23,7 +23,7 @@ Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "FG.ServiceFabric.Tests.Appl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests.Actor", "FG.ServiceFabric.Tests.Actor\FG.ServiceFabric.Tests.Actor.csproj", "{9AB85068-EF28-4659-9C8F-D6AFC45D097A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FG.ServiceFabric.Tests.Actor.Interfaces", "FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj", "{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Tests.Actor.Interfaces", "FG.ServiceFabric.Tests.Actor.Interfaces\FG.ServiceFabric.Tests.Actor.Interfaces.csproj", "{2C6AEFCA-F4A1-47BC-8ABF-8374F852CA89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{62824CA9-CA2C-428B-8605-5E5D47B005A4}"
 EndProject
@@ -69,10 +69,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Actors.Per
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FG.ServiceFabric.Persistence.DocumentDb", "FG.ServiceFabric.Persistence.DocumentDb\FG.ServiceFabric.Persistence.DocumentDb.csproj", "{8D1D7995-C494-419A-93A4-D33C1778A5ED}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{150CA65F-8C74-447F-8469-C37851F37872}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -318,6 +317,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7A87FB6F-8593-4692-94BF-D245981DD263}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

@@ -15,7 +15,13 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    public class OverloadedStateSessionActorStateProvider : IActorStateProvider, IQueryableActorStateProvider
+    public interface IOverloadedActorStateManager
+    {
+        Task ResetInnerStateAsync(ActorId actorId, CancellationToken cancellationToken);
+        Task RewriteExternalStateAsync(ActorId actorId, CancellationToken cancellationToken);
+    }
+
+    public class OverloadedStateSessionActorStateProvider : IActorStateProvider, IQueryableActorStateProvider, IOverloadedActorStateManager
     {
         private readonly IStateSessionActorDocumentManager _actorDocumentManager;
         private readonly IActorStateProvider _innerActorStateProvider;
@@ -292,6 +298,26 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             return remindersByActorId;
         }
+
+        #endregion
+
+        #region  Overloaded Actor State Manager
+
+        public async Task ResetInnerStateAsync(ActorId actorId, CancellationToken cancellationToken)
+        {
+            await _innerActorStateProvider.RemoveActorAsync(actorId, cancellationToken);
+
+            var document = await _actorDocumentManager.UpdateActorDocument(actorId, null, cancellationToken.OrNone());
+            await UpdateInnerStateFromStateSession(document, cancellationToken.OrNone());
+        }
+        
+        public async Task RewriteExternalStateAsync(ActorId actorId, CancellationToken cancellationToken)
+        {
+            await _actorDocumentManager.RemoveActorDocument(actorId, cancellationToken);
+
+
+        }
+        
 
         #endregion
     }

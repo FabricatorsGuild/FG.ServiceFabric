@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using FG.Common.Settings;
 using FG.Common.Utils;
 using FG.ServiceFabric.DocumentDb.CosmosDb;
+using FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb.Diagnostics;
 using FG.ServiceFabric.Services.Runtime.StateSession.Internal;
 using FG.ServiceFabric.Services.Runtime.StateSession.Metadata;
 using FG.ServiceFabric.Utils;
