@@ -13,6 +13,7 @@
     <Product>FG.ServiceFabric.Diagnostics</Product>
     <Description>Service Fabric Diagnostics for Fabricators Guild solutions</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageOutputPath>$(SolutionDir)..\..\FG.ServiceFabric\nugetfeed</PackageOutputPath>
     <IncludeSymbols>true</IncludeSymbols>
     <Version>1.4.0.0</Version>
     <PackageTags>service fabric fabric transport remoting actors diagnostics autologger</PackageTags>
