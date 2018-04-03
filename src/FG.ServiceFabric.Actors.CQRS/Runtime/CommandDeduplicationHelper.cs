@@ -1,43 +1,14 @@
 using System;
-using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using FG.Common.Async;
 using FG.Common.Utils;
 using FG.CQRS;
+using FG.ServiceFabric.CQRS;
 using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
-    [DataContract]
-    internal sealed class CommandReturnValue
-    {
-        private CommandReturnValue()
-        {
-        }
-
-        private CommandReturnValue(object returnValue)
-        {
-            ReturnValue = returnValue;
-        }
-
-        [DataMember]
-        public object ReturnValue { get; set; }
-
-        [IgnoreDataMember]
-        public bool HasReturnValue => ReturnValue != null;
-
-        public static CommandReturnValue None()
-        {
-            return new CommandReturnValue();
-        }
-
-        public static CommandReturnValue Create(object returnValue)
-        {
-            return new CommandReturnValue(returnValue);
-        }
-    }
-
     /// <summary>
     ///     Message deduplication helper can be used when it is not possible to achieve natural idempotency.
     /// </summary>
