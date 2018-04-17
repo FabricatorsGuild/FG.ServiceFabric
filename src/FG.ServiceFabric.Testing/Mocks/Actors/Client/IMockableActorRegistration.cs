@@ -6,8 +6,14 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
+    using FG.ServiceFabric.Testing.Mocks.Services.Runtime;
+
     internal interface IMockableActorRegistration
     {
+        bool IsSimple { get; }
+
+        SimpleActorRegistrationConfiguration SimpleActorConfiguration { get; }
+
         Type InterfaceType { get; }
         Type ImplementationType { get; }
         CreateActorService CreateActorService { get; }
@@ -15,6 +21,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         CreateActorStateManager CreateActorStateManager { get; }
         CreateActorStateProvider CreateActorStateProvider { get; }
         IMockableServiceRegistration ServiceRegistration { get; set; }
+    }
+
+    public struct SimpleActorRegistrationConfiguration
+    {
+        public Func<MockActorContainer, IActorService> ActorServiceFactory { get; set; }
+
+        public Func<IActorService, ActorId, IActor> ActorFactory { get; set; }
     }
 
     public delegate IActorStateProvider CreateActorStateProvider(StatefulServiceContext context,

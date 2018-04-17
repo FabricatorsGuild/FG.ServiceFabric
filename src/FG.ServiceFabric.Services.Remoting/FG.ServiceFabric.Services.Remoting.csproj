@@ -119,6 +119,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Services\Remoting\ExceptionHandler\IExceptionHandlerFactory.cs" />
     <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClient.cs" />
     <Compile Include="Services\Remoting\FabricTransport\Client\FabricTransportServiceRemotingClientFactory.cs" />
+    <Compile Include="Services\Remoting\FabricTransport\Client\ServiceRemotingClientCache.cs" />
     <Compile Include="Services\Remoting\FabricTransport\CustomServiceRequestHeader.cs" />
     <Compile Include="Services\Remoting\FabricTransport\DefaultServiceRequestContextWrapperHandler.cs" />
     <Compile Include="Services\Remoting\FabricTransport\FabricTransportRemotingExceptionHandlerAttribute.cs" />

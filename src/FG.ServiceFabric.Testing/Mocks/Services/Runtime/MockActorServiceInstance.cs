@@ -13,38 +13,15 @@ using Microsoft.ServiceFabric.Services.Client;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
-    internal class MockActorServiceInstance : MockServiceInstance
-    {
-        public IDictionary<ActorId, Actor> Actors { get; private set; }
+    using System.Collections.Concurrent;
 
+    internal class MockActorServiceInstance : BaseMockActorServiceInstance
+    {
         public IActorStateProvider ActorStateProvider { get; private set; }
 
         public override string ToString()
         {
             return $"{nameof(MockActorServiceInstance)}: {ServiceUri}";
-        }
-
-        internal override bool Equals(Type actorInterfaceType, ServicePartitionKey partitionKey)
-        {
-            if (ActorRegistration?.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind)
-                return false;
-
-            var partitionId = ActorRegistration?.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
-
-            return ActorRegistration.InterfaceType == actorInterfaceType &&
-                   Partition.PartitionInformation.Id == partitionId;
-        }
-
-        internal override bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
-        {
-            if (ActorRegistration.ServiceRegistration.ServiceDefinition.PartitionKind != partitionKey.Kind)
-                return false;
-
-            var partitionId = ActorRegistration.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
-
-            return serviceUri.ToString().Equals(ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                   && ActorRegistration.ServiceRegistration.InterfaceTypes.Any(i => i == serviceInterfaceType)
-                   && Partition.PartitionInformation.Id == partitionId;
         }
 
         protected override void Build()
@@ -67,13 +44,13 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
                 ServiceConfig);
             ActorStateProvider =
             (ActorRegistration.CreateActorStateProvider ?? ((context, actorInfo) =>
-                 (IActorStateProvider) new MockActorStateProvider(FabricRuntime))).Invoke(
+                 (IActorStateProvider)new MockActorStateProvider(FabricRuntime))).Invoke(
                 statefulServiceContext,
                 actorTypeInformation);
 
             var stateManagerFactory = ActorRegistration.CreateActorStateManager != null
-                ? (Func<ActorBase, IActorStateProvider, IActorStateManager>) ((actor, stateProvider) =>
-                    ActorRegistration.CreateActorStateManager(actor, stateProvider))
+                ? (Func<ActorBase, IActorStateProvider, IActorStateManager>)((actor, stateProvider) =>
+                   ActorRegistration.CreateActorStateManager(actor, stateProvider))
                 : null;
             var actorServiceFactory = ActorRegistration.CreateActorService ?? CreateActorService;
 
@@ -91,8 +68,6 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
             }
 
             ServiceInstance = actorService;
-
-            Actors = new Dictionary<ActorId, Actor>();
 
             base.Build();
         }
@@ -137,7 +112,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
                         canConstruct = false;
 
                 if (canConstruct)
-                    return (ActorService) constructor.Invoke(null, arguments.ToArray());
+                    return (ActorService)constructor.Invoke(null, arguments.ToArray());
             }
 
             return GetMockActorService(serviceContext, actorTypeInformation, actorStateProvider, stateManagerFactory);

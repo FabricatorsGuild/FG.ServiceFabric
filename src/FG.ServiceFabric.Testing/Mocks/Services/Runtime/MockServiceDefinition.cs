@@ -32,7 +32,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
         public static MockServiceDefinition CreateStateless(int instances)
         {
-            var mockServiceDefinition = new MockServiceDefinition {PartitionKind = ServicePartitionKind.Singleton};
+            var mockServiceDefinition = new MockServiceDefinition { PartitionKind = ServicePartitionKind.Singleton };
 
             for (var i = 0; i < instances; i++)
             {
@@ -53,7 +53,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
             long lowKey = long.MinValue,
             long highKey = long.MaxValue)
         {
-            var mockServiceDefinition = new MockServiceDefinition {PartitionKind = ServicePartitionKind.Int64Range};
+            var mockServiceDefinition = new MockServiceDefinition { PartitionKind = ServicePartitionKind.Int64Range };
 
             var lowKeyInt = new BigInteger(lowKey);
             var highKeyInt = new BigInteger(highKey);
@@ -64,7 +64,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
             for (var i = 0; i < partitionCount; i++)
             {
                 var partitionInformation =
-                    MockPartition.CreateInt64Partiton((long) currentLowKey, (long) currentHighKey);
+                    MockPartition.CreateInt64Partiton((long)currentLowKey, (long)currentHighKey);
                 var statefulPartition = MockPartition.CreateStatefulPartition(partitionInformation);
                 mockServiceDefinition._partitions.Add(statefulPartition);
 
@@ -84,7 +84,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
             var replicaRole = ReplicaRole.Primary;
             var replicaAddress = "";
             var nodeName = "";
-            var replicaId = (long) CRC64.ToCRC64(Guid.NewGuid().ToByteArray());
+            var replicaId = (long)CRC64.ToCRC64(Guid.NewGuid().ToByteArray());
             var lastInBuildDuration = TimeSpan.FromSeconds(1);
 
             var instance = ReflectionUtils.ActivateInternalCtor<StatefulServiceReplica>(
@@ -102,7 +102,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
         public static MockServiceDefinition CreateNamedPartitions(params string[] partitionNames)
         {
-            var mockServiceDefinition = new MockServiceDefinition {PartitionKind = ServicePartitionKind.Named};
+            var mockServiceDefinition = new MockServiceDefinition { PartitionKind = ServicePartitionKind.Named };
 
             foreach (var partitionName in partitionNames)
             {
@@ -118,7 +118,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
         public static MockServiceDefinition CreateSingletonPartition()
         {
-            var mockServiceDefinition = new MockServiceDefinition {PartitionKind = ServicePartitionKind.Singleton};
+            var mockServiceDefinition = new MockServiceDefinition { PartitionKind = ServicePartitionKind.Singleton };
 
             var partitionInformation = MockPartition.SingletonPartitionInformation;
             var statefulPartition = MockPartition.CreateStatefulPartition(partitionInformation);
@@ -141,14 +141,14 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
             if (PartitionKind == ServicePartitionKind.Int64Range)
             {
-                var value = (long) partitionKey.Value;
+                var value = (long)partitionKey.Value;
                 return _partitions.Select(p => p.PartitionInformation as Int64RangePartitionInformation)
                     .First(p => p.LowKey <= value && p.HighKey >= value).Id;
             }
 
             if (PartitionKind == ServicePartitionKind.Named)
             {
-                var value = (string) partitionKey.Value;
+                var value = (string)partitionKey.Value;
                 return _partitions.Select(p => p.PartitionInformation as NamedPartitionInformation)
                     .First(p => p.Name == value).Id;
             }

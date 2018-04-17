@@ -8,9 +8,18 @@ using Microsoft.ServiceFabric.Services.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
+    using Microsoft.ServiceFabric.Actors;
+
     public interface IMockableServiceRegistration
     {
         bool IsStateful { get; }
+
+        bool IsSimple { get; }
+
+        object ServiceInstance { get; }
+
+        Func<MockActorContainer, IActorService> ActorServiceInstanceFactory { get; }
+
         Type[] InterfaceTypes { get; }
         Type ImplementationType { get; }
         CreateStatefulService CreateStatefulService { get; }

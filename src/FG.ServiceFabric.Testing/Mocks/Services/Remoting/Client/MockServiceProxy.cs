@@ -40,7 +40,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
         public IServiceRemotingPartitionClient ServicePartitionClient { get; }
 
         public Microsoft.ServiceFabric.Services.Remoting.V2.Client.IServiceRemotingPartitionClient
-            ServicePartitionClient2 { get; }
+            ServicePartitionClient2
+        { get; }
 
         protected virtual IEnumerable<IInterceptor> GetInterceptors(object target, Type serviceInterfaceType,
             IMockServiceProxyManager serviceProxyManager)
@@ -48,7 +49,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             var serviceProxyInterceptor = new ServiceProxyInterceptor(this);
             var serviceInterceptor = new ServiceInterceptor(serviceProxyManager);
 
-            return new IInterceptor[] {serviceInterceptor, serviceProxyInterceptor};
+            return new IInterceptor[] { serviceInterceptor, serviceProxyInterceptor };
         }
 
         protected virtual IInterceptorSelector GetInterceptorSelector(object target, Type serviceInterfaceType,
@@ -64,10 +65,10 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             var generator = new ProxyGenerator(new PersistentProxyBuilder());
             var selector = GetInterceptorSelector(target, serviceInterfaceType, serviceProxyManager);
             var interceptors = GetInterceptors(target, serviceInterfaceType, serviceProxyManager);
-            var options = new ProxyGenerationOptions {Selector = selector};
+            var options = new ProxyGenerationOptions { Selector = selector };
             var proxy = generator.CreateInterfaceProxyWithTarget(
                 serviceInterfaceType,
-                new[] {typeof(IServiceProxy)},
+                new[] { typeof(IServiceProxy) },
                 target,
                 options,
                 interceptors.ToArray());

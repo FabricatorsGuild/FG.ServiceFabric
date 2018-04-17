@@ -41,7 +41,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
         public new IActorServicePartitionClient ActorServicePartitionClient { get; }
 
         public new Microsoft.ServiceFabric.Actors.Remoting.V2.Client.IActorServicePartitionClient
-            ActorServicePartitionClientV2 { get; }
+            ActorServicePartitionClientV2
+        { get; }
 
         private object CreateDynamicProxy(object target, Type actorInterfaceType, IMockActorProxyManager actorManager)
         {
@@ -49,10 +50,10 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             var selector = new InterceptorSelector();
             var actorInterceptor = new ActorInterceptor(actorManager);
             var actorProxyInterceptor = new ActorProxyInterceptor(this);
-            var options = new ProxyGenerationOptions {Selector = selector};
+            var options = new ProxyGenerationOptions { Selector = selector };
             var proxy = generator.CreateInterfaceProxyWithTarget(
                 actorInterfaceType,
-                new[] {typeof(IActorProxy)},
+                new[] { typeof(IActorProxy) },
                 target,
                 options,
                 actorInterceptor,

@@ -6,7 +6,8 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 {
-    public class MockableActorRegistration<TActorInterface, TActorImplementation> : IMockableActorRegistration
+    // EB: Internal?
+    public class MockableActorRegistration<TActorInterface, TActorImplementation> : BaseMockableActorRegistration
         where TActorInterface : IActor
         where TActorImplementation : class, TActorInterface
     {
@@ -26,17 +27,9 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             CreateActorService = null;
             ServiceRegistration = serviceRegistration;
         }
-
-        public Type InterfaceType { get; }
-        public Type ImplementationType { get; }
-        public Func<ActorService, ActorId, object> Activator { get; }
-        public CreateActorStateManager CreateActorStateManager { get; }
-        public CreateActorStateProvider CreateActorStateProvider { get; }
-        public CreateActorService CreateActorService { get; }
-        public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
-    public class MockableActorRegistration : IMockableActorRegistration
+    public class MockableActorRegistration : BaseMockableActorRegistration
     {
         public MockableActorRegistration(
             IMockableServiceRegistration serviceRegistration,
@@ -54,24 +47,10 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
             ServiceRegistration = serviceRegistration;
-
-
-            //ServiceUri = serviceUri;
-            //CreateActorService = null;
-            //ServiceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
-            //Name = serviceName ?? $"{ImplementationType.Name}Service";
         }
-
-        public Type InterfaceType { get; }
-        public Type ImplementationType { get; }
-        public Func<ActorService, ActorId, object> Activator { get; }
-        public CreateActorStateManager CreateActorStateManager { get; }
-        public CreateActorStateProvider CreateActorStateProvider { get; }
-        public CreateActorService CreateActorService { get; }
-        public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 
-    public class MockableActorRegistration<TActorService> : IMockableActorRegistration
+    public class MockableActorRegistration<TActorService> : BaseMockableActorRegistration
         where TActorService : ActorService
     {
         public MockableActorRegistration(
@@ -89,19 +68,11 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
             CreateActorService = (context, actorTypeInformation, actorStateProvider, stateManagerFactory) =>
                 createActorService(context, actorTypeInformation, actorStateProvider, stateManagerFactory);
             Activator = (service, actorId) =>
-                activator((TActorService) service, actorId);
+                activator((TActorService)service, actorId);
             CreateActorStateManager = createActorStateManager;
             CreateActorStateProvider = createActorStateProvider;
 
             ServiceRegistration = serviceRegistration;
         }
-
-        public Type InterfaceType { get; }
-        public Type ImplementationType { get; }
-        public Func<ActorService, ActorId, object> Activator { get; }
-        public CreateActorStateManager CreateActorStateManager { get; }
-        public CreateActorStateProvider CreateActorStateProvider { get; }
-        public CreateActorService CreateActorService { get; }
-        public IMockableServiceRegistration ServiceRegistration { get; set; }
     }
 }

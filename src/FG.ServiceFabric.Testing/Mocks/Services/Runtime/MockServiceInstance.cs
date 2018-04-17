@@ -1,45 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Fabric.Query;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using FG.ServiceFabric.Testing.Mocks.Actors.Client;
-using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
-using FG.ServiceFabric.Testing.Setup;
-using Microsoft.ServiceFabric.Services.Client;
-using Microsoft.ServiceFabric.Services.Runtime;
-using StatelessService = Microsoft.ServiceFabric.Services.Runtime.StatelessService;
-
 namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 {
-    internal static class MockServiceReflectionHelper
-    {
-        public static MethodInfo StatefulRunAsyncMethodInfo { get; } = GetRunAsync(typeof(StatefulServiceBase));
+    using System;
+    using System.Collections.Generic;
+    using System.Fabric.Description;
+    using System.Fabric.Query;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
 
-        public static MethodInfo StatelessRunAsync { get; } = GetRunAsync(typeof(StatelessService));
+    using FG.ServiceFabric.Testing.Mocks.Actors.Client;
+    using FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client;
+    using FG.ServiceFabric.Testing.Setup;
 
-        public static MethodInfo GetRunAsync(Type type)
-        {
-            return type.GetMethod("RunAsync", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        public static MethodInfo GetRunAsync(bool isStateful)
-        {
-            return isStateful ? StatefulRunAsyncMethodInfo : StatelessRunAsync;
-        }
-    }
+    using Microsoft.ServiceFabric.Services.Client;
 
     internal class MockServiceInstance : IMockServiceInstance
     {
         public IMockableActorRegistration ActorRegistration { get; private set; }
-
-        public object ServiceInstance { get; set; }
-
-        public IMockableServiceRegistration ServiceRegistration { get; private set; }
-
-        protected MockFabricRuntime FabricRuntime { get; private set; }
 
         public CancellationTokenSource CancellationTokenSource { get; private set; }
 
@@ -53,11 +30,17 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
 
         public IServiceConfig ServiceConfig { get; private set; }
 
+        public object ServiceInstance { get; set; }
+
         public IServiceManifest ServiceManifest { get; private set; }
+
+        public IMockableServiceRegistration ServiceRegistration { get; private set; }
 
         public Uri ServiceUri { get; private set; }
 
         public MockActorServiceInstanceStatus Status { get; private set; }
+
+        protected MockFabricRuntime FabricRuntime { get; private set; }
 
         public static IEnumerable<MockServiceInstance> Register(
             MockFabricRuntime fabricRuntime,
@@ -67,26 +50,50 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
         {
             var instances = new List<MockServiceInstance>();
             foreach (var replica in actorRegistration.ServiceRegistration.ServiceDefinition.Instances)
-            foreach (var partition in actorRegistration.ServiceRegistration.ServiceDefinition.Partitions)
             {
-                var instance = new MockActorServiceInstance
+                foreach (var partition in actorRegistration.ServiceRegistration.ServiceDefinition.Partitions)
                 {
-                    ActorRegistration = actorRegistration,
-                    ServiceRegistration = actorRegistration.ServiceRegistration,
-                    FabricRuntime = fabricRuntime,
-                    Partition = partition,
-                    Replica = replica,
-                    ServiceUri = actorRegistration.ServiceRegistration.ServiceUri,
-                    ServiceManifest = serviceManifest,
-                    ServiceConfig = serviceConfig
-                };
-                instances.Add(instance);
+                    MockServiceInstance instance;
+
+                    if (actorRegistration.IsSimple)
+                    {
+                        instance = new SimpleMockActorServiceInstance
+                        {
+                            ActorRegistration = actorRegistration,
+                            ServiceRegistration = actorRegistration.ServiceRegistration,
+                            FabricRuntime = fabricRuntime,
+                            Partition = partition,
+                            Replica = replica,
+                            ServiceUri = actorRegistration.ServiceRegistration.ServiceUri,
+                            ServiceManifest = serviceManifest,
+                            ServiceConfig = serviceConfig,
+                        };
+                    }
+                    else
+                    {
+                        instance = new MockActorServiceInstance
+                        {
+                            ActorRegistration = actorRegistration,
+                            ServiceRegistration = actorRegistration.ServiceRegistration,
+                            FabricRuntime = fabricRuntime,
+                            Partition = partition,
+                            Replica = replica,
+                            ServiceUri = actorRegistration.ServiceRegistration.ServiceUri,
+                            ServiceManifest = serviceManifest,
+                            ServiceConfig = serviceConfig
+                        };
+                    }
+
+                    instances.Add(instance);
+                }
             }
 
             fabricRuntime.RegisterInstances(instances);
 
             foreach (var instance in instances)
+            {
                 instance.Build();
+            }
 
             return instances;
         }
@@ -99,93 +106,123 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Runtime
         {
             var instances = new List<MockServiceInstance>();
             foreach (var replica in serviceRegistration.ServiceDefinition.Instances)
-            foreach (var partition in serviceRegistration.ServiceDefinition.Partitions)
             {
-                MockServiceInstance instance = null;
-                if (serviceRegistration.IsStateful)
-                    instance = new MockStatefulServiceInstance
-                    {
-                        ServiceRegistration = serviceRegistration,
-                        FabricRuntime = fabricRuntime,
-                        Partition = partition,
-                        Replica = replica,
-                        ServiceUri = serviceRegistration.ServiceUri,
-                        ServiceManifest = serviceManifest,
-                        ServiceConfig = serviceConfig
-                    };
-                else
-                    instance = new MockStatelessServiceInstance
-                    {
-                        ServiceRegistration = serviceRegistration,
-                        FabricRuntime = fabricRuntime,
-                        Partition = partition,
-                        Replica = replica,
-                        ServiceUri = serviceRegistration.ServiceUri,
-                        ServiceManifest = serviceManifest,
-                        ServiceConfig = serviceConfig
-                    };
+                foreach (var partition in serviceRegistration.ServiceDefinition.Partitions)
+                {
+                    MockServiceInstance instance = null;
 
-                instances.Add(instance);
+                    if (serviceRegistration.IsSimple)
+                    {
+                        instance = new SimpleMockServiceInstance
+                        {
+                            FabricRuntime = fabricRuntime,
+                            Partition = partition,
+                            Replica = replica,
+                            ServiceUri = serviceRegistration.ServiceUri,
+                            ServiceManifest = serviceManifest,
+                            ServiceConfig = serviceConfig,
+                            ServiceInstance = serviceRegistration.ServiceInstance,
+                        };
+                    }
+                    else if (serviceRegistration.IsStateful)
+                    {
+                        instance = new MockStatefulServiceInstance
+                        {
+                            ServiceRegistration = serviceRegistration,
+                            FabricRuntime = fabricRuntime,
+                            Partition = partition,
+                            Replica = replica,
+                            ServiceUri = serviceRegistration.ServiceUri,
+                            ServiceManifest = serviceManifest,
+                            ServiceConfig = serviceConfig
+                        };
+                    }
+                    else
+                    {
+                        instance = new MockStatelessServiceInstance
+                        {
+                            ServiceRegistration = serviceRegistration,
+                            FabricRuntime = fabricRuntime,
+                            Partition = partition,
+                            Replica = replica,
+                            ServiceUri = serviceRegistration.ServiceUri,
+                            ServiceManifest = serviceManifest,
+                            ServiceConfig = serviceConfig
+                        };
+                    }
+
+                    instances.Add(instance);
+                }
             }
 
             fabricRuntime.RegisterInstances(instances);
 
             foreach (var instance in instances)
+            {
                 instance.Build();
+            }
 
             return instances;
         }
 
-        public override string ToString()
+        public virtual bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
         {
-            return $"{nameof(MockServiceInstance)}: {ServiceUri}";
-        }
-
-        internal virtual bool Equals(Uri serviceUri, Type serviceInterfaceType, ServicePartitionKey partitionKey)
-        {
-            if (ServiceRegistration?.ServiceDefinition.PartitionKind != partitionKey.Kind)
+            if (this.ServiceRegistration?.ServiceDefinition.PartitionKind != partitionKey.Kind)
+            {
                 return false;
+            }
 
-            var partitionId = ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
+            var partitionId = this.ServiceRegistration.ServiceDefinition.GetPartion(partitionKey);
 
-            return serviceUri.ToString().Equals(ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase)
-                   && ServiceRegistration.InterfaceTypes.Any(i => i == serviceInterfaceType)
-                   && Partition.PartitionInformation.Id == partitionId;
+            return serviceUri.ToString().Equals(this.ServiceUri.ToString(), StringComparison.InvariantCultureIgnoreCase)
+                   && this.ServiceRegistration.InterfaceTypes.Any(i => i == serviceInterfaceType)
+                   && this.Partition.PartitionInformation.Id == partitionId;
         }
 
-        internal virtual bool Equals(Type actorInterfaceType, ServicePartitionKey partitionKey)
+        public virtual bool Equals(Type actorInterfaceType, ServicePartitionKey partitionKey)
         {
             return false;
         }
 
+        public override string ToString()
+        {
+            return $"{nameof(MockServiceInstance)}: {this.ServiceUri}";
+        }
+
         protected virtual void Build()
         {
-            if (ServiceInstance == null)
+            if (this.ServiceInstance == null)
+            {
                 throw new NotSupportedException("Could not determine the type of service instance");
+            }
 
-            RunAsync();
+            this.RunAsync();
         }
 
         private Task RunAsync()
         {
             return Task.Run(
                 async () =>
-                {
-                    var runAsyncMethod = MockServiceReflectionHelper.GetRunAsync(ServiceRegistration.IsStateful);
-                    CancellationTokenSource = new CancellationTokenSource();
+                    {
+                        var runAsyncMethod = MockServiceReflectionHelper.GetRunAsync(this.ServiceRegistration.IsStateful);
+                        this.CancellationTokenSource = new CancellationTokenSource();
 
-                    RunAsyncStarted = DateTime.Now;
-                    if (!FabricRuntime.DisableMethodCallOutput)
-                        Console.WriteLine(
-                            $"Started RunAsync for {ServiceUri} {Partition.PartitionInformation.Id}/{Replica.Id} - {ServiceInstance.GetHashCode()}");
+                        this.RunAsyncStarted = DateTime.Now;
+                        if (!this.FabricRuntime.DisableMethodCallOutput)
+                        {
+                            Console.WriteLine(
+                                $"Started RunAsync for {this.ServiceUri} {this.Partition.PartitionInformation.Id}/{this.Replica.Id} - {this.ServiceInstance.GetHashCode()}");
+                        }
 
-                    await (Task) runAsyncMethod.Invoke(ServiceInstance, new object[] {CancellationTokenSource.Token});
+                        await (Task)runAsyncMethod.Invoke(this.ServiceInstance, new object[] { this.CancellationTokenSource.Token });
 
-                    RunAsyncEnded = DateTime.Now;
-                    if (!FabricRuntime.DisableMethodCallOutput)
-                        Console.WriteLine(
-                            $"Finished RunAsync for {ServiceInstance.GetHashCode()} in {(RunAsyncEnded.Value - RunAsyncStarted.Value).TotalMilliseconds} ms");
-                });
+                        this.RunAsyncEnded = DateTime.Now;
+                        if (!this.FabricRuntime.DisableMethodCallOutput)
+                        {
+                            Console.WriteLine(
+                                $"Finished RunAsync for {this.ServiceInstance.GetHashCode()} in {(this.RunAsyncEnded.Value - this.RunAsyncStarted.Value).TotalMilliseconds} ms");
+                        }
+                    });
         }
     }
 }

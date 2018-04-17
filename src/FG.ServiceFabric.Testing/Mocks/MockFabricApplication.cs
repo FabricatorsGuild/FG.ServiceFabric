@@ -16,6 +16,16 @@ using StatelessService = Microsoft.ServiceFabric.Services.Runtime.StatelessServi
 
 namespace FG.ServiceFabric.Testing.Mocks
 {
+    using System.Collections.Generic;
+
+    public static class ObjectExtensions
+    {
+        public static IEnumerable<T> ToEnumerable<T>(this T item)
+        {
+            yield return item;
+        }
+    }
+
     public class MockFabricApplication
     {
         internal MockFabricApplication(MockFabricRuntime mockFabricRuntime, string applicationInstanceName)
@@ -31,21 +41,117 @@ namespace FG.ServiceFabric.Testing.Mocks
 
         public ApplicationUriBuilder ApplicationUriBuilder { get; }
 
-        public void SetupService<TServiceImplementation>
+        public void RegisterMockService<TServiceInterface>(
+                TServiceInterface serviceInstance,
+                string serviceName = null,
+                MockServiceDefinition serviceDefinition = null,
+                IServiceManifest serviceManifest = null,
+                IServiceConfig serviceConfig = null)
+        {
+            var registration = this.CreateSimpleMockServiceRegistration(serviceInstance, serviceName, serviceDefinition, typeof(TServiceInterface));
+
+            var instances = MockServiceInstance.Register(
+                this.FabricRuntime,
+                registration,
+                serviceManifest.OrDefaultFor(registration.Name),
+                serviceConfig.OrDefault());
+        }
+
+        private MockableServiceRegistration CreateSimpleMockServiceRegistration(
+            Func<MockActorContainer, IActorService> actorServiceInstanceFactory,
+            string serviceName,
+            MockServiceDefinition serviceDefinition,
+            Type serviceInterfaceType)
+        {
+            var serviceInterfaceTypes = GetInterfacesAssignableFromType<IService>(serviceInterfaceType);
+
+            var serviceUri = this.ApplicationUriBuilder.Build(serviceName).ToUri();
+
+            var registration = new MockableServiceRegistration(serviceInterfaceTypes, actorServiceInstanceFactory, serviceDefinition, serviceUri, serviceName)
+                                   {
+                                       IsSimple = true
+                                   };
+            return registration;
+        }
+
+        private MockableServiceRegistration CreateSimpleMockServiceRegistration<TServiceInterface>(
+            TServiceInterface serviceInstance,
+            string serviceName,
+            MockServiceDefinition serviceDefinition,
+            Type serviceInterfaceType)
+        {
+            var serviceInterfaceTypes = GetInterfacesAssignableFromType<IService>(serviceInterfaceType);
+
+            serviceName = serviceName ?? serviceInstance.GetType().Name;
+            var serviceUri = this.ApplicationUriBuilder.Build(serviceName).ToUri();
+
+            var registration = new MockableServiceRegistration(serviceInterfaceTypes, serviceInstance, serviceDefinition, serviceUri, serviceName)
+                                   {
+                                       IsSimple = true
+                                   };
+            return registration;
+        }
+
+        //public void RegisterMockActor<TActorInterface>(
+        //    Func<IActorService, ActorId, IActor> actorFactory,
+        //    string actorServiceName = null,
+        //    MockServiceDefinition serviceDefinition = null,
+        //    IServiceManifest serviceManifest = null,
+        //    IServiceConfig serviceConfig = null)
+        //    where TActorInterface : class, IActor
+        //{
+        //    RegisterMockActor<TActorInterface, IActorService>();
+        //}
+
+        public void RegisterMockActor<TActorInterface, TActorServiceInterface>
         (
+            Func<MockActorContainer, IActorService> actorServiceInstanceFactory,
+            Func<IActorService, ActorId, IActor> actorFactory,
+            string actorServiceName = null,
+            MockServiceDefinition serviceDefinition = null,
+            IServiceManifest serviceManifest = null,
+            IServiceConfig serviceConfig = null)
+            where TActorInterface : class, IActor
+            where TActorServiceInterface : IActorService
+        {
+            var actorServiceInterfaceType = typeof(TActorServiceInterface);
+                        
+            serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
+
+            var actorServiceRegistration = this.CreateSimpleMockServiceRegistration(actorServiceInstanceFactory, actorServiceName, serviceDefinition, typeof(TActorServiceInterface));
+
+            var actorRegistration = new SimpleMockableActorRegistration(
+                actorServiceRegistration,
+                new SimpleActorRegistrationConfiguration
+                    {
+                        ActorFactory = actorFactory,
+                        ActorServiceFactory = actorServiceInstanceFactory
+                },
+                actorServiceInterfaceType
+                );
+
+            MockServiceInstance.Register(
+                this.FabricRuntime, 
+                actorRegistration,
+                serviceManifest.OrDefaultFor(actorServiceName), 
+                serviceConfig.OrDefault());
+        }
+
+        private static Type[] GetInterfacesAssignableFromType<TType>(Type sourceType)
+        {
+            return sourceType.ToEnumerable().Union(sourceType.GetInterfaces()).Where(si => typeof(TType).IsAssignableFrom(si)).ToArray();
+        }
+
+        public void SetupService<TServiceImplementation>(
             Func<StatefulServiceContext, IReliableStateManagerReplica2, TServiceImplementation> createService,
             CreateStateManager createStateManager = null,
             MockServiceDefinition serviceDefinition = null,
             IServiceManifest serviceManifest = null,
-            IServiceConfig serviceConfig = null
-        )
+            IServiceConfig serviceConfig = null)
             where TServiceImplementation : StatefulServiceBase
         {
             var serviceType = typeof(TServiceImplementation);
-            var serviceInterfaceTypes = typeof(TServiceImplementation).IsInterface
-                ? new[] {typeof(TServiceImplementation)}
-                : typeof(TServiceImplementation)
-                    .GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
+            var serviceInterfaceTypes = GetInterfacesAssignableFromType<IService>(serviceType);
 
             serviceDefinition = serviceDefinition ?? MockServiceDefinition.Default;
 
@@ -76,11 +182,10 @@ namespace FG.ServiceFabric.Testing.Mocks
             CreateStateManager createStateManager = null,
             MockServiceDefinition serviceDefinition = null,
             IServiceManifest serviceManifest = null,
-            IServiceConfig serviceConfig = null
-        )
+            IServiceConfig serviceConfig = null)
         {
             var serviceInterfaceTypes = serviceType.IsInterface
-                ? new[] {serviceType}
+                ? new[] { serviceType }
                 : serviceType
                     .GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
@@ -116,7 +221,7 @@ namespace FG.ServiceFabric.Testing.Mocks
         )
         {
             var serviceInterfaceTypes = serviceType.IsInterface
-                ? new[] {serviceType}
+                ? new[] { serviceType }
                 : serviceType
                     .GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
@@ -150,7 +255,7 @@ namespace FG.ServiceFabric.Testing.Mocks
         {
             var serviceType = typeof(TServiceImplementation);
             var serviceInterfaceTypes = typeof(TServiceImplementation).IsInterface
-                ? new[] {typeof(TServiceImplementation)}
+                ? new[] { typeof(TServiceImplementation) }
                 : typeof(TServiceImplementation)
                     .GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 
@@ -192,7 +297,7 @@ namespace FG.ServiceFabric.Testing.Mocks
                     .FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
 
             var serviceInterfaceTypes = typeof(TActorService).IsInterface
-                ? new[] {typeof(TActorService)}
+                ? new[] { typeof(TActorService) }
                 : typeof(TActorService).GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService)))
                     .ToArray();
 
@@ -218,8 +323,8 @@ namespace FG.ServiceFabric.Testing.Mocks
                 actorInterface,
                 typeof(TActorImplementation),
                 createActorService,
-                (Func<ActorService, ActorId, TActorImplementation>) ((actorService, actorId) =>
-                    activator((TActorService) actorService, actorId)),
+                (Func<ActorService, ActorId, TActorImplementation>)((actorService, actorId) =>
+                   activator((TActorService)actorService, actorId)),
                 createActorStateManager,
                 createActorStateProvider);
 
@@ -289,7 +394,7 @@ namespace FG.ServiceFabric.Testing.Mocks
                     .FirstOrDefault(i => i.GetInterfaces().Any(i2 => i2 == typeof(IActor)));
 
             var serviceInterfaceTypes = actorServiceImplementationType.IsInterface
-                ? new[] {actorServiceImplementationType}
+                ? new[] { actorServiceImplementationType }
                 : actorServiceImplementationType
                     .GetInterfaces().Where(i => i.GetInterfaces().Any(i2 => i2 == typeof(IService))).ToArray();
 

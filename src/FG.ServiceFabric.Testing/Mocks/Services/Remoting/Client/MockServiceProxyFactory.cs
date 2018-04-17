@@ -51,23 +51,33 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             }
         }
 
-        public TServiceInterface CreateServiceProxy<TServiceInterface>(Uri serviceUri,
+        public TServiceInterface CreateServiceProxy<TServiceInterface>(
+            Uri serviceUri,
             ServicePartitionKey partitionKey = null,
-            TargetReplicaSelector targetReplicaSelector = TargetReplicaSelector.Default, string listenerName = null)
+            TargetReplicaSelector targetReplicaSelector = TargetReplicaSelector.Default,
+            string listenerName = null)
             where TServiceInterface : IService
         {
             var serviceInterfaceType = typeof(TServiceInterface);
-            var instance =
-                _fabricRuntime.Instances.SingleOrDefault(i => i.Equals(serviceUri, serviceInterfaceType, partitionKey));
+            var instance = _fabricRuntime.GetServiceInstance(serviceUri, serviceInterfaceType, partitionKey);
 
             if (instance == null)
+            {
                 throw new ArgumentException(
                     $"A service with interface {serviceInterfaceType.Name} could not be found for address {serviceUri}");
+            }
 
-            var mockServiceProxy = new MockServiceProxy(instance.ServiceInstance, serviceUri, serviceInterfaceType,
+            var mockServiceProxy = new MockServiceProxy(
+                instance.ServiceInstance, 
+                serviceUri, 
+                serviceInterfaceType,
                 partitionKey,
-                TargetReplicaSelector.Default, "", null, this);
-            return (TServiceInterface) mockServiceProxy.Proxy;
+                TargetReplicaSelector.Default, 
+                string.Empty, 
+                null, 
+                this);
+
+            return (TServiceInterface)mockServiceProxy.Proxy;
         }
     }
 }
