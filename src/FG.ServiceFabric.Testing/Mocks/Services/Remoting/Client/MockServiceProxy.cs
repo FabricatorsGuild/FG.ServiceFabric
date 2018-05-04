@@ -16,6 +16,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
 {
     public class MockServiceProxy : IServiceProxy
     {
+        private readonly MockServiceInstanceProxyCache instanceProxyCache = new MockServiceInstanceProxyCache();
+
         public MockServiceProxy(
             object target,
             Uri serviceUri,
@@ -30,7 +32,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             ServicePartitionClient =
                 new MockServicePartitionClient(serviceUri, partitionKey, replicaSelector, listenerName, factory);
 
-            Proxy = CreateDynamicProxy(target, serviceInterfaceType, serviceProxyManager);
+            this.Proxy = this.instanceProxyCache.GetOrAdd(new MockServiceInstanceProxyCacheKey(serviceUri, serviceInterfaceType, partitionKey), k => this.CreateDynamicProxy(target, serviceInterfaceType, serviceProxyManager));
         }
 
         public object Proxy { get; }
@@ -136,20 +138,21 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
             public void Intercept(IInvocation invocation)
             {
                 _serviceProxyManager?.BeforeMethod(invocation.Proxy as IService, invocation.Method);
-                RunInvocation(invocation);
-                _serviceProxyManager?.AfterMethod(invocation.Proxy as IService, invocation.Method);
+
+                invocation.Proceed();
+                if (invocation.ReturnValue is Task returnTask)
+                {
+                    returnTask.ContinueWith(t => _serviceProxyManager?.AfterMethod(invocation.Proxy as IService, invocation.Method));
+                }
+                else
+                {
+                    _serviceProxyManager?.AfterMethod(invocation.Proxy as IService, invocation.Method);
+                }
             }
 
             public bool ShouldIntercept(Type type, MethodInfo method, IEnumerable<IInterceptor> acceptedInterceptors)
             {
                 return !acceptedInterceptors.Any();
-            }
-
-            private void RunInvocation(IInvocation invocation)
-            {
-                invocation.Proceed();
-                if (invocation.ReturnValue is Task returnTask)
-                    returnTask.GetAwaiter().GetResult();
             }
         }
 

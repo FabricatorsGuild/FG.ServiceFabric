@@ -88,7 +88,14 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="Serpent.InterfaceProxy.NetFramework, Version=0.0.6698.40292, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serpent.InterfaceProxy.NetFramework.0.0.6698.40292\lib\net461\Serpent.InterfaceProxy.NetFramework.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.2.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
@@ -146,10 +153,13 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Assertion\AsyncAssertions.cs" />
     <Compile Include="Assertion\ObjectPropertyAssertions.cs" />
     <None Include="FG.ServiceFabric.Testing.nuspec" />
+    <Compile Include="Mocks\Actors\Client\BaseActorProxy.cs" />
     <Compile Include="Mocks\Actors\Client\IMockableActorRegistration.cs" />
     <Compile Include="Mocks\Actors\Client\IMockActorProxyManager.cs" />
     <Compile Include="Mocks\Actors\Client\MockableActorRegistration.cs" />
+    <Compile Include="Mocks\Actors\Client\MockActorProxy - Copy.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxy.cs" />
+    <Compile Include="Mocks\Actors\Client\MockActorProxyFactories.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorProxyFactory.cs" />
     <Compile Include="Mocks\Actors\Client\MockActorServiceProxy.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorReminder.cs" />
@@ -176,6 +186,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Mocks\Services\Remoting\Client\IMockServiceProxyManager.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\MockableServiceRegistration.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\MockServiceProxy.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\MockServiceInstanceProxyCache.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\MockServiceInstanceProxyCacheKey.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\MockServiceProxyFactory.cs" />
     <Compile Include="Mocks\Services\Runtime\IMockServiceInstance.cs" />
     <Compile Include="Mocks\Services\Runtime\MockActorServiceInstance.cs" />

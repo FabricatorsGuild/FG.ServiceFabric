@@ -10,6 +10,8 @@ using ServiceProxyFactory = FG.ServiceFabric.Services.Remoting.Runtime.Client.Se
 
 namespace FG.ServiceFabric.Actors.Runtime
 {
+    using System.Threading.Tasks;
+
     public abstract class ActorBase : Actor
     {
         private readonly Func<IActorClientLogger> _actorClientLoggerFactory;
@@ -28,6 +30,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             _applicationUriBuilder = new ApplicationUriBuilder(actorService.Context.CodePackageActivationContext);
             _actorProxyFactoryFactory = () => new ActorProxyFactory(_actorClientLoggerFactory?.Invoke());
             _serviceProxyFactoryFactory = () => new ServiceProxyFactory(_serviceClientLoggerFactory?.Invoke());
+
+            this.MockRuntimeHelperInstance = new MockRuntimeHelper(this);
         }
 
         protected ActorBase(
@@ -39,6 +43,30 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             _actorClientLoggerFactory = actorClientLoggerFactory;
             _serviceClientLoggerFactory = serviceClientLoggerFactory;
+        }
+
+        public MockRuntimeHelper MockRuntimeHelperInstance { get; }
+
+        public struct MockRuntimeHelper
+        {
+            private readonly ActorBase actor;
+
+            public MockRuntimeHelper(ActorBase actor)
+            {
+                this.actor = actor;
+
+                // actor.OnPreActorMethodAsync()
+            }
+
+            public Task OnPreActorMethodAsync(ActorMethodContext actorMethodContext)
+            {
+                return this.actor.OnPreActorMethodAsync(actorMethodContext);
+            }
+
+            public Task OnPostActorMethodAsync(ActorMethodContext actorMethodContext)
+            {
+                return this.actor.OnPostActorMethodAsync(actorMethodContext);
+            }
         }
 
         protected IActorProxyFactory ActorProxyFactory => _actorProxyFactoryFactory();
