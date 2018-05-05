@@ -67,6 +67,11 @@ namespace FG.ServiceFabric.Actors.Runtime
             {
                 return this.actor.OnPostActorMethodAsync(actorMethodContext);
             }
+
+            public Task OnActivateAsync()
+            {
+                return this.actor.OnActivateAsync();
+            }
         }
 
         protected IActorProxyFactory ActorProxyFactory => _actorProxyFactoryFactory();

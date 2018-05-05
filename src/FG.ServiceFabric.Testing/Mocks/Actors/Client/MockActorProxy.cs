@@ -42,25 +42,23 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
 
         public TActorInterface Proxy { get; }
 
-        private static Func<TActorInterface, IActorProxy, TActorInterface> ProxyFactory { get; } = CreateMockActorProxy();
+        private static Func<TActorInterface, IActorProxy, TActorInterface> ProxyFactory { get; } = CreateMockActorProxyFactory();
 
         protected override object GetReturnValue(int interfaceId, int methodId, object responseBody)
         {
             throw new NotImplementedException();
         }
 
-        private static Func<TActorInterface, IActorProxy, TActorInterface> CreateMockActorProxy()
+        private static Func<TActorInterface, IActorProxy, TActorInterface> CreateMockActorProxyFactory()
         {
-            var parameters = TypeCloneBuilderParameters<ProxyTypeBuilder.TypeContext, ProxyTypeBuilder.MethodContext>.New.AddInterface(typeof(TActorInterface))
+            var builder = (ProxyBuilder)ProxyBuilder
+                .New
+                .AddInterface(typeof(TActorInterface))
                 .AddInterface(typeof(IActorProxy))
                 .ParentType(typeof(BaseActorProxy<>).MakeGenericType(typeof(TActorInterface)))
                 .TypeName("ActorProxy" + "_" + Guid.NewGuid().ToString("N"));
 
-            var proxyTypeBuilder = new ProxyTypeBuilder();
-
-            var result = proxyTypeBuilder.GenerateType(parameters);
-
-            return result.GetFactory<TActorInterface, IActorProxy, TActorInterface>();
+            return builder.Build().GetFactory<TActorInterface, IActorProxy, TActorInterface>();
         }
 
         private TActorInterface CreateDynamicProxy(TActorInterface target)

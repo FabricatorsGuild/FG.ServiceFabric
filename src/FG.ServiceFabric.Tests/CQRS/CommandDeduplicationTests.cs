@@ -174,13 +174,13 @@ namespace FG.ServiceFabric.Tests.CQRS
         public async Task AddCountAsyncPerformingSyncAction(AddCountCommand command)
         {
             await CommandDeduplicationHelper.ProcessOnceAsync(
-                () =>
+                async () =>
                 {
-                    ExecutionHelper.ExecuteWithRetriesAsync(
+                    await ExecutionHelper.ExecuteWithRetriesAsync(
                         async ct => { await StateManager.AddOrUpdateStateAsync("MyState", 1, (s, i) => ++i, ct); },
                         3,
                         1.Seconds(),
-                        CancellationToken.None).GetAwaiter().GetResult();
+                        CancellationToken.None);
                 },
                 command,
                 StateManager,

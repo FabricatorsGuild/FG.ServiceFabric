@@ -356,7 +356,7 @@ namespace FG.ServiceFabric.Testing.Mocks.Actors.Client
                 throw new ArgumentException(
                     $"Expected a MockableActorRegistration with ActorServiceType for the type {typeof(TServiceInterface).Name}");
 
-            var mockServiceProxy = new MockActorServiceProxy(instance.ServiceInstance, serviceUri, serviceInterfaceType,
+            var mockServiceProxy = new MockActorServiceProxy<TServiceInterface>((TServiceInterface)instance.ServiceInstance, serviceUri, serviceInterfaceType,
                 partitionKey,
                 TargetReplicaSelector.Default, string.Empty, null, this);
 

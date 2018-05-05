@@ -55,7 +55,7 @@
                     };
             }
 
-            ActorMethodContextCache = actorType.GetMethods().Select(mi => mi.Name).Distinct().ToDictionary(name => name, name => ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(name, ActorCallType.ActorInterfaceMethod));
+            ActorMethodContextCache = actorType.GetAllInterfaces().SelectMany(i => i.GetMethods()).Select(mi => mi.Name).Distinct().ToDictionary(name => name, name => ReflectionUtils.ActivateInternalCtor<ActorMethodContext>(name, ActorCallType.ActorInterfaceMethod));
         }
 
         public BaseActorProxy(TInterface actorInterface, IActorProxy actorProxy)

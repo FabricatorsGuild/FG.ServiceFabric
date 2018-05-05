@@ -62,15 +62,21 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.InMemory
 
             protected override async Task<string> ReadAsync(SchemaStateKey key, bool checkExistsOnly = false)
             {
+                var sw = new SpinWait();
+
                 var id = key.GetId();
                 if (Storage.TryGetValue(id, out var value))
                 {
                     // Quick return not-null value if check for existance only
-                    await Task.Delay(1);
+                    // await Task.Delay(1);
+                    sw.SpinOnce();
+                    sw.SpinOnce();
+
                     return checkExistsOnly ? string.Empty : value;
                 }
 
-                await Task.Delay(1);
+                sw.SpinOnce();
+                sw.SpinOnce();
                 return null;
             }
 

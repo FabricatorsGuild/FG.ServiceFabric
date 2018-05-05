@@ -41,8 +41,8 @@ namespace FG.ServiceFabric.Testing.Mocks.Services.Remoting.Client
                 throw new ArgumentException($"A service with interface {serviceInterfaceType.Name} could not be found for address {serviceUri}");
             }
 
-            var mockServiceProxy = new MockServiceProxy(
-                instance.ServiceInstance,
+            var mockServiceProxy = new MockServiceProxy<TServiceInterface>(
+                (TServiceInterface)instance.ServiceInstance,
                 serviceUri,
                 serviceInterfaceType,
                 partitionKey,

@@ -88,8 +88,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="Serpent.InterfaceProxy.NetFramework, Version=0.0.6698.40292, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Serpent.InterfaceProxy.NetFramework.0.0.6698.40292\lib\net461\Serpent.InterfaceProxy.NetFramework.dll</HintPath>
+    <Reference Include="Serpent.InterfaceProxy.NetFramework, Version=0.0.6700.1855, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Serpent.InterfaceProxy.NetFramework.0.0.6700.1855\lib\net461\Serpent.InterfaceProxy.NetFramework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -164,6 +164,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Mocks\Actors\Client\MockActorServiceProxy.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorReminder.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorService.cs" />
+    <Compile Include="Mocks\Actors\Runtime\MockActorServiceExtension.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorStateManager.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorStateProvider.cs" />
     <Compile Include="Mocks\Actors\Runtime\MockActorTimer.cs" />
@@ -182,6 +183,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Mocks\MockFabricSetupException.cs" />
     <Compile Include="Mocks\MockServiceRuntimeException.cs" />
     <Compile Include="Mocks\MockServiceRuntimeRegistration.cs" />
+    <Compile Include="Mocks\Services\Remoting\Client\BaseServiceProxy.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\IMockableServiceRegistration.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\IMockServiceProxyManager.cs" />
     <Compile Include="Mocks\Services\Remoting\Client\MockableServiceRegistration.cs" />
