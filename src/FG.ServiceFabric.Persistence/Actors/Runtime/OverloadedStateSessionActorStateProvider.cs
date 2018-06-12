@@ -11,6 +11,7 @@ namespace FG.ServiceFabric.Actors.Runtime
     using FG.Common.Utils;
     using FG.ServiceFabric.Actors.Runtime.ActorDocument;
     using FG.ServiceFabric.Actors.Runtime.Reminders;
+    using FG.ServiceFabric.Actors.Runtime.RuntimeInformation;
     using FG.ServiceFabric.Services.Runtime.StateSession;
 
     using Microsoft.ServiceFabric.Actors;
@@ -31,8 +32,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         private readonly IActorStateProvider _innerActorStateProvider;
 
-        private readonly ConcurrentDictionary<ActorId, ActorRuntimeInformation> actorRuntimeInformation = new ConcurrentDictionary<ActorId, ActorRuntimeInformation>();
-
         private readonly OverloadedStateSessionActorStateProviderSettings settings;
 
         private ReplicaRole _currentRole;
@@ -40,6 +39,8 @@ namespace FG.ServiceFabric.Actors.Runtime
         private Func<CancellationToken, Task<bool>> _onDataLossAsync;
 
         private Func<CancellationToken, Task> _onRestoreCompletedAsync;
+
+        private readonly ActorRuntimeInformationCollection actorRuntimeInformation = new ActorRuntimeInformationCollection();
 
         public OverloadedStateSessionActorStateProvider(
             IActorStateProvider innerActorStateProvider,
@@ -81,23 +82,17 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             await this._innerActorStateProvider.ActorActivatedAsync(actorId, cancellationToken);
 
-            if (await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.IsSaveInProgress, cancellationToken))
+            if (this.actorRuntimeInformation.IsSaveInProgress(actorId) || await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.IsSaveInProgress, cancellationToken))
             {
                 // Previous state was not stored correctly. Update from documentdb
                 await this.UpdateInnerStateFromDocumentStateSessionAsync(actorId, cancellationToken);
             }
 
-            if (this.actorRuntimeInformation.ContainsKey(actorId) == false)
+            if (this.actorRuntimeInformation.ContainsActor(actorId) == false)
             {
-                if (await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.HasDocumentState, cancellationToken))
-                {
-                    this.SetHasDocumentState(actorId);
-                }
-
-                if (await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.IsSaveInProgress, cancellationToken))
-                {
-                    this.SetHasDocumentState(actorId);
-                }
+                var hasDocument = await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.HasDocumentState, cancellationToken);
+                var isSaveInProgress = await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.IsSaveInProgress, cancellationToken);
+                this.actorRuntimeInformation.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetIsSaveInProgress(isSaveInProgress).SetHasDocumentState(hasDocument));
             }
         }
 
@@ -215,12 +210,24 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public async Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await this._innerActorStateProvider.RemoveActorAsync(actorId, cancellationToken);
+            var isRemoving = await this._innerActorStateProvider.ContainsStateAsync(actorId, StateNames.IsDeleteInProgress, cancellationToken);
 
-            cancellationToken = cancellationToken.OrNone();
+            if (isRemoving == false)
+            {
+                await this._innerActorStateProvider.SaveStateAsync(
+                    actorId,
+                    new[] { new ActorStateChange(StateNames.IsDeleteInProgress, typeof(bool), true, StateChangeKind.Add), },
+                    cancellationToken);
+            }
+
+            this.actorRuntimeInformation.SetIsSaveInProgress(actorId);
+
             await this._actorDocumentManager.RemoveActorDocument(actorId, cancellationToken);
 
-            this.actorRuntimeInformation.TryRemove(actorId, out _);
+            cancellationToken = cancellationToken.OrNone();
+            await this._innerActorStateProvider.RemoveActorAsync(actorId, cancellationToken);
+
+            this.actorRuntimeInformation.RemoveActor(actorId);
         }
 
         public async Task RestoreAsync(string backupFolderPath)
@@ -265,7 +272,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public async Task SaveStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> stateChanges, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var actorInformation = this.GetActorRuntimeInformation(actorId);
+            var actorInformation = this.actorRuntimeInformation.GetActorRuntimeInformation(actorId);
 
             if (actorInformation.IsSaveInProgress == false)
             {
@@ -276,12 +283,14 @@ namespace FG.ServiceFabric.Actors.Runtime
                 cancellationToken);
             }
 
-            this.SetIsSaveInProgress(actorId);
-
             var hasDocument = actorInformation.HasDocumentState;
+
+            this.actorRuntimeInformation.SetIsSaveInProgress(actorId, true);
 
             // Save to document
             await this._actorDocumentManager.UpdateActorDocument(actorId, stateChanges, hasDocument ? UpsertType.Update : UpsertType.Insert, cancellationToken);
+
+            this.actorRuntimeInformation.SetHasDocumentState(actorId);
 
             // Save to state, and remove "save in progress" flag
             var newChanges = stateChanges?.ToList() ?? new List<ActorStateChange>();
@@ -294,7 +303,7 @@ namespace FG.ServiceFabric.Actors.Runtime
 
             await this._innerActorStateProvider.SaveStateAsync(actorId, newChanges, cancellationToken);
 
-            this.SetIsSaveInProgress(actorId, false);
+            this.actorRuntimeInformation.SetIsSaveInProgress(actorId, false);
         }
 
         public async Task UpdateInnerStateFromDocumentStateSessionAsync(ActorId actorId, CancellationToken cancellationToken)
@@ -315,32 +324,11 @@ namespace FG.ServiceFabric.Actors.Runtime
                 }
                 else
                 {
-                    this.SetHasDocumentState(actorId);
+                    this.actorRuntimeInformation.SetHasDocumentState(actorId);
                 }
             }
 
             await this.UpdateInnerStateFromStateSession(document, cancellationToken.OrNone());
-        }
-
-        private bool GetActorHasDocument(ActorId actorId)
-        {
-            return this.GetActorRuntimeInformation(actorId).HasDocumentState;
-        }
-
-        private bool GetActorIsSaveInProgress(ActorId actorId)
-        {
-            return this.GetActorRuntimeInformation(actorId).IsSaveInProgress;
-        }
-
-
-        private ActorRuntimeInformation GetActorRuntimeInformation(ActorId actorId)
-        {
-            if (!this.actorRuntimeInformation.TryGetValue(actorId, out var actorRuntimeInformation))
-            {
-                throw new Exception("Unexpected runtime error - Actor not activated correctly but state save requested. If this exception is thrown - it's most likely a bug.");
-            }
-
-            return actorRuntimeInformation;
         }
 
         private async Task LoadStateFromCosmosAsync(CancellationToken cancellationToken)
@@ -393,23 +381,6 @@ namespace FG.ServiceFabric.Actors.Runtime
             }
         }
 
-        private void SetHasDocumentState(ActorId actorId)
-        {
-            this.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetHasDocumentState(true));
-        }
-
-        private void SetIsSaveInProgress(ActorId actorId, bool isSaveInProgress = true)
-        {
-            this.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetIsSaveInProgress(isSaveInProgress));
-        }
-
-        private void AddOrUpdateActorRuntimeInformation(ActorId actorId, Func<ActorRuntimeInformation, ActorRuntimeInformation> updateFunc)
-        {
-            this.actorRuntimeInformation.AddOrUpdate(
-                actorId,
-                aid => updateFunc(new ActorRuntimeInformation()),
-                (aid, ari) => updateFunc(ari));
-        }
 
         private async Task UpdateInnerStateFromStateSession(ActorDocumentState actorDocument, CancellationToken cancellationToken)
         {
@@ -447,16 +418,16 @@ namespace FG.ServiceFabric.Actors.Runtime
             await this._innerActorStateProvider.SaveStateAsync(actorId, actorStateChanges, cancellationToken);
         }
 
-        private async Task UpdateInnerStateRemindersAsync(CancellationToken cancellationToken, ActorDocumentState actorDocumentState, ActorId actorId)
+        private async Task UpdateInnerStateRemindersAsync(ActorId actorId, IEnumerable<ActorReminderData> reminders, CancellationToken cancellationToken)
         {
-            foreach (var reminder in actorDocumentState.Reminders.Values)
+            foreach (var reminder in reminders)
             {
                 var actorReminderState = new ActorReminderState(reminder, DateTime.UtcNow);
                 await this._innerActorStateProvider.SaveReminderAsync(actorId, actorReminderState, cancellationToken);
             }
         }
 
-        private async Task UpdateInnerStateStateAsync(ActorId actorId, Dictionary<string, object> states, HashSet<string> existingStateNames, CancellationToken cancellationToken)
+        private async Task UpdateInnerStateAsync(ActorId actorId, Dictionary<string, object> states, HashSet<string> existingStateNames, CancellationToken cancellationToken)
         {
             var actorStateChanges = states.Select(
                 actorState => new ActorStateChange(
@@ -472,25 +443,30 @@ namespace FG.ServiceFabric.Actors.Runtime
             // Reminders
             if (actorDocumentState.Reminders != null)
             {
-                await this.UpdateInnerStateRemindersAsync(cancellationToken, actorDocumentState, actorId);
+                await this.UpdateInnerStateRemindersAsync(actorId, actorDocumentState.Reminders.Values, cancellationToken);
             }
 
             // State
             if (actorDocumentState.States != null)
             {
-                var existingStateNames = new HashSet<string>(await this._innerActorStateProvider.EnumerateStateNamesAsync(actorId, cancellationToken));
-
-                var actorStates = actorDocumentState.States;
-
-                if (existingStateNames.Contains(StateNames.HasDocumentState) == false)
-                {
-                    actorStates[StateNames.HasDocumentState] = true;
-                }
-
-                await this.UpdateInnerStateStateAsync(actorId, actorStates, existingStateNames, cancellationToken);
-
-                this.SetHasDocumentState(actorId);
+                await this.UpdateInnerStateAsync(actorId, actorDocumentState, cancellationToken);
             }
+        }
+
+        private async Task UpdateInnerStateAsync(ActorId actorId, ActorDocumentState actorDocumentState, CancellationToken cancellationToken)
+        {
+            var existingStateNames = new HashSet<string>(await this._innerActorStateProvider.EnumerateStateNamesAsync(actorId, cancellationToken));
+
+            var actorStates = actorDocumentState.States;
+
+            if (existingStateNames.Contains(StateNames.HasDocumentState) == false)
+            {
+                actorStates[StateNames.HasDocumentState] = true;
+            }
+
+            await this.UpdateInnerStateAsync(actorId, actorStates, existingStateNames, cancellationToken);
+
+            this.actorRuntimeInformation.SetHasDocumentState(actorId);
         }
 
         private static class StateNames
@@ -498,6 +474,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             public const string HasDocumentState = "HasDocumentState-389edb4a-30f9-4693-8f5c-78148e10480d";
 
             public const string IsSaveInProgress = "InnerStateIsSaveInProgressKeyName-877287eb-3c4f-4634-8006-ed2a6776d14c";
+
+            public const string IsDeleteInProgress = "IsDeleteInProgress-ab9903f1-3b13-460d-a168-604d8e0dc106";
 
             public const string IsStateLoaded = "IsStateLoaded-e813376e-9991-4a1a-8cf3-6c59974645a7";
 

@@ -141,7 +141,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentStateKey.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\DefaultStateSessionActorDocumentManager.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\UpsertType.cs" />
-    <Compile Include="Actors\Runtime\ActorRuntimeInformation.cs" />
+    <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformation.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderExtensions.cs" />
     <Compile Include="Actors\Runtime\DefaultQueryableStateProvider.cs" />
     <Compile Include="Actors\Runtime\DocumentDbStateSessionManagerQueryableWithTransactions.cs" />
@@ -160,6 +160,10 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderState.cs" />
+    <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformationCollection.cs" />
+    <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformationExtensions.cs" />
+    <Compile Include="Actors\Runtime\SaveStateHandlers\ISaveReliableState.cs" />
+    <Compile Include="Actors\Runtime\SaveStateHandlers\ReliableStateSaver.cs" />
     <Compile Include="Actors\Runtime\SessionStateActorStateProviderException.cs" />
     <Compile Include="Actors\Runtime\StateSession\ActorStateWrapper.cs" />
     <Compile Include="Actors\Runtime\StateSession\Metadata\ActorStateMetadata.cs" />

@@ -6,12 +6,16 @@ namespace FG.ServiceFabric.Actors.Runtime
 
         public bool IsSaveInProgress { get; private set; }
 
+        public bool IsDeleteInProgress { get; private set; }
+
+
         public ActorRuntimeInformation Clone()
         {
             return new ActorRuntimeInformation
                        {
                            HasDocumentState = this.HasDocumentState,
-                           IsSaveInProgress = this.IsSaveInProgress
+                           IsSaveInProgress = this.IsSaveInProgress,
+                           IsDeleteInProgress = this.IsDeleteInProgress
                        };
         }
 
@@ -27,6 +31,13 @@ namespace FG.ServiceFabric.Actors.Runtime
         {
             var newInformation = this.Clone();
             newInformation.IsSaveInProgress = isSaveInProgress;
+            return newInformation;
+        }
+
+        public ActorRuntimeInformation SetIsDeleteInProgress(bool isDeleteInProgress)
+        {
+            var newInformation = this.Clone();
+            newInformation.IsDeleteInProgress = isDeleteInProgress;
             return newInformation;
         }
 

@@ -50,7 +50,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
                 var key = new ActorDocumentStateKey(actorId);
 
                 // e.g.: servicename_partition1_ACTORSTATE-myState_G:A4F3A8FC-801E-4940-8993-98CB6D7BCEF9
-                ConditionalValue<ActorDocumentState> state = new ConditionalValue<ActorDocumentState>();
+                var state = new ConditionalValue<ActorDocumentState>();
 
                 bool loadActorDocument = upsertType == UpsertType.Update || upsertType == UpsertType.Auto;
 
