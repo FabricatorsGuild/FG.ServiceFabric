@@ -42,7 +42,10 @@ namespace FG.ServiceFabric.Actors.Runtime
             try
             {
                 var nextToken = continuationToken?.Marker as string;
-                var documentCollectionQuery = session.Client.CreateDocumentQuery<ActorSingleStateDocument<T>>(
+
+                var documentClient = await session.GetDocumentClientAsync();
+
+                var documentCollectionQuery = documentClient.CreateDocumentQuery<ActorSingleStateDocument<T>>(
                     UriFactory.CreateDocumentCollectionUri(session.DatabaseName, session.DatabaseCollection),
                     new SqlQuerySpec
                     {

@@ -8,11 +8,16 @@ using Microsoft.ServiceFabric.Actors.Runtime;
 
 namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 {
+    using System;
+
     internal interface IStateSessionActorDocumentManager
     {
         Task<ActorDocumentState> LoadActorDocument(ActorId actorId, CancellationToken cancellationToken);
 
-        Task<ActorDocumentState> UpdateActorDocument(ActorId actorId, ActorStateChange[] actorStateChanges,
+        Task<ActorDocumentState> UpdateActorDocument(
+            ActorId actorId, 
+            ActorStateChange[] actorStateChanges,
+            UpsertType upsertType,
             CancellationToken cancellationToken);
 
         Task RemoveActorDocument(ActorId actorId, CancellationToken cancellationToken);
@@ -20,7 +25,12 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
         Task<IActorReminderCollection> LoadAllRemindersAsync(
             CancellationToken cancellationToken);
 
-        Task UpdateActorDocument(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges,
+        Task IterateAllDocumentStatesAsync(Func<ActorId, ActorDocumentState, CancellationToken, Task> iterationFunc, CancellationToken cancellationToken);
+
+        Task UpdateActorDocument(
+            ActorId actorId, 
+            IReadOnlyCollection<ActorStateChange> actorStateChanges,
+            UpsertType upsertType,
             CancellationToken cancellationToken);
 
         Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder,

@@ -16,6 +16,10 @@ using Microsoft.ServiceFabric.Data;
 
 namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 {
+    using Microsoft.Azure.Documents.SystemFunctions;
+
+    using Newtonsoft.Json;
+
     public class DocumentDbStateSessionManagerWithTransactions :
         StateSessionManagerBase<DocumentDbStateSessionManagerWithTransactions.DocumentDbStateSession>,
         IStateSessionManager,
@@ -33,7 +37,8 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
         private DocumentClient _client;
         private bool _collectionExists;
-        private readonly object _lock = new object();
+
+        private readonly SemaphoreSlim lockSemaphore = new SemaphoreSlim(1);
 
         public DocumentDbStateSessionManagerWithTransactions(
             string serviceName,
@@ -67,38 +72,51 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             throw new NotImplementedException();
         }
 
-        private DocumentClient CreateClient()
+        private async Task<DocumentClient> CreateClientAsync()
         {
             _logger.CreatingClient();
-            lock (_lock)
+
+            var client = await _factory.OpenAsync(
+                             _databaseName,
+                             new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
+                             new Uri(_endpointUri),
+                             _collectionPrimaryKey,
+                             _connectionPolicySetting);
+
+            if (!_collectionExists)
             {
-                _client = _factory.OpenAsync(
-                    _databaseName,
-                    new CosmosDbCollectionDefinition(_collection, $"/partitionKey"),
-                    new Uri(_endpointUri),
-                    _collectionPrimaryKey,
-                    _connectionPolicySetting
-                ).GetAwaiter().GetResult();
+                await client.EnsureStoreIsConfigured(_databaseName,
+                        new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);
 
-
-                if (!_collectionExists)
-                {
-                    _client.EnsureStoreIsConfigured(_databaseName,
-                            new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger).GetAwaiter()
-                        .GetResult();
-                    _collectionExists = true;
-                }
+                _collectionExists = true;
             }
 
-            return _client;
+            return client;
         }
 
-        private DocumentClient GetClient()
+        private async Task<DocumentClient> GetClientAsync()
         {
-            if (_client == null)
-                _client = CreateClient();
+            if (this._client != null)
+            {
+                return this._client;
+            }
 
-            return _client;
+            try
+            {
+                await this.lockSemaphore.WaitAsync();
+
+                if (_client == null)
+                {
+                    this._client = await this.CreateClientAsync();
+                }
+
+                return _client;
+            }
+            finally
+            {
+                this.lockSemaphore.Release();
+            }
+
         }
 
         protected override DocumentDbStateSession CreateSessionInternal(
@@ -118,7 +136,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         public class DocumentDbStateSession : StateSessionBase<
             DocumentDbStateSessionManagerWithTransactions>, IDocumentDbSession
         {
-            private readonly DocumentClient _documentClient;
             private readonly DocumentDbStateSessionManagerWithTransactions _manager;
 
             public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
@@ -126,7 +143,6 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 : base(manager, stateSessionObjects)
             {
                 _manager = manager;
-                _documentClient = _manager.GetClient();
             }
 
             public DocumentDbStateSession(DocumentDbStateSessionManagerWithTransactions manager,
@@ -134,18 +150,23 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 : base(manager, stateSessionObjects)
             {
                 _manager = manager;
-                _documentClient = _manager.GetClient();
             }
 
-            DocumentClient IDocumentDbSession.Client => _documentClient;
+            Task<DocumentClient> IDocumentDbSession.GetDocumentClientAsync()
+            {
+                return this._manager.GetClientAsync();
+            }
+
             string IDocumentDbSession.DatabaseName => _manager._databaseName;
             string IDocumentDbSession.DatabaseCollection => _manager._collection;
             PartitionKey IDocumentDbSession.PartitionKey => GetPartitionKey();
 
             public override string ToString()
             {
+                var _documentClient = this.GetDocumentClientAsync().GetAwaiter().GetResult();
+
                 return
-                    $"{GetType().Name}\r\n-------------------\r\nManager: {_manager.GetType().Name} {_manager.GetHashCode()}\r\nClient: {_documentClient.GetType().Name} {_documentClient.GetHashCode()}\r\nService Name: {_manager.ServiceName}\r\nService Partition: {_manager.PartitionKey}\r\nStorage Partition: {_manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey)}";
+                    $"{GetType().Name}\r\n-------------------\r\nManager: {_manager.GetType().Name} {_manager.GetHashCode()}\r\nClient: {_documentClient?.GetType().Name} {_documentClient?.GetHashCode()}\r\nService Name: {_manager.ServiceName}\r\nService Partition: {_manager.PartitionKey}\r\nStorage Partition: {_manager.GetStoragePartitionKey(_manager.ServiceName, _manager.PartitionKey)}";
             }
 
             private PartitionKey GetPartitionKey()
@@ -164,30 +185,30 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 return UriFactory.CreateDocumentCollectionUri(_manager._databaseName, _manager._collection);
             }
 
-            protected override Task<bool> ContainsInternal(SchemaStateKey key,
+            private Task<DocumentClient> GetDocumentClientAsync()
+            {
+                return this._manager.GetClientAsync();
+            }
+
+            protected override async Task<bool> ContainsInternal(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var id = key.GetId();
+
+                var documentClient = await this.GetDocumentClientAsync();
+
                 try
                 {
-                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
-                            CreateDocumentCollectionUri(),
-                            new FeedOptions
-                            {
-                                PartitionKey = GetPartitionKey(),
-                                MaxItemCount = 1
-                            })
-                        .Where(d => d.Id == id);
-
-                    // ReSharper disable once UnusedVariable - cannot use Any() on DocumentQueryException
-                    foreach (var document in documentCollectionQuery)
-                        return Task.FromResult(true);
-                    return Task.FromResult(false);
+                    var document = await documentClient.ReadDocumentAsync(this.CreateDocumentUri(id));
+                    return true;
                 }
                 catch (DocumentClientException dcex)
                 {
                     if (dcex.StatusCode == HttpStatusCode.NotFound)
-                        return Task.FromResult(false);
+                    {
+                        return false;
+                    }
+
                     throw new StateSessionException($"ContainsInternal for {id} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
@@ -208,7 +229,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                     IDocumentQuery<IdWrapper> documentCollectionQuery;
                     var nextToken = continuationToken?.Marker as string;
 
-                    documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
+                    var client = await this.GetDocumentClientAsync();
+
+                    documentCollectionQuery = client.CreateDocumentQuery<IdWrapper>(
                             CreateDocumentCollectionUri(),
                             new FeedOptions
                             {
@@ -244,7 +267,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                             }
                         }
                     }
-                    return new FindByKeyPrefixResult {ContinuationToken = null, Items = results};
+                    return new FindByKeyPrefixResult { ContinuationToken = null, Items = results };
                 }
                 catch (DocumentClientException dcex)
                 {
@@ -263,9 +286,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var results = new List<string>();
+
+                var client = await this.GetDocumentClientAsync();
+
                 try
                 {
-                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper>(
+                    var documentCollectionQuery = client.CreateDocumentQuery<StateWrapper>(
                             CreateDocumentCollectionUri(),
                             new FeedOptions
                             {
@@ -296,29 +322,28 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
             }
 
-            protected override Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
+            protected override  async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var id = key.GetId();
+
+                var client = await this.GetDocumentClientAsync();
+
                 try
                 {
-                    var documentCollectionQuery = _documentClient.CreateDocumentQuery<StateWrapper<T>>(
-                            CreateDocumentCollectionUri(),
-                            new FeedOptions
-                            {
-                                PartitionKey = GetPartitionKey(),
-                                MaxItemCount = 1
-                            })
-                        .Where(d => d.Id == id);
-
-                    foreach (var document in documentCollectionQuery)
-                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(true, document));
-                    return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                    var document = await client.ReadDocumentAsync<StateWrapper<T>>(this.CreateDocumentUri(id), new RequestOptions
+                                                                                                                   {
+                                                                                                                       PartitionKey = this.GetPartitionKey()
+                                                                                                                   });
+                    return new ConditionalValue<StateWrapper<T>>(true, document);
                 }
                 catch (DocumentClientException dcex)
                 {
                     if (dcex.StatusCode == HttpStatusCode.NotFound)
-                        return Task.FromResult(new ConditionalValue<StateWrapper<T>>(false, null));
+                    {
+                        return new ConditionalValue<StateWrapper<T>>(false, null);
+                    }
+
                     throw new StateSessionException($"TryGetValueAsync for {id} failed, {dcex.Message}", dcex);
                 }
                 catch (Exception ex)
@@ -332,7 +357,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             {
                 try
                 {
-                    var response = await _documentClient.ReadDocumentAsync<StateWrapper<T>>(
+                    var client = await this.GetDocumentClientAsync();
+
+                    var response = await client.ReadDocumentAsync<StateWrapper<T>>(
                         CreateDocumentUri(key.GetId()),
                         new RequestOptions
                         {
@@ -358,7 +385,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             {
                 try
                 {
-                    await _documentClient.UpsertDocumentAsync(
+
+                    var documentClient = await this.GetDocumentClientAsync();
+
+                    await documentClient.UpsertDocumentAsync(
                         CreateDocumentCollectionUri(),
                         value,
                         new RequestOptions
@@ -382,7 +412,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 var id = key.GetId();
                 try
                 {
-                    await _documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
+                    var documentClient = await this.GetDocumentClientAsync();
+
+                    await documentClient.DeleteDocumentAsync(CreateDocumentUri(id),
                         new RequestOptions
                         {
                             PartitionKey = GetPartitionKey()
@@ -405,7 +437,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
             {
                 try
                 {
-                    var resultCount = await _documentClient.CreateDocumentQuery<StateWrapper>(
+                    var documentClient = await this.GetDocumentClientAsync();
+
+                    var resultCount = await documentClient.CreateDocumentQuery<StateWrapper>(
                             CreateDocumentCollectionUri(),
                             new FeedOptions
                             {
@@ -442,7 +476,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
         {
             try
             {
-                var client = GetClient();
+                var client = await this.GetClientAsync();
                 var dict = new Dictionary<string, string>();
                 var feedResponse =
                     await client.ReadDocumentFeedAsync(
@@ -468,7 +502,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
         async Task IDocumentDbDataManager.CreateCollection(string collectionName)
         {
-            var client = GetClient();
+            var client = await this.GetClientAsync();
 
             await client.EnsureStoreIsConfigured(_databaseName,
                 new CosmosDbCollectionDefinition(_collection, $"/partitionKey"), _logger);

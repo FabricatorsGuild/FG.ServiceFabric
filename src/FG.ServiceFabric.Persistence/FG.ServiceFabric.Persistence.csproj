@@ -140,6 +140,9 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentState.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentStateKey.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\DefaultStateSessionActorDocumentManager.cs" />
+    <Compile Include="Actors\Runtime\ActorDocument\UpsertType.cs" />
+    <Compile Include="Actors\Runtime\ActorRuntimeInformation.cs" />
+    <Compile Include="Actors\Runtime\ActorStateProviderExtensions.cs" />
     <Compile Include="Actors\Runtime\DefaultQueryableStateProvider.cs" />
     <Compile Include="Actors\Runtime\DocumentDbStateSessionManagerQueryableWithTransactions.cs" />
     <Compile Include="Actors\Runtime\DocumentStateSerializerHelper.cs" />
@@ -148,8 +151,11 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\IActorStateProviderQueryable.cs" />
     <Compile Include="Actors\Runtime\IActorValueMetadata.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\IStateSessionActorDocumentManager.cs" />
+    <Compile Include="Actors\Runtime\IOverloadedStateSessionActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\IQueryableActorStateProvider.cs" />
     <Compile Include="Actors\Runtime\OverloadedStateSessionActorStateProvider.cs" />
+    <Compile Include="Actors\Runtime\OverloadedStateSessionActorStateProviderActorStateInformation.cs" />
+    <Compile Include="Actors\Runtime\OverloadedStateSessionActorStateProviderSettings.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCollection.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderCompletedData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />

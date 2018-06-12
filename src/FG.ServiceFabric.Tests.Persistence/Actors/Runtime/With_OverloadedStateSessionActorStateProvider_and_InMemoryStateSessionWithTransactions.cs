@@ -54,7 +54,7 @@ namespace FG.ServiceFabric.Tests.Persistence.Actors.Runtime
                         (context, information, provider, factory) =>
                             new ActorDemoActorService(context, information, stateProvider: provider),
                         createActorStateProvider: (context, actorInfo) =>
-                            new OverloadedStateSessionActorStateProvider(new MockActorStateProvider(FabricRuntime, null), CreateStateManager(context)), 
+                            new OverloadedStateSessionActorStateProvider(new MockActorStateProvider(FabricRuntime, null), CreateStateManager(context), null), 
                         serviceDefinition: MockServiceDefinition.CreateUniformInt64Partitions(2, long.MinValue,
                             long.MaxValue));
 
