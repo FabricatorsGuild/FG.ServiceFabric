@@ -188,6 +188,13 @@ namespace FG.ServiceFabric.Actors.Runtime
                     new[] { new ActorStateChange(StateNames.IsStateLoaded, typeof(bool), true, StateChangeKind.Add) },
                     cancellationToken);
             }
+            else
+            {
+
+
+            }
+
+
 
             return await this._innerActorStateProvider.LoadRemindersAsync(cancellationToken);
         }
@@ -478,6 +485,8 @@ namespace FG.ServiceFabric.Actors.Runtime
             public const string IsDeleteInProgress = "IsDeleteInProgress-ab9903f1-3b13-460d-a168-604d8e0dc106";
 
             public const string IsStateLoaded = "IsStateLoaded-e813376e-9991-4a1a-8cf3-6c59974645a7";
+
+            public const string DocumentSelfLink = "c745667f-7909-46a2-b213-ce7110fd9f60";
 
             public static readonly IReadOnlyDictionary<string, string> ActorStatesToPreserve = new Dictionary<string, string>
             {

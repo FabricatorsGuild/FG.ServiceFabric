@@ -42,6 +42,10 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession
         [DataMember]
         public string Key { get; private set; }
 
+        [JsonProperty(PropertyName = "_self")]
+        [DataMember]
+        public string Self { get; private set; }
+
     }
 
     [Serializable]
