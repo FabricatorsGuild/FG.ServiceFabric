@@ -20,7 +20,7 @@ namespace FG.ServiceFabric.Actors.Runtime.RuntimeInformation
             return this.actorRuntimeInformation.ContainsKey(actorId);
         }
 
-        public ActorRuntimeInformationCollection AddOrUpdateActorRuntimeInformation(ActorId actorId, Func<ActorRuntimeInformation, ActorRuntimeInformation> updateFunc)
+        public ActorRuntimeInformationCollection Set(ActorId actorId, Func<ActorRuntimeInformation, ActorRuntimeInformation> updateFunc)
         {
             this.actorRuntimeInformation.AddOrUpdate(
                 actorId,

@@ -199,7 +199,12 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
 
                 try
                 {
-                    var document = await documentClient.ReadDocumentAsync(this.CreateDocumentUri(id));
+                    var document = await documentClient.ReadDocumentAsync(
+                                       this.CreateDocumentUri(id),
+                                       new RequestOptions
+                                       {
+                                           PartitionKey = this.GetPartitionKey()
+                                       });
                     return true;
                 }
                 catch (DocumentClientException dcex)
@@ -322,7 +327,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 }
             }
 
-            protected override  async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
+            protected override async Task<ConditionalValue<StateWrapper<T>>> TryGetValueInternalAsync<T>(SchemaStateKey key,
                 CancellationToken cancellationToken = default(CancellationToken))
             {
                 var id = key.GetId();
@@ -332,9 +337,9 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                 try
                 {
                     var document = await client.ReadDocumentAsync<StateWrapper<T>>(this.CreateDocumentUri(id), new RequestOptions
-                                                                                                                   {
-                                                                                                                       PartitionKey = this.GetPartitionKey()
-                                                                                                                   });
+                    {
+                        PartitionKey = this.GetPartitionKey()
+                    });
                     return new ConditionalValue<StateWrapper<T>>(true, document);
                 }
                 catch (DocumentClientException dcex)

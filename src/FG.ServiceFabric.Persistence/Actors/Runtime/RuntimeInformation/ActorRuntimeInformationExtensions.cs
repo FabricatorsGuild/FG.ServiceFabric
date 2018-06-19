@@ -1,33 +1,38 @@
-﻿namespace FG.ServiceFabric.Actors.Runtime.RuntimeInformation
+namespace FG.ServiceFabric.Actors.Runtime.RuntimeInformation
 {
-    using Microsoft.ServiceFabric.Actors;
+    using Microsoft.ServiceFabric.Data;
 
-    public static class ActorRuntimeInformationCollectionExtensions
+    public static class ActorRuntimeInformationExtensions
     {
-        public static ActorRuntimeInformationCollection SetHasDocumentState(this ActorRuntimeInformationCollection collection, ActorId actorId)
+
+        public static ActorRuntimeInformation SetHasDocumentState(this ActorRuntimeInformation actorRuntimeInformation, bool hasDocumentState)
         {
-            return collection.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetHasDocumentState(true));
+            actorRuntimeInformation.HasDocumentState = hasDocumentState;
+            return actorRuntimeInformation;
         }
 
-        public static ActorRuntimeInformationCollection SetIsSaveInProgress(this ActorRuntimeInformationCollection collection, ActorId actorId, bool isSaveInProgress = true)
+        public static ActorRuntimeInformation SetIsSaveInProgress(this ActorRuntimeInformation actorRuntimeInformation, bool isSaveInProgress)
         {
-            return collection.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetIsSaveInProgress(isSaveInProgress));
+            actorRuntimeInformation.IsSaveInProgress = isSaveInProgress;
+            return actorRuntimeInformation;
         }
 
-        public static ActorRuntimeInformationCollection IsDeleteInProgress(this ActorRuntimeInformationCollection collection, ActorId actorId, bool isDeleteInProgress = true)
+        public static ActorRuntimeInformation SetIsDeleteInProgress(this ActorRuntimeInformation actorRuntimeInformation, bool isDeleteInProgress)
         {
-            return collection.AddOrUpdateActorRuntimeInformation(actorId, ari => ari.SetIsDeleteInProgress(isDeleteInProgress));
+            actorRuntimeInformation.IsDeleteInProgress = isDeleteInProgress;
+            return actorRuntimeInformation;
         }
 
-        public static bool IsSaveInProgress(this ActorRuntimeInformationCollection collection, ActorId actorId)
+        public static ActorRuntimeInformation SetDocumentSelfLink(this ActorRuntimeInformation actorRuntimeInformation, string documentSelfLink)
         {
-            var value = collection.TryGetActorRuntimeInformation(actorId);
-            if (value.HasValue == false)
-            {
-                return false;
-            }
+            actorRuntimeInformation.DocumentSelfLink = documentSelfLink;
+            return actorRuntimeInformation;
+        }
 
-            return value.Value.IsSaveInProgress;
+        public static ActorRuntimeInformation SetDocumentSelfLink(this ActorRuntimeInformation actorRuntimeInformation, ConditionalValue<string> documentSelfLink)
+        {
+            actorRuntimeInformation.DocumentSelfLink = documentSelfLink.HasValue ? documentSelfLink.Value : null;
+            return actorRuntimeInformation;
         }
     }
 }

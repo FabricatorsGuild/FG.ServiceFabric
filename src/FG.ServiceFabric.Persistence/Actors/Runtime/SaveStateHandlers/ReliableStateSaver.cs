@@ -5,6 +5,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using FG.ServiceFabric.Actors.Runtime.RuntimeInformation;
+
     using Microsoft.ServiceFabric.Actors;
     using Microsoft.ServiceFabric.Actors.Runtime;
 

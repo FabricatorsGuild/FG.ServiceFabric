@@ -555,7 +555,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                                     MaxItemCount = maxNumResults,
                                     RequestContinuation = nextToken
                                 })
-                            .Where(d => d.Id.StartsWith(idPrefix))
+                            .Where(d => d.ServiceName.Equals(idPrefix))
                             .AsDocumentQuery();
                     else
                         documentCollectionQuery = _documentClient.CreateDocumentQuery<IdWrapper>(
@@ -565,7 +565,7 @@ namespace FG.ServiceFabric.Services.Runtime.StateSession.CosmosDb
                                     PartitionKey = new PartitionKey(ServicePartitionKey),
                                     MaxItemCount = maxNumResults
                                 })
-                            .Where(d => d.Id.StartsWith(idPrefix))
+                            .Where(d => d.ServiceName.Equals(idPrefix))
                             .AsDocumentQuery();
 
                     while (documentCollectionQuery.HasMoreResults)

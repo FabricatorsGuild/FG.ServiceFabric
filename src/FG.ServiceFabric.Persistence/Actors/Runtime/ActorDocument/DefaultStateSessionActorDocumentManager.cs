@@ -26,7 +26,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             _stateSessionManager = stateSessionManager;
         }
 
-        public async Task<ActorDocumentState> LoadActorDocument(ActorId actorId, CancellationToken cancellationToken)
+        public async Task<ActorDocumentState> LoadActorAsync(ActorId actorId, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.CreateSession())
             {
@@ -91,7 +91,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task RemoveActorDocument(ActorId actorId, CancellationToken cancellationToken)
+        public async Task RemoveActorAsync(ActorId actorId, CancellationToken cancellationToken)
         {
             cancellationToken = cancellationToken.OrNone();
             using (var session = _stateSessionManager.Writable.CreateSession())
@@ -121,7 +121,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
 
             try
             {
-                await this.IterateAllDocumentStatesAsync(
+                await this.IterateActorsAsync(
                     (actorId, actorDocument, _) =>
                         {
                             if (actorDocument.Reminders != null)
@@ -149,7 +149,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             return reminderCollection;
         }
 
-        public async Task IterateAllDocumentStatesAsync(Func<ActorId, ActorDocumentState, CancellationToken, Task> iterationFunc, CancellationToken cancellationToken)
+        public async Task IterateActorsAsync(Func<ActorId, ActorDocumentState, CancellationToken, Task> iterationFunc, CancellationToken cancellationToken)
         {
             var session = this._stateSessionManager.CreateSession();
             try
@@ -193,7 +193,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocument(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges, UpsertType upsertType, CancellationToken cancellationToken)
+        public async Task UpdateActorStateAsync(ActorId actorId, IReadOnlyCollection<ActorStateChange> actorStateChanges, UpsertType upsertType, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -245,7 +245,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentReminder(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
+        public async Task UpdateActorReminder(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -267,7 +267,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentReminderComplete(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
+        public async Task CompleteReminderAsync(ActorId actorId, IActorReminder reminder, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -292,7 +292,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task UpdateActorDocumentRemoveReminders(ActorId actorId, IReadOnlyCollection<string> reminderNamesToDelete, CancellationToken cancellationToken)
+        public async Task DeleteRemindersAsync(ActorId actorId, IReadOnlyCollection<string> reminderNamesToDelete, CancellationToken cancellationToken)
         {
             using (var session = _stateSessionManager.Writable.CreateSession())
             {
@@ -330,7 +330,7 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
             }
         }
 
-        public async Task<PagedResult<ActorId>> GetActorsAsync(
+        public async Task<PagedResult<ActorId>> GetActorsIdsAsync(
             int numItemsToReturn,
             ContinuationToken continuationToken,
             CancellationToken cancellationToken = default(CancellationToken))

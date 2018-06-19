@@ -39,8 +39,8 @@
 $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\nugetfeed" -Prop Platform=x64 -Symbols</PostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.18.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.18.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.22.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.22.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.ServiceFabric.Actors, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=AMD64">
@@ -141,6 +141,10 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\ActorDocument\ActorDocumentStateKey.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\DefaultStateSessionActorDocumentManager.cs" />
     <Compile Include="Actors\Runtime\ActorDocument\UpsertType.cs" />
+    <Compile Include="Actors\Runtime\DocumentDbStateSessionExtensions.cs" />
+    <Compile Include="Actors\Runtime\DocumentStateDefinition.cs" />
+    <Compile Include="Actors\Runtime\IInnerActorState.cs" />
+    <Compile Include="Actors\Runtime\InnerActorStateAccessor.cs" />
     <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformation.cs" />
     <Compile Include="Actors\Runtime\ActorStateProviderExtensions.cs" />
     <Compile Include="Actors\Runtime\DefaultQueryableStateProvider.cs" />
@@ -161,6 +165,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Actors\Runtime\Reminders\ActorReminderData.cs" />
     <Compile Include="Actors\Runtime\Reminders\ActorReminderState.cs" />
     <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformationCollection.cs" />
+    <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformationCollectionExtensions.cs" />
     <Compile Include="Actors\Runtime\RuntimeInformation\ActorRuntimeInformationExtensions.cs" />
     <Compile Include="Actors\Runtime\SaveStateHandlers\ISaveReliableState.cs" />
     <Compile Include="Actors\Runtime\SaveStateHandlers\ReliableStateSaver.cs" />
@@ -273,8 +278,8 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
   <Import Project="..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets" Condition="Exists('..\packages\Microsoft.ServiceFabric.Actors.2.8.232\build\Microsoft.ServiceFabric.Actors.targets')" />
-  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.18.0\build\Microsoft.Azure.DocumentDB.targets')" />
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.22.0\build\Microsoft.Azure.DocumentDB.targets')" />
 </Project>

@@ -8,6 +8,6 @@ namespace FG.ServiceFabric.Actors.Runtime
 
     public interface IOverloadedStateSessionActorStateProvider : IActorStateProvider, IQueryableActorStateProvider
     {
-        Task UpdateInnerStateFromDocumentStateSessionAsync(ActorId actorId, CancellationToken cancellationToken);
+        Task UpdateActorInnerStateAsync(ActorId actorId, CancellationToken cancellationToken);
     }
 }

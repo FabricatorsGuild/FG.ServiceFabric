@@ -41,5 +41,9 @@ namespace FG.ServiceFabric.Actors.Runtime.ActorDocument
         [JsonProperty("actorId")]
         [DataMember]
         public string ActorId { get; private set; }
+
+        [JsonProperty("_selfLink")]
+        [DataMember]
+        public string DocumentSelfLink { get; private set; }
     }
 }
