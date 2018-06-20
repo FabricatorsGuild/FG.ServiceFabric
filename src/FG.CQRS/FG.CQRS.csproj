@@ -58,6 +58,7 @@ $(SolutionDir)nuget.exe pack $(ProjectPath) -OutputDirectory "$(SolutionDir)..\n
     <Compile Include="Exceptions\HandlerNotFoundException.cs" />
     <Compile Include="Exceptions\InvariantsNotMetException.cs" />
     <None Include="FG.CQRS.nuspec" />
+    <Compile Include="Exceptions\LoadEventStreamException.cs" />
     <Compile Include="IAggregateReadModel.cs" />
     <Compile Include="IAggregateRoot.cs" />
     <Compile Include="IAggregateRootCreatedEvent.cs" />

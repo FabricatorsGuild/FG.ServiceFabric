@@ -16,6 +16,16 @@ namespace FG.CQRS.Exceptions
         {
         }
 
+        public AggregateRootNotFoundException(string message) : base(
+            message)
+        {
+        }
+
+        public AggregateRootNotFoundException(string message, Exception innerException) : base(
+            message, innerException)
+        {
+        }
+
         [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
         protected AggregateRootNotFoundException
         (
